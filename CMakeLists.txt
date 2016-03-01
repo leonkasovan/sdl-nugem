@@ -11,6 +11,21 @@ find_package(SDL2 REQUIRED)
 add_definitions("-Wall")
 include_directories(${SDL2_INCLUDE_DIR})
 
-add_executable(negum main.c)
+
+set(SOURCE_FILES
+	mugen/sffv1.cpp
+	mugen/sffv2.cpp
+    character.cpp
+    scenefight.cpp
+    scenemenu.cpp
+    scene.cpp
+    game.cpp
+    main.cpp
+)
+
+add_executable(negum ${SOURCE_FILES})
+# Using C++11
+set_property(TARGET negum PROPERTY CXX_STANDARD 11)
+set_property(TARGET negum PROPERTY CXX_STANDARD_REQUIRED 11)
 install(TARGETS negum DESTINATION bin)
 target_link_libraries(negum ${SDL2_LIBRARIES})
