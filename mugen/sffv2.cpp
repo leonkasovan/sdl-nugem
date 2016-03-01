@@ -241,7 +241,7 @@ SDL_Surface * Sffv2::getSurface()
 						outputColoredPixelFromPallet(color, index_pixel, pallet, surface, surface_size);
 				}
 				else {   // LZ packet (short or long)
-					uint16_t copylength = sdata[i_byte] & 0x1F;
+					uint32_t copylength = sdata[i_byte] & 0x1F;
 					uint32_t * pixels = (uint32_t *) surface->pixels;
 					uint8_t offset = 0;
 					if (copylength > 0) { // short LZ packet
@@ -280,10 +280,7 @@ SDL_Surface * Sffv2::getSurface()
 					// That is why the factor for the offset is there
 					for (int i_pixel = 0; i_pixel < copylength && index_pixel < surface_size; i_pixel++, index_pixel++) {
 						uint32_t offset_from_beginning = offset * (1 + i_pixel / copylength);
-						if (i_pixel > offset_from_beginning)
-							* (pixels + index_pixel) = 0;
-						else
-							* (pixels + index_pixel) = * (pixels + index_pixel - offset_from_beginning);
+						* (pixels + index_pixel) = * (pixels + index_pixel - offset_from_beginning);
 					}
 				}
 			}

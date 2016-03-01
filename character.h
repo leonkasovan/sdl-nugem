@@ -18,6 +18,7 @@ protected:
 	std::string id;
 	std::string name;
 private:
+	std::string directory;
 	std::string definitionfilename;
 	std::string spritefilename;
 	SDL_Texture * texture;

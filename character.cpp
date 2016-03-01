@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <array>
 #include <string>
 #include <ios>
@@ -15,17 +16,25 @@ Character::Character(const char * charid): id(charid)
 	currentSprite = 1;
 	spriteHandler = nullptr;
 	needSpriteRefresh = true;
-	definitionfilename = "chars/" + id + "/" + id + ".def";
-	std::ifstream defs(definitionfilename);
+	directory = "chars/" + id;
+	definitionfilename = id + ".def";
+	std::ifstream defs(directory + "/" + definitionfilename);
 	std::string line;
 	while (std::getline(defs, line)) {
 		// Processing the line
-		
+		std::stringstream linestream(line);
+		std::string identifier, separator, value;
+		linestream >> identifier;
+		linestream >> separator;
+		if (separator == "=") {
+			linestream >> value;
+		}
+		if (identifier == "sprite" && !value.empty())
+			spritefilename = value;
 		// Ignore comments
 	}
-	spritefilename = "chars/" + id + "/" + id + ".sff";
 	defs.close();
-	spriteHandler = new Sffv2(spritefilename.c_str());
+	spriteHandler = new Sffv2((directory + "/" + spritefilename).c_str());
 }
 
 Character::~Character()
