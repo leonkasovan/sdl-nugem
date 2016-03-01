@@ -217,7 +217,9 @@ SDL_Surface * Sffv2::getSurface()
 		// TODO Fix this
 		uint32_t shortlzpackets = 1;
 		uint8_t recycledbits = 0;
-		for (i_byte = 0; i_byte < sprite.data_length; i_byte++) {
+		// first 4 bytes are the size of uncompressed data
+		// so we skip them
+		for (i_byte = 4; i_byte < sprite.data_length; i_byte++) {
 			uint8_t control_packet = sdata[i_byte];
 			uint8_t i_data_packet;
 			for (i_data_packet = 0; i_data_packet < 8 && i_byte < sprite.data_length; i_data_packet++) {
@@ -288,7 +290,6 @@ SDL_Surface * Sffv2::getSurface()
 		}
 		break;
 	}
-	std::cout << "format: " << (int) sprite.fmt << std::endl;
 	std::cout << "pixels written: " << (int) index_pixel << "; surface size: " << (int) surface_size << "; bytes read: " << i_byte << "; data length: " << sprite.data_length << std::endl;
 	return surface;
 }
