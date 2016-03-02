@@ -21,6 +21,7 @@ private:
 	std::string directory;
 	std::string definitionfilename;
 	std::string spritefilename;
+	std::string mugenversion;
 	SDL_Texture * texture;
 	int currentSprite;
 	bool needSpriteRefresh;

@@ -10,7 +10,7 @@
 
 // This only provides support for SFF v2.00 ?
 // 24bit / 32bit sprites don't work?
-struct sprite_t {
+struct sffv2sprite_t {
 	uint16_t groupno;
 	uint16_t itemno;
 	uint16_t width;
@@ -20,21 +20,21 @@ struct sprite_t {
 	uint16_t indexlinked;
 	uint8_t fmt; // Format: 0 -> raw, 1 -> invalid, 2 -> RLE8, 3 -> RLE5, 4 -> LZ5
 	uint8_t coldepth;
-	uint32_t data_offset;
-	uint32_t data_length;
-	uint16_t palette_index;
+	uint32_t dataOffset;
+	uint32_t dataLength;
+	uint16_t paletteIndex;
 	uint16_t flags; // bit 0 -> if value = 0, literal (use ldata); if value = 1, translate (use tdata & decompress on load)
 	// bit 1 to 15: unused
 	SDL_Texture * texture;
 };
 
-struct pallet_t {
+struct sffv2palette_t {
 	uint16_t groupno;
 	uint16_t itemno;
 	uint16_t numcols; // Number of colors
 	uint16_t indexlinked;
-	uint32_t ldata_offset;
-	uint32_t data_length;
+	uint32_t ldataOffset;
+	uint32_t dataLength;
 	// there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte
 };
 
@@ -46,19 +46,18 @@ public:
 	void setSprite(int n);
 	SDL_Surface * getSurface();
 protected:
-	void outputColoredPixelFromPallet(uint8_t color, const uint32_t index_pixel, const pallet_t& pallet, SDL_Surface* surface, const uint32_t surface_size);
+	void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
 private:
 	std::string filename;
-	std::vector<sprite_t> sprites;
-	std::vector<pallet_t> pallets;
-	uint32_t currentsprite;
+	std::vector<sffv2sprite_t> sprites;
+	std::vector<sffv2palette_t> palettes;
+	uint32_t currentSprite;
 	uint32_t nsprites;
-	uint32_t npallets;
+	uint32_t npalettes;
 	uint8_t * ldata;
-	uint32_t ldata_length;
+	uint32_t ldataLength;
 	uint8_t * tdata;
-	uint32_t tdata_length;
-	int32_t currentSprite;
+	uint32_t tdataLength;
 	SDL_Texture * texture;
 };
 

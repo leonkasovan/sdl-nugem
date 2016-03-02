@@ -13,7 +13,7 @@
 Character::Character(const char * charid): id(charid)
 {
 	texture = nullptr;
-	currentSprite = 1;
+	currentSprite = 2;
 	spriteHandler = nullptr;
 	needSpriteRefresh = true;
 	directory = "chars/" + id;
@@ -31,10 +31,13 @@ Character::Character(const char * charid): id(charid)
 		}
 		if (identifier == "sprite" && !value.empty())
 			spritefilename = value;
+		else if (identifier == "mugenversion" && !value.empty())
+			mugenversion = value;
 		// Ignore comments
 	}
 	defs.close();
-	spriteHandler = new Sffv2((directory + "/" + spritefilename).c_str());
+// 	spriteHandler = new Sffv2((directory + "/" + spritefilename).c_str());
+	spriteHandler = new Sffv1((directory + "/" + spritefilename).c_str());
 }
 
 Character::~Character()
@@ -62,8 +65,8 @@ void Character::render(SDL_Renderer * renderer)
 	SDL_Rect DestR;
 	DestR.x = 0;
 	DestR.y = 0;
-	DestR.w = width;
-	DestR.h = height;
+	DestR.w = width * 4;
+	DestR.h = height * 4;
 	SDL_RenderCopy(renderer, texture, nullptr, &DestR);
 }
 

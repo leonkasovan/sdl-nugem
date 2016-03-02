@@ -1,18 +1,12 @@
-project(negum)
+set(PROJECT nugem)
+project(${PROJECT})
 cmake_minimum_required(VERSION 2.8)
 
-# Point to our own cmake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
-
-# Find SDL2
-find_package(SDL2 REQUIRED)
 
 # Add global definitions
 add_definitions("-Wall")
-include_directories(${SDL2_INCLUDE_DIR})
-
-
 set(SOURCE_FILES
+	spritehandler.cpp
 	mugen/sffv1.cpp
 	mugen/sffv2.cpp
     character.cpp
@@ -23,9 +17,15 @@ set(SOURCE_FILES
     main.cpp
 )
 
-add_executable(negum ${SOURCE_FILES})
+add_executable(${PROJECT} ${SOURCE_FILES})
 # Using C++11
-set_property(TARGET negum PROPERTY CXX_STANDARD 11)
-set_property(TARGET negum PROPERTY CXX_STANDARD_REQUIRED 11)
-install(TARGETS negum DESTINATION bin)
-target_link_libraries(negum ${SDL2_LIBRARIES})
+set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD 11)
+set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD_REQUIRED 11)
+
+# Find SDL2
+INCLUDE(FindPkgConfig REQUIRED)
+PKG_CHECK_MODULES(SDL2 REQUIRED sdl2 SDL2_image)
+include_directories(${SDL2_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT} ${SDL2_LIBRARIES})
+install(TARGETS ${PROJECT} DESTINATION bin)

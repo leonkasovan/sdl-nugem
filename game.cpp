@@ -31,8 +31,8 @@ void Game::run()
 	Character * currentChar = nullptr;
 	isprite = 1;
 	SDL_Event e;
-	currentChar = new Character("kfm");
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00); // clear color: black
+	currentChar = new Character("Sakura");
+	SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0x00); // clear color: black
 	// Main game loop
 	while (!SDL_QuitRequested()) {
 		while (SDL_PollEvent(&e) != 0) {
