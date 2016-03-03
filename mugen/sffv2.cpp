@@ -276,7 +276,11 @@ SDL_Surface * Sffv2::getSurface()
 					// Source: Nomen, internal_sffv2_rle5-lz5_decode.h:200
 					// That is why the factor for the offset is there
 					for (int i_pixel = 0; i_pixel < copylength && indexPixel < surfaceSize; i_pixel++, indexPixel++) {
-						uint32_t offsetFromBeginning = offset * (1 + i_pixel / offset);
+						uint32_t offsetFromBeginning;
+						if (offset)
+							offsetFromBeginning = offset * (1 + i_pixel / offset);
+						else
+							offsetFromBeginning = i_pixel; // just copy the same pixel over and over again I guess
 						* (pixels + indexPixel) = * (pixels + indexPixel - offsetFromBeginning);
 					}
 				}

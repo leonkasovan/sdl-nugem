@@ -2,6 +2,7 @@
 #include "character.h"
 
 #include <iostream>
+#include <dirent.h>
 
 Game::Game()
 {
@@ -20,7 +21,9 @@ Game::Game()
 
 Game::~Game()
 {
-	/* Deinitialize everything */
+	for (auto character = characters.begin(); character != characters.end(); character++)
+		delete *character;
+	// SDL deinitialization
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -28,23 +31,43 @@ Game::~Game()
 
 void Game::run()
 {
-	std::vector<Character> characters;
-	Character * currentChar = nullptr;
+	findCharacters();
+	unsigned int currentCharacter = 0;
 	isprite = 1;
 	SDL_Event e;
-	currentChar = new Character("Sakura");
 	SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0x00); // clear color: black
 	// Main game loop
 	while (!SDL_QuitRequested()) {
 		while (SDL_PollEvent(&e) != 0) {
-			currentChar->handleEvent(e);
+			if (e.type == SDL_KEYDOWN) {
+				//Select surfaces based on key press
+				switch (e.key.keysym.sym) {
+				case SDLK_LEFT:
+					currentCharacter--;
+					break;
+
+				case SDLK_RIGHT:
+					currentCharacter++;
+					break;
+				}
+
+				currentCharacter = (currentCharacter + characters.size()) % characters.size();
+			}
+			characters[currentCharacter]->handleEvent(e);
 		}
 		SDL_RenderClear(renderer);
 		//Place your simulation code and rendering code here
-		currentChar->render(renderer);
+		characters[currentCharacter]->render(renderer);
 		SDL_RenderPresent(renderer);
 		SDL_Delay(1000 / 60);  // 60 fps
 	}
-	if (currentChar)
-		delete currentChar;
 }
+
+void Game::findCharacters()
+{
+	characters.push_back(new Character("kfm"));
+	characters.push_back(new Character("kfm720"));
+	characters.push_back(new Character("Sakura"));
+	characters.push_back(new Character("ryusfa"));
+}
+
