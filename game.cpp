@@ -28,6 +28,7 @@ Game::~Game()
 
 void Game::run()
 {
+	std::vector<Character> characters;
 	Character * currentChar = nullptr;
 	isprite = 1;
 	SDL_Event e;

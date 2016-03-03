@@ -21,6 +21,25 @@ Character::Character(const char * charid): id(charid)
 	std::ifstream defs(directory + "/" + definitionfilename);
 	std::string line;
 	while (std::getline(defs, line)) {
+		// Cut the line at the comments: find the ; character
+		bool ignored = false;
+		for (unsigned int index = 0; index < line.size(); index++) {
+			if (ignored) {
+				if (line[index] == '\"')
+					ignored = false;
+				continue;
+			}
+			// else
+			switch (line[index]) {
+				case '"':
+					ignored = true;
+					break;
+				case ';':
+					line = line.substr(0, index);
+					index = line.size();
+					break;
+			}
+		}
 		// Processing the line
 		std::stringstream linestream(line);
 		std::string identifier, separator, value;
@@ -36,8 +55,23 @@ Character::Character(const char * charid): id(charid)
 		// Ignore comments
 	}
 	defs.close();
-// 	spriteHandler = new Sffv2((directory + "/" + spritefilename).c_str());
-	spriteHandler = new Sffv1((directory + "/" + spritefilename).c_str());
+	std::string spritepath = directory + "/" + spritefilename;
+	std::array<uint8_t, 4> version;
+	// Determining sprite version
+	{
+		char readbuf[12];
+		std::ifstream spritefile(spritepath);
+		spritefile.read(readbuf, 12);
+		if (strcmp(readbuf, "ElecbyteSpr")) {
+			throw std::runtime_error(std::string("Invalid sprite file: ") + spritepath);
+		}
+		version = extract_version(spritefile);
+		spritefile.close();
+	}
+	if (version[0] < 2)
+		spriteHandler = new Sffv1(spritepath.c_str());
+	else if (version[0] == 2)
+		spriteHandler = new Sffv2(spritepath.c_str());
 }
 
 Character::~Character()

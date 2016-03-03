@@ -44,8 +44,21 @@ Sffv2::Sffv2(const char * filename)
 	currentSprite = 0;
 	ldata = nullptr;
 	tdata = nullptr;
+	readFile(filename);
+}
+
+Sffv2::~Sffv2()
+{
+	if (ldata != nullptr)
+		delete [] ldata;
+	if (tdata != nullptr)
+		delete [] tdata;
+}
+
+void Sffv2::readFile(const char * filename)
+{
 	uint32_t fileptr;
-	uint8_t * readbuf = new uint8_t[READBUF_SIZE];
+	uint8_t * readbuf[READBUF_SIZE];
 	std::ifstream charfile(filename);
 	// Reading the filename
 
@@ -102,15 +115,6 @@ Sffv2::Sffv2(const char * filename)
 	}
 
 	charfile.close();
-	delete [] readbuf;
-}
-
-Sffv2::~Sffv2()
-{
-	if (ldata != nullptr)
-		delete [] ldata;
-	if (tdata != nullptr)
-		delete [] tdata;
 }
 
 const uint32_t Sffv2::getTotalSpriteNumber() const

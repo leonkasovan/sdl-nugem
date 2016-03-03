@@ -15,7 +15,7 @@ Sffv1::Sffv1(const char * filename)/*: character(chara)*/
 {
 	currentSprite = 0;
 	uint32_t fileptr;
-	uint8_t * readbuf = new uint8_t[READBUF_SIZE];
+	uint8_t * readbuf[READBUF_SIZE];
 	std::ifstream charfile(filename);
 	// Reading the filename
 
@@ -27,6 +27,9 @@ Sffv1::Sffv1(const char * filename)/*: character(chara)*/
 	}
 	// Version bytes
 	std::array<uint8_t, 4> version = extract_version(charfile);
+	// if the version is too high, throw it
+	if (version[3] > 1)
+		throw version;
 	// Number of groups
 	ngroups = read_uint32(charfile);
 	nimages = read_uint32(charfile);
@@ -59,7 +62,6 @@ Sffv1::Sffv1(const char * filename)/*: character(chara)*/
 	}
 
 	charfile.close();
-	delete [] readbuf;
 }
 
 Sffv1::~Sffv1()

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <SDL.h>
+#include <exception>
 
 #include "spritehandler.h"
 
@@ -29,6 +30,12 @@ private:
 	uint16_t width;
 	uint16_t height;
 };
+
+class CharacterException: public std::exception
+{};
+
+class CharacterSpriteError: public CharacterException
+{};
 
 #endif // CHARACTER_H
 
