@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 # Add global definitions
 add_definitions("-Wall")
 set(SOURCE_FILES
+	mugen/mugenutils.cpp
 	spritehandler.cpp
 	mugen/sffv1.cpp
 	mugen/sffv2.cpp

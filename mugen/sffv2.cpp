@@ -262,10 +262,6 @@ SDL_Surface * Sffv2::getSurface()
 						shortlzpackets++;
 					}
 					else {   // long LZ packet
-						// Apparently the LZ5 decoding bug is in this block
-						// Because LZ5-encoded sprites without any long lZ packet decode just fine...
-						// So what is wrong ?
-						
 						offset = sdata[i_byte] << 2; // since the 0x3F-masked bits are null, there is only the 0xC0-masked bits left
 						// ^ these are the highest 2 bits out of the 10-bit offset
 						i_byte++;
@@ -277,7 +273,7 @@ SDL_Surface * Sffv2::getSurface()
 					// memory copy
 					// stay safe...
 					// If the length is greater than the offset, then the copy pointer must go back to the beginning of the source when it reaches the full length
-					// Credits to the Nomen developper
+					// According to the Nomen developper
 					// So that is why the offset has a factor here
 					for (int i_pixel = 0; i_pixel < copylength && indexPixel < surfaceSize; i_pixel++, indexPixel++) {
 						uint32_t offsetFromBeginning;
@@ -290,7 +286,6 @@ SDL_Surface * Sffv2::getSurface()
 				}
 			}
 		}
-		std::cout << "pixels written: " << (int) indexPixel << " (should be: " << *((uint32_t *) sdata) << "); surface size: " << (int) surfaceSize << "; bytes read: " << i_byte << "; data length: " << sprite.dataLength << std::endl;
 		break;
 	}
 	return surface;

@@ -7,6 +7,7 @@
 #include <exception>
 
 #include "spritehandler.h"
+#include "mugen/mugenutils.h"
 
 class Character
 {
@@ -16,8 +17,10 @@ public:
 	virtual void render(SDL_Renderer * renderer);
 	virtual void handleEvent(const SDL_Event e);
 protected:
+	void loadCharacterDef(const char* filepath);
 	std::string id;
 	std::string name;
+	mugen::defcontents def;
 private:
 	std::string directory;
 	std::string definitionfilename;

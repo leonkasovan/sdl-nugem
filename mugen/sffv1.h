@@ -30,7 +30,7 @@ public:
 	const uint32_t getTotalSpriteNumber() const;
 	void setSprite(int n);
 protected:
-// 	void readSubfile();
+	
 private:
 	uint32_t currentSprite;
 	uint32_t ngroups;

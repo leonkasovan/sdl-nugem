@@ -15,46 +15,27 @@ Character::Character(const char * charid): id(charid)
 	texture = nullptr;
 	currentSprite = 2;
 	spriteHandler = nullptr;
-	needSpriteRefresh = true;
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
-	std::ifstream defs(directory + "/" + definitionfilename);
-	std::string line;
-	while (std::getline(defs, line)) {
-		// Cut the line at the comments: find the ; character
-		bool ignored = false;
-		for (unsigned int index = 0; index < line.size(); index++) {
-			if (ignored) {
-				if (line[index] == '\"')
-					ignored = false;
-				continue;
-			}
-			// else
-			switch (line[index]) {
-				case '"':
-					ignored = true;
-					break;
-				case ';':
-					line = line.substr(0, index);
-					index = line.size();
-					break;
-			}
-		}
-		// Processing the line
-		std::stringstream linestream(line);
-		std::string identifier, separator, value;
-		linestream >> identifier;
-		linestream >> separator;
-		if (separator == "=") {
-			linestream >> value;
-		}
-		if (identifier == "sprite" && !value.empty())
-			spritefilename = value;
-		else if (identifier == "mugenversion" && !value.empty())
-			mugenversion = value;
-		// Ignore comments
-	}
-	defs.close();
+	loadCharacterDef((directory + "/" + definitionfilename).c_str());
+	needSpriteRefresh = true;
+}
+
+Character::~Character()
+{
+	if (spriteHandler)
+		delete spriteHandler;
+	if (texture)
+		SDL_DestroyTexture(texture);
+}
+
+void Character::loadCharacterDef(const char * filepath)
+{
+	if (spriteHandler)
+		delete spriteHandler;
+	def = mugen::loadDef(filepath);
+	mugenversion = (std::string) def["Info"]["mugenversion"];
+	spritefilename = (std::string) def["Files"]["sprite"];
 	std::string spritepath = directory + "/" + spritefilename;
 	std::array<uint8_t, 4> version;
 	// Determining sprite version
@@ -74,14 +55,6 @@ Character::Character(const char * charid): id(charid)
 		spriteHandler = new Sffv2(spritepath.c_str());
 }
 
-Character::~Character()
-{
-	if (spriteHandler)
-		delete spriteHandler;
-	if (texture)
-		SDL_DestroyTexture(texture);
-}
-
 void Character::render(SDL_Renderer * renderer)
 {
 	// TODO only get surface when needed (check currentSprite)
@@ -99,8 +72,8 @@ void Character::render(SDL_Renderer * renderer)
 	SDL_Rect DestR;
 	DestR.x = 0;
 	DestR.y = 0;
-	DestR.w = width * 4;
-	DestR.h = height * 4;
+	DestR.w = width;
+	DestR.h = height;
 	SDL_RenderCopy(renderer, texture, nullptr, &DestR);
 }
 

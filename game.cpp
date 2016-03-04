@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <dirent.h>
+#include <SDL_image.h>
 
 Game::Game()
 {
@@ -17,12 +18,16 @@ Game::Game()
 	                          w_width, w_height,
 	                          0);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	// SDL_image initialization
+	IMG_Init(0);
 }
 
 Game::~Game()
 {
 	for (auto character = characters.begin(); character != characters.end(); character++)
 		delete *character;
+	// SDL_image deinitialization
+	IMG_Quit();
 	// SDL deinitialization
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -35,7 +40,7 @@ void Game::run()
 	unsigned int currentCharacter = 0;
 	isprite = 1;
 	SDL_Event e;
-	SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0x00); // clear color: black
+	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xC6, 0x00); // clear color: black
 	// Main game loop
 	while (!SDL_QuitRequested()) {
 		while (SDL_PollEvent(&e) != 0) {
