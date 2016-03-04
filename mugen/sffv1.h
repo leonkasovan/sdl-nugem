@@ -21,7 +21,6 @@ struct sffv1sprite_t {
 	uint16_t previousCopyIndex; // only for a linked sprite
 	bool samePaletteAsPrevious;
 	uint8_t * data;
-	uint8_t * paletteData;
 };
 
 class Sffv1: public SpriteHandler

@@ -58,7 +58,6 @@ Sffv1::Sffv1(Character & chara, const char* filename): character(chara)
 		// "PCX graphic data. If palette data is available, it is the last 768 bytes."
 		sprite.data = new uint8_t[sprite.dataSize];
 		charfile.read((char *) sprite.data, sprite.dataSize);
-		sprite.paletteData = nullptr;
 		sprites.push_back(sprite);
 	}
 	charfile.close();
@@ -79,11 +78,8 @@ Sffv1::Sffv1(Character & chara, const char* filename): character(chara)
 
 Sffv1::~Sffv1()
 {
-	for (int i = 0; i < sprites.size(); i++) {
+	for (int i = 0; i < sprites.size(); i++)
 		delete [] sprites[i].data;
-		if (sprites[i].paletteData != nullptr)
-			delete [] sprites[i].paletteData;
-	}
 }
 
 const uint32_t Sffv1::getTotalSpriteNumber() const
