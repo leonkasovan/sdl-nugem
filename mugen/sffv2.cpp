@@ -272,7 +272,7 @@ SDL_Surface * Sffv2::getSurface()
 						offset |= sdata[i_byte]; // low 8 bits of the 10-bit offset
 						offset += 1;
 						i_byte++;
-						copylength = sdata[i_byte] + 8; // value range: 8 to 263
+						copylength = sdata[i_byte] + 3; // value range: 8 to 263
 					}
 					// memory copy
 					// stay safe...
