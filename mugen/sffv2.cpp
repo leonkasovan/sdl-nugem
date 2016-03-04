@@ -238,16 +238,16 @@ SDL_Surface * Sffv2::getSurface()
 						outputColoredPixel(color, indexPixel, palette, surface, surfaceSize);
 				}
 				else {   // LZ packet (short or long)
-					uint32_t copylength = sdata[i_byte] & 0x1F;
+					uint32_t copylength = sdata[i_byte] & 0x3F; // bits 0-5
 					uint32_t * pixels = (uint32_t *) surface->pixels;
-					uint8_t offset = 0;
-					if (copylength != 0) { // short LZ packet
+					uint16_t offset = 0;
+					if (copylength) { // short LZ packet, if initial copy length is not null
 						copylength += 1; // <- see the docs
 						// How recycled bits work:
-// 								bits 6-7: recycled bits of short LZ packet 4k + 1
-// 								bits 4-5: recycled bits of short LZ packet 4k + 2
-// 								bits 2-3: recycled bits of short LZ packet 4k + 3
-// 								bits 0-1: recycled bits of short LZ packet 4k + 4
+// 						bits 6-7: recycled bits of short LZ packet 4k + 1
+// 						bits 4-5: recycled bits of short LZ packet 4k + 2
+// 						bits 2-3: recycled bits of short LZ packet 4k + 3
+// 						bits 0-1: recycled bits of short LZ packet 4k + 4
 						if (shortlzpackets % 4 == 0) { // use the recycled bits
 							recycledbits |= (sdata[i_byte] & 0xC0) >> 6;
 							offset = recycledbits + 1;
@@ -262,24 +262,28 @@ SDL_Surface * Sffv2::getSurface()
 						shortlzpackets++;
 					}
 					else {   // long LZ packet
-						offset = sdata[i_byte] << 2; // since the 0x1F-masked bits are null, there is only 0xC0 left
+						// Apparently the LZ5 decoding bug is in this block
+						// Because LZ5-encoded sprites without any long lZ packet decode just fine...
+						// So what is wrong ?
+						
+						offset = sdata[i_byte] << 2; // since the 0x3F-masked bits are null, there is only the 0xC0-masked bits left
 						// ^ these are the highest 2 bits out of the 10-bit offset
 						i_byte++;
 						offset |= sdata[i_byte]; // low 8 bits of the 10-bit offset
 						offset += 1;
 						i_byte++;
-						copylength = sdata[i_byte] + 3;
+						copylength = sdata[i_byte] + 8; // value range: 8 to 263
 					}
 					// memory copy
 					// stay safe...
 					// If the length is greater than the offset, then the copy pointer must go back to the beginning of the source when it reaches the full length
-					// Source: Nomen, internal_sffv2_rle5-lz5_decode.h:200
-					// That is why the factor for the offset is there
+					// Credits to the Nomen developper
+					// So that is why the offset has a factor here
 					for (int i_pixel = 0; i_pixel < copylength && indexPixel < surfaceSize; i_pixel++, indexPixel++) {
 						uint32_t offsetFromBeginning;
 						if (offset)
 							offsetFromBeginning = offset * (1 + i_pixel / offset);
-						else
+						else // the offset should never be null though...
 							offsetFromBeginning = i_pixel; // just copy the same pixel over and over again I guess
 						* (pixels + indexPixel) = * (pixels + indexPixel - offsetFromBeginning);
 					}

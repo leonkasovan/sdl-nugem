@@ -23,7 +23,8 @@ struct sffv2sprite_t {
 	uint32_t dataOffset;
 	uint32_t dataLength;
 	uint16_t paletteIndex;
-	uint16_t flags; // bit 0 -> if value = 0, literal (use ldata); if value = 1, translate (use tdata & decompress on load)
+	uint16_t flags; // flags w/ load information
+	// bit 0 -> if value = 0, literal (use ldata); if value = 1, translate (use tdata & decompress on load)
 	// bit 1 to 15: unused
 	SDL_Texture * texture;
 };
