@@ -9,7 +9,17 @@
 
 class Character;
 
-typedef std::array<SDL_Color, 256> ActPalette;
+struct sffv1color_t {
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+};
+
+struct sffv1palette_t {
+	std::array<sffv1color_t, 256> colors;
+};
+
+typedef std::array<sffv1color_t, 256> ActPalette;
 
 struct sffv1sprite_t {
 	// image coordinates
@@ -18,7 +28,7 @@ struct sffv1sprite_t {
 	uint16_t group; // group number
 	uint16_t groupimage; // image number (in the group)
 	uint32_t dataSize;
-	uint16_t previousCopyIndex; // only for a linked sprite
+	uint16_t linkedindex; // only for a linked sprite
 	bool samePaletteAsPrevious;
 	uint8_t * data;
 };
@@ -41,7 +51,7 @@ private:
 	uint32_t nimages;
 	std::vector<sffv1sprite_t> sprites;
 	bool sharedPalette; // if not, it's an individual palette
-	std::vector<ActPalette> palettes;
+	std::vector<sffv1palette_t> palettes;
 	Character & character;
 };
 

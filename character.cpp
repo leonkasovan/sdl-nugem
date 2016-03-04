@@ -29,9 +29,14 @@ Character::~Character()
 		SDL_DestroyTexture(texture);
 }
 
-const mugen::defcontents & Character::getdef()
+const mugen::defcontents & Character::getdef() const
 {
 	return def;
+}
+
+const std::__cxx11::string & Character::getdir() const
+{
+	return directory;
 }
 
 void Character::loadCharacterDef(const char * filepath)

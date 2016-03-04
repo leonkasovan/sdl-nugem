@@ -17,7 +17,7 @@ struct sffv2sprite_t {
 	uint16_t height;
 	uint16_t axisx;
 	uint16_t axisy;
-	uint16_t indexlinked;
+	uint16_t linkedindex;
 	uint8_t fmt; // Format: 0 -> raw, 1 -> invalid, 2 -> RLE8, 3 -> RLE5, 4 -> LZ5
 	uint8_t coldepth;
 	uint32_t dataOffset;
@@ -33,7 +33,7 @@ struct sffv2palette_t {
 	uint16_t groupno;
 	uint16_t itemno;
 	uint16_t numcols; // Number of colors
-	uint16_t indexlinked;
+	uint16_t linkedindex;
 	uint32_t ldataOffset;
 	uint32_t dataLength;
 	// there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte

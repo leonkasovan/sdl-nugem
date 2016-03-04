@@ -16,7 +16,7 @@ sffv2sprite_t readSprite(std::ifstream & fileobj)
 	sprite.height = read_uint16(fileobj);
 	sprite.axisx = read_uint16(fileobj);
 	sprite.axisy = read_uint16(fileobj);
-	sprite.indexlinked = read_uint16(fileobj);
+	sprite.linkedindex = read_uint16(fileobj);
 	sprite.fmt = fileobj.get();
 	sprite.coldepth = fileobj.get();
 	sprite.dataOffset = read_uint32(fileobj);
@@ -33,7 +33,7 @@ sffv2palette_t readPalette(std::ifstream & fileobj)
 	palette.groupno = read_uint16(fileobj);
 	palette.itemno = read_uint16(fileobj);
 	palette.numcols = read_uint16(fileobj);
-	palette.indexlinked = read_uint16(fileobj);
+	palette.linkedindex = read_uint16(fileobj);
 	palette.ldataOffset = read_uint32(fileobj);
 	palette.dataLength = read_uint32(fileobj);
 	return palette;
@@ -160,8 +160,8 @@ SDL_Surface * Sffv2::getSurface()
 #endif
 	// Case of a linked sprite
 	size_t displayedSprite = currentSprite;
-	if (sprites[currentSprite].indexlinked)
-		displayedSprite = sprites[currentSprite].indexlinked;
+	if (sprites[currentSprite].linkedindex)
+		displayedSprite = sprites[currentSprite].linkedindex;
 	sffv2sprite_t & sprite = sprites[displayedSprite];
 	// Initializing the surface to be returned
 	SDL_Surface * surface = SDL_CreateRGBSurface(0, sprite.width, sprite.height, 32, rmask, gmask, bmask, amask);  // using the defaults masks
@@ -170,8 +170,8 @@ SDL_Surface * Sffv2::getSurface()
 	uint8_t * sdata = ldata + sprite.dataOffset;
 	size_t paletteUsed = sprite.paletteIndex;
 	// case of a linked palette
-	if (palettes[paletteUsed].indexlinked)
-		paletteUsed = palettes[paletteUsed].indexlinked;
+	if (palettes[paletteUsed].linkedindex)
+		paletteUsed = palettes[paletteUsed].linkedindex;
 	sffv2palette_t & palette = palettes[paletteUsed];
 	uint64_t indexPixel = 0;
 	uint32_t surfaceSize = (uint32_t)(surface->w * surface->h);

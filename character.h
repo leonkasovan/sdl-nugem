@@ -16,7 +16,8 @@ public:
 	virtual ~Character();
 	virtual void render(SDL_Renderer * renderer);
 	virtual void handleEvent(const SDL_Event e);
-	const mugen::defcontents & getdef();
+	const mugen::defcontents & getdef() const;
+	const std::string & getdir() const;
 protected:
 	void loadCharacterDef(const char* filepath);
 	std::string id;
