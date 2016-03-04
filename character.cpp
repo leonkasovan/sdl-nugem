@@ -29,6 +29,11 @@ Character::~Character()
 		SDL_DestroyTexture(texture);
 }
 
+const mugen::defcontents & Character::getdef()
+{
+	return def;
+}
+
 void Character::loadCharacterDef(const char * filepath)
 {
 	if (spriteHandler)
@@ -50,7 +55,7 @@ void Character::loadCharacterDef(const char * filepath)
 		spritefile.close();
 	}
 	if (version[0] < 2)
-		spriteHandler = new Sffv1(spritepath.c_str());
+		spriteHandler = new Sffv1(*this, spritepath.c_str());
 	else if (version[0] == 2)
 		spriteHandler = new Sffv2(spritepath.c_str());
 }

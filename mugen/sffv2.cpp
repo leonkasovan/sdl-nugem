@@ -158,11 +158,21 @@ SDL_Surface * Sffv2::getSurface()
 	bmask = 0x00ff0000;
 	amask = 0xff000000;
 #endif
-	sffv2sprite_t & sprite = sprites[currentSprite];
+	// Case of a linked sprite
+	size_t displayedSprite = currentSprite;
+	if (sprites[currentSprite].indexlinked)
+		displayedSprite = sprites[currentSprite].indexlinked;
+	sffv2sprite_t & sprite = sprites[displayedSprite];
+	// Initializing the surface to be returned
 	SDL_Surface * surface = SDL_CreateRGBSurface(0, sprite.width, sprite.height, 32, rmask, gmask, bmask, amask);  // using the defaults masks
 	// 		SDL_LockSurface(surface);
+	// Initializing the variables we will need for the rest
 	uint8_t * sdata = ldata + sprite.dataOffset;
-	sffv2palette_t & palette = palettes[sprite.paletteIndex];
+	size_t paletteUsed = sprite.paletteIndex;
+	// case of a linked palette
+	if (palettes[paletteUsed].indexlinked)
+		paletteUsed = palettes[paletteUsed].indexlinked;
+	sffv2palette_t & palette = palettes[paletteUsed];
 	uint64_t indexPixel = 0;
 	uint32_t surfaceSize = (uint32_t)(surface->w * surface->h);
 	uint32_t i_byte = 0;

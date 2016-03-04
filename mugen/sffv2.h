@@ -53,7 +53,7 @@ private:
 	std::string filename;
 	std::vector<sffv2sprite_t> sprites;
 	std::vector<sffv2palette_t> palettes;
-	uint32_t currentSprite;
+	size_t currentSprite;
 	uint32_t nsprites;
 	uint32_t npalettes;
 	uint8_t * ldata;

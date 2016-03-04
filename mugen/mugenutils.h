@@ -23,6 +23,12 @@ struct defsection {
 	defkey& operator[] (std::string&& k) {
 		return contents[k];
 	}
+	const defkey& at ( const std::string& k) const {
+		return contents.at(k);
+	}
+	defkey& at ( const std::string& k) {
+		return contents.at(k);
+	}
 };
 
 typedef std::unordered_map<std::string, defsection> defcontents;

@@ -2,6 +2,7 @@
 
 #include "../character.h"
 
+#define ACT_PALETTES_NUMBER 256
 #define READBUF_SIZE 12
 
 #include <ios>
@@ -11,7 +12,7 @@
 #include <SDL_image.h>
 
 
-Sffv1::Sffv1(const char * filename)/*: character(chara)*/
+Sffv1::Sffv1(Character & chara, const char* filename): character(chara)
 {
 	currentSprite = 0;
 	uint32_t fileptr;
@@ -60,8 +61,20 @@ Sffv1::Sffv1(const char * filename)/*: character(chara)*/
 		sprite.paletteData = nullptr;
 		sprites.push_back(sprite);
 	}
-
 	charfile.close();
+	// Now we have to read the palette files
+	bool continueLoop = true;
+	for (int i = 1; continueLoop && i <= 12; i++) {
+		std::string keyname = "pal";
+		keyname += std::to_string(i);
+		try {
+			std::string filename = (std::string) character.getdef().at("Files").at("keyname");
+		}
+		catch (std::out_of_range) {
+			break;
+		}
+		continueLoop = readActPalette(filename);
+	}
 }
 
 Sffv1::~Sffv1()
@@ -92,7 +105,25 @@ SDL_Surface * Sffv1::getSurface()
 	SDL_RWops * imgdata = SDL_RWFromConstMem(sprite.data, sprite.dataSize);
 	SDL_Surface * surface = IMG_LoadPCX_RW(imgdata);
 	SDL_RWclose(imgdata);
-	std::cout << SDL_GetError() << std::endl;
 	return surface;
 }
 
+bool Sffv1::readActPalette(const char * filepath)
+{
+	ActPalette palette;
+	try {
+		std::ifstream actfile(filepath);
+		if (actfile.fail())
+			return false;
+		for (int i_palette = 0; i_palette < ACT_PALETTES_NUMBER && actfile.good(); i_palette++) {
+			palette[i_palette] = (SDL_Color) { actfile.get(), actfile.get(), actfile.get() };
+		}
+		actfile.close();
+	}
+	catch (std::ios_base::failure()) {
+		return false;
+		
+	}
+	palettes.push_back(palette);
+	return true;
+}
