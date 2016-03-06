@@ -60,7 +60,7 @@ Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 	charfile >> sharedPaletteByte;
 	sharedPalette = (sharedPaletteByte != 0);
 	// Reading the subfiles
-	while (charfile.good() && nextSubfileOffset) {
+	while (charfile.good() && ((int) nextSubfileOffset) > 0 && sprites.size() < nimages) {
 		sffv1sprite_t sprite;
 		charfile.seekg(nextSubfileOffset, std::ios::beg);
 		nextSubfileOffset = read_uint32(charfile);
@@ -112,7 +112,7 @@ Sffv1::~Sffv1()
 
 const size_t Sffv1::getTotalSpriteNumber() const
 {
-	return nimages;
+	return sprites.size();
 }
 
 void Sffv1::setSprite(size_t n)
@@ -133,12 +133,13 @@ void Sffv1::setPalette(size_t n)
 sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 {
 	sffv1palette_t s;
-	size_t paletteSpriteNumber;
-	size_t iterationNumber;
-	for (paletteSpriteNumber = spritenumber, iterationNumber = sprites.size(); sprites[paletteSpriteNumber].samePaletteAsPrevious && !sprites[paletteSpriteNumber].hasOwnPalette && iterationNumber > 0; paletteSpriteNumber--, iterationNumber--) {
-		if (!sprites[paletteSpriteNumber].samePaletteAsPrevious)
-			return palettes[currentPalette];
-		else if (paletteSpriteNumber < 0)
+	long paletteSpriteNumber = spritenumber;
+	size_t iterationNumber = sprites.size();
+	
+	while (sprites[paletteSpriteNumber].samePaletteAsPrevious && iterationNumber > 0) {
+		iterationNumber--;
+		paletteSpriteNumber--;
+		if (paletteSpriteNumber < 0)
 			paletteSpriteNumber += sprites.size();
 	}
 	sffv1sprite_t & paletteSprite = sprites[paletteSpriteNumber];
