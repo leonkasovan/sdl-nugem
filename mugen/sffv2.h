@@ -23,6 +23,7 @@
 #include "../spritehandler.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <SDL.h>
 
 // SFFv2 sprite format, as documented in https://web.archive.org/web/20150510210608/http://elecbyte.com/wiki/index.php/SFFv2
@@ -58,6 +59,10 @@ struct sffv2palette_t {
 	// there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte
 };
 
+struct sffv2group_t {
+	std::unordered_map<size_t, size_t> i;
+};
+
 class Sffv2: public SpriteHandler {
 public:
 	Sffv2(const char* filename);
@@ -65,15 +70,21 @@ public:
 	const size_t getTotalSpriteNumber() const;
 	const size_t getTotalPaletteNumber() const;
 	void setSprite(size_t n);
+	void setSprite(size_t group, size_t image);
 	void setPalette(size_t n);
 	SDL_Surface * getSurface();
+	const size_t getImageXAxis() const;
+	const size_t getImageYAxis() const;
 protected:
 	void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
 	void loadSffFile();
+	sffv2sprite_t readSprite(std::ifstream & fileobj);
+	sffv2palette_t readPalette(std::ifstream & fileobj);
 private:
 	std::string filename;
 	std::vector<sffv2sprite_t> sprites;
 	std::vector<sffv2palette_t> palettes;
+	std::unordered_map<size_t, sffv2group_t> groups;
 	size_t currentSprite;
 	size_t currentPalette;
 	uint32_t nsprites;

@@ -31,7 +31,10 @@ public:
 	virtual const size_t getTotalSpriteNumber() const = 0;
 	virtual const size_t getTotalPaletteNumber() const = 0;
 	virtual void setSprite(size_t n) = 0;
+	virtual void setSprite(size_t group, size_t image) = 0;
 	virtual void setPalette(size_t n) = 0;
+	virtual const size_t getImageXAxis() const = 0;
+	virtual const size_t getImageYAxis() const = 0;
 };
 
 // Function for both SFFv1 and SFFv2 sprites

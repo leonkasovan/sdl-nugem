@@ -56,6 +56,11 @@ void Sffv1::setSprite(size_t n)
 	currentSprite = n;
 }
 
+void Sffv1::setSprite(size_t group, size_t image)
+{
+	currentSprite = groups[group].i[image];
+}
+
 const size_t Sffv1::getTotalPaletteNumber() const
 {
 	return palettes.size();
@@ -109,6 +114,8 @@ void Sffv1::loadSffFile()
 		// "PCX graphic data. If palette data is available, it is the last 768 bytes."
 		sprite.data = new uint8_t[sprite.dataSize];
 		charfile.read((char *) sprite.data, sprite.dataSize);
+		// Add the sprites' index to its group and image number
+		groups[sprite.group].i[sprite.groupimage] = sprites.size();
 		sprites.push_back(sprite);
 	}
 	charfile.close();
@@ -249,3 +256,14 @@ bool Sffv1::readActPalette(const char * filepath)
 	palettes.push_back(palette);
 	return true;
 }
+
+const size_t Sffv1::getImageXAxis() const
+{
+	return sprites[currentSprite].axisX;
+}
+
+const size_t Sffv1::getImageYAxis() const
+{
+	return sprites[currentSprite].axisY;
+}
+

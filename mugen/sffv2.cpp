@@ -26,44 +26,15 @@
 
 #define READBUF_SIZE 32
 
-sffv2sprite_t readSprite(std::ifstream & fileobj)
-{
-	sffv2sprite_t sprite;
-	sprite.groupno = read_uint16(fileobj);
-	sprite.itemno = read_uint16(fileobj);
-	sprite.width = read_uint16(fileobj);
-	sprite.height = read_uint16(fileobj);
-	sprite.axisx = read_uint16(fileobj);
-	sprite.axisy = read_uint16(fileobj);
-	sprite.linkedindex = read_uint16(fileobj);
-	sprite.fmt = fileobj.get();
-	sprite.coldepth = fileobj.get();
-	sprite.dataOffset = read_uint32(fileobj);
-	sprite.dataLength = read_uint32(fileobj);
-	sprite.paletteIndex = read_uint16(fileobj);
-	sprite.flags = read_uint16(fileobj);
-	sprite.texture = nullptr;
-	return sprite;
-}
-
-sffv2palette_t readPalette(std::ifstream & fileobj)
-{
-	sffv2palette_t palette;
-	palette.groupno = read_uint16(fileobj);
-	palette.itemno = read_uint16(fileobj);
-	palette.numcols = read_uint16(fileobj);
-	palette.linkedindex = read_uint16(fileobj);
-	palette.ldataOffset = read_uint32(fileobj);
-	palette.dataLength = read_uint32(fileobj);
-	return palette;
-}
-
 Sffv2::Sffv2(const char * filename): filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
 	ldata = nullptr;
 	tdata = nullptr;
+	sprites.clear();
+	palettes.clear();
+	groups.clear();
 	loadSffFile();
 }
 
@@ -137,6 +108,39 @@ void Sffv2::loadSffFile()
 	charfile.close();
 }
 
+sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
+{
+	sffv2sprite_t sprite;
+	sprite.groupno = read_uint16(fileobj);
+	sprite.itemno = read_uint16(fileobj);
+	sprite.width = read_uint16(fileobj);
+	sprite.height = read_uint16(fileobj);
+	sprite.axisx = read_uint16(fileobj);
+	sprite.axisy = read_uint16(fileobj);
+	sprite.linkedindex = read_uint16(fileobj);
+	sprite.fmt = fileobj.get();
+	sprite.coldepth = fileobj.get();
+	sprite.dataOffset = read_uint32(fileobj);
+	sprite.dataLength = read_uint32(fileobj);
+	sprite.paletteIndex = read_uint16(fileobj);
+	sprite.flags = read_uint16(fileobj);
+	sprite.texture = nullptr;
+	groups[sprite.groupno].i[sprite.itemno] = sprites.size();
+	return sprite;
+}
+
+sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
+{
+	sffv2palette_t palette;
+	palette.groupno = read_uint16(fileobj);
+	palette.itemno = read_uint16(fileobj);
+	palette.numcols = read_uint16(fileobj);
+	palette.linkedindex = read_uint16(fileobj);
+	palette.ldataOffset = read_uint32(fileobj);
+	palette.dataLength = read_uint32(fileobj);
+	return palette;
+}
+
 const size_t Sffv2::getTotalSpriteNumber() const
 {
 	return nsprites;
@@ -152,9 +156,24 @@ void Sffv2::setSprite(size_t n)
 	currentSprite = n;
 }
 
+void Sffv2::setSprite(size_t group, size_t image)
+{
+	currentSprite = groups[group].i[image];
+}
+
 void Sffv2::setPalette(size_t n)
 {
 	currentPalette = n;
+}
+
+const size_t Sffv2::getImageXAxis() const
+{
+	return sprites[currentSprite].axisx;
+}
+
+const size_t Sffv2::getImageYAxis() const
+{
+	return sprites[currentSprite].axisy;
 }
 
 void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)

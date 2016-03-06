@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <unordered_map>
 #include <SDL.h>
 
 class Character;
@@ -52,6 +53,11 @@ struct sffv1sprite_t {
 	uint8_t * data;
 };
 
+struct sffv1group_t {
+	// map: index in group -> absolute image index
+	std::unordered_map<size_t, size_t> i;
+};
+
 class Sffv1: public SpriteHandler
 {
 public:
@@ -61,7 +67,10 @@ public:
 	const size_t getTotalSpriteNumber() const;
 	const size_t getTotalPaletteNumber() const;
 	void setSprite(size_t n);
+	void setSprite(size_t group, size_t image);
 	void setPalette(size_t n);
+	const size_t getImageXAxis() const;
+	const size_t getImageYAxis() const;
 protected:
 	void loadSffFile();
 	void loadSharedPalettes();
@@ -78,6 +87,7 @@ private:
 	std::vector<sffv1sprite_t> sprites;
 	bool sharedPalette; // if not, it's an individual palette
 	std::vector<sffv1palette_t> palettes;
+	std::unordered_map<size_t, sffv1group_t> groups;
 	Character & character;
 };
 
