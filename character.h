@@ -48,7 +48,8 @@ private:
 	std::string spritefilename;
 	std::string mugenversion;
 	SDL_Texture * texture;
-	int currentSprite;
+	size_t currentSprite;
+	size_t currentPalette;
 	bool needSpriteRefresh;
 	SpriteHandler * spriteHandler;
 	uint16_t width;

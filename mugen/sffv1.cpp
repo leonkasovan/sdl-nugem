@@ -21,7 +21,6 @@
 
 #include "../character.h"
 
-#define ACT_PALETTES_NUMBER 256
 #define READBUF_SIZE 12
 
 #include <ios>
@@ -34,6 +33,8 @@ Sffv1::Sffv1(Character & character, const char * filename): character(character)
 {
 	currentSprite = 0;
 	currentPalette = 0;
+	sprites.clear();
+	palettes.clear();
 	loadSffFile();
 	loadSharedPalettes();
 }
@@ -100,19 +101,14 @@ void Sffv1::loadSffFile()
 		sprite.group = read_uint16(charfile);
 		sprite.groupimage = read_uint16(charfile);
 		sprite.linkedindex = read_uint16(charfile);
-		uint8_t samePaletteAsPreviousByte;
-		charfile >> samePaletteAsPreviousByte;
-		sprite.samePaletteAsPrevious = (samePaletteAsPreviousByte != 0);
-		sprite.hasOwnPalette = false;
+		uint8_t usesSharedPaletteByte;
+		charfile >> usesSharedPaletteByte;
+		sprite.usesSharedPalette = (usesSharedPaletteByte != 0);
 		charfile.seekg(13, std::ios::cur); // skipping the next 12 bytes, from byte 19 to byte 31
 		// According to formats.txt:
 		// "PCX graphic data. If palette data is available, it is the last 768 bytes."
 		sprite.data = new uint8_t[sprite.dataSize];
 		charfile.read((char *) sprite.data, sprite.dataSize);
-		
-		if (sprite.dataSize > 768 && sprite.data[sprite.dataSize - 1 - 768] == 0x0C)
-			sprite.hasOwnPalette = true;
-		
 		sprites.push_back(sprite);
 	}
 	charfile.close();
@@ -130,30 +126,29 @@ void Sffv1::loadSharedPalettes()
 			continueLoop = readActPalette(actfilename.c_str());
 		}
 		catch
-			(std::out_of_range) {
+			(std::out_of_range) { // thrown by character.getdef() if the method at doesn't find the key
 			break;
 		}
 	}
 }
-
 
 sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 {
 	sffv1palette_t s;
 	long paletteSpriteNumber = spritenumber;
 	size_t iterationNumber = sprites.size();
-	if (sprites[paletteSpriteNumber].samePaletteAsPrevious)
+	if (sharedPalette && sprites[paletteSpriteNumber].usesSharedPalette)
 		return palettes[currentPalette];
-	while (sprites[paletteSpriteNumber].samePaletteAsPrevious && iterationNumber > 0) {
+	while (sprites[paletteSpriteNumber].usesSharedPalette && iterationNumber > 0) {
 		iterationNumber--;
 		paletteSpriteNumber--;
 		if (paletteSpriteNumber < 0)
 			paletteSpriteNumber += sprites.size();
 	}
 	sffv1sprite_t & paletteSprite = sprites[paletteSpriteNumber];
-	if (paletteSprite.dataSize > 768 && paletteSprite.hasOwnPalette) {
+	if (paletteSprite.dataSize > 768 && paletteSprite.data[paletteSprite.dataSize - 768 - 1] == 0x0C) {
 		uint8_t * paletteData = paletteSprite.data + (paletteSprite.dataSize - 768);
-		for (int i = 0; i < 256; i++) {
+		for (int i = 0; i < PALETTE_NCOLORS; i++) {
 			s.colors[i] = (sffv1color_t) { *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2) };
 		}
 		return s;
@@ -213,11 +208,11 @@ SDL_Surface * Sffv1::getSurface()
 			runLength = 1;
 			colorIndex = dataStart[i_byte];
 		}
-		if (colorIndex) {
+		if (colorIndex) { // if not null
 				sffv1color_t & color = palette.colors[dataStart[i_byte]];
 				sdlcolor = (SDL_Color) { color.red, color.green, color.blue, 0xFF };
 			}
-			else
+			else // apply transparency if the color value is zero
 				sdlcolor = (SDL_Color) { 0, 0, 0, 0 };
 		for (int runCount = runLength; runCount > 0; runCount--, i_pixel++)
 			*(pixels + i_pixel) = SDL_MapRGBA(surface->format, sdlcolor.r, sdlcolor.g, sdlcolor.b, sdlcolor.a);
@@ -231,12 +226,17 @@ bool Sffv1::readActPalette(const char * filepath)
 {
 	sffv1palette_t palette;
 	std::ifstream actfile;
+	// reading a .act file: a Photoshop 8-bit palette
 	try {
 		actfile.open(filepath);
 		if (actfile.fail())
 			return false;
-		for (int i_palette = 0; i_palette < ACT_PALETTES_NUMBER && actfile.good(); i_palette++) {
-			palette.colors[i_palette] = { actfile.get(), actfile.get(), actfile.get() };
+		// for some reason the colors are in reverse order
+		// it didn't appear to be in the official specification though
+		for (int i_palette = 0; i_palette < PALETTE_NCOLORS && actfile.good(); i_palette++) {
+			palette.colors[PALETTE_NCOLORS - 1 - i_palette].red = actfile.get();
+			palette.colors[PALETTE_NCOLORS - 1 - i_palette].green = actfile.get();
+			palette.colors[PALETTE_NCOLORS - 1 - i_palette].blue = actfile.get();
 		}
 		actfile.close();
 	}

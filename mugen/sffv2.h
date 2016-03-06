@@ -69,7 +69,7 @@ public:
 	SDL_Surface * getSurface();
 protected:
 	void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
-	void readFile(const char* filename);
+	void loadSffFile();
 private:
 	std::string filename;
 	std::vector<sffv2sprite_t> sprites;

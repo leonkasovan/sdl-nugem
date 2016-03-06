@@ -20,6 +20,8 @@
 #ifndef SFFV1_H
 #define SFFV1_H
 
+#define PALETTE_NCOLORS 256
+
 #include "../spritehandler.h"
 #include <string>
 #include <vector>
@@ -35,7 +37,7 @@ struct sffv1color_t {
 };
 
 struct sffv1palette_t {
-	sffv1color_t colors[256];
+	sffv1color_t colors[PALETTE_NCOLORS];
 };
 
 struct sffv1sprite_t {
@@ -46,8 +48,7 @@ struct sffv1sprite_t {
 	uint16_t groupimage; // image number (in the group)
 	uint32_t dataSize;
 	uint16_t linkedindex; // only for a linked sprite
-	bool samePaletteAsPrevious; // if the image owns its palette, or if it uses another image's palette
-	bool hasOwnPalette;
+	bool usesSharedPalette; // if the image owns its palette, or if it uses a shared palette
 	uint8_t * data;
 };
 

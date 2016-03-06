@@ -33,6 +33,7 @@ Character::Character(const char * charid): id(charid)
 {
 	texture = nullptr;
 	currentSprite = 0;
+	currentPalette = 0;
 	spriteHandler = nullptr;
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
@@ -91,6 +92,7 @@ void Character::render(SDL_Renderer * renderer)
 		if (texture)
 			SDL_DestroyTexture(texture);
 		spriteHandler->setSprite(currentSprite);
+		spriteHandler->setPalette(currentPalette);
 		SDL_Surface * surface = spriteHandler->getSurface();
 		width = surface->w;
 		height = surface->h;
@@ -108,7 +110,8 @@ void Character::render(SDL_Renderer * renderer)
 
 void Character::handleEvent(const SDL_Event e)
 {
-	const int32_t nsprites = spriteHandler->getTotalSpriteNumber();
+	const size_t nsprites = spriteHandler->getTotalSpriteNumber();
+	const size_t npalettes = spriteHandler->getTotalPaletteNumber();
 	if (e.type == SDL_KEYDOWN) {
 		// Select surfaces based on key press
 		
@@ -126,10 +129,19 @@ void Character::handleEvent(const SDL_Event e)
 			break;
 			
 		
-		// 
+		case SDLK_s:
+			currentPalette--;
+			needSpriteRefresh = true;
+			break;
+		
+		case SDLK_f:
+			currentPalette++;
+			needSpriteRefresh = true;
+			break;
 		}
 
 		currentSprite = (currentSprite + nsprites) % nsprites;
+		currentPalette = (currentPalette + npalettes) % npalettes;
 	}
 }
 

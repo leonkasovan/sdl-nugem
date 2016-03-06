@@ -58,13 +58,13 @@ sffv2palette_t readPalette(std::ifstream & fileobj)
 	return palette;
 }
 
-Sffv2::Sffv2(const char * filename)
+Sffv2::Sffv2(const char * filename): filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
 	ldata = nullptr;
 	tdata = nullptr;
-	readFile(filename);
+	loadSffFile();
 }
 
 Sffv2::~Sffv2()
@@ -75,11 +75,11 @@ Sffv2::~Sffv2()
 		delete [] tdata;
 }
 
-void Sffv2::readFile(const char * filename)
+void Sffv2::loadSffFile()
 {
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
-	std::ifstream charfile(filename);
+	std::ifstream charfile(filename.c_str());
 	// Reading the filename
 
 	// First 512 bytes: header
