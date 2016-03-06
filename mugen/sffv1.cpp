@@ -166,9 +166,6 @@ SDL_Surface * Sffv1::getSurface()
 	bmask = 0x00ff0000;
 	amask = 0xff000000;
 #endif
-	std::cout << (int) currentSprite << std::endl;
-	std::cout << "own palette: " << (sprites[currentSprite].hasOwnPalette ? "yes" : "no") << std::endl;
-	std::cout << "same as previous?: " << (sprites[currentSprite].samePaletteAsPrevious ? "yes" : "no") << std::endl;
 	size_t displayedSpriteNumber = currentSprite;
 	if (sprites[currentSprite].linkedindex && !sprites[currentSprite].dataSize)
 		displayedSpriteNumber = sprites[currentSprite].linkedindex;
