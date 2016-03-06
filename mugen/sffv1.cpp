@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) Victor Nivet
+ * 
+ * This file is part of Nugem.
+ * 
+ * Nugem is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ * 
+ * Nugem is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "sffv1.h"
 
 #include "../character.h"
@@ -15,6 +34,7 @@
 Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 {
 	currentSprite = 0;
+	currentPalette = 0;
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
 	std::ifstream charfile(filename);
@@ -53,16 +73,22 @@ Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 		uint8_t samePaletteAsPreviousByte;
 		charfile >> samePaletteAsPreviousByte;
 		sprite.samePaletteAsPrevious = (samePaletteAsPreviousByte != 0);
+		sprite.hasOwnPalette = false;
 		charfile.seekg(13, std::ios::cur); // skipping the next 12 bytes, from byte 19 to byte 31
 		// According to formats.txt:
 		// "PCX graphic data. If palette data is available, it is the last 768 bytes."
 		sprite.data = new uint8_t[sprite.dataSize];
 		charfile.read((char *) sprite.data, sprite.dataSize);
+		
+		if (sprite.dataSize > 768 && sprite.data[sprite.dataSize - 1 - 768] == 0x0C)
+			sprite.hasOwnPalette = true;
+		
 		sprites.push_back(sprite);
 	}
 	charfile.close();
 	// Now we have to read the palette files
 	bool continueLoop = true;
+	// We get the values of pal1, pal2, pal3, ... etc in order until pal12
 	for (int i = 1; continueLoop && i <= 12; i++) {
 		std::string keyname = "pal";
 		keyname += std::to_string(i);
@@ -79,18 +105,51 @@ Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 
 Sffv1::~Sffv1()
 {
-	for (int i = 0; i < sprites.size(); i++)
+	for (int i = 0; i < sprites.size(); i++) {
 		delete [] sprites[i].data;
+	}
 }
 
-const uint32_t Sffv1::getTotalSpriteNumber() const
+const size_t Sffv1::getTotalSpriteNumber() const
 {
 	return nimages;
 }
 
-void Sffv1::setSprite(int n)
+void Sffv1::setSprite(size_t n)
 {
 	currentSprite = n;
+}
+
+const size_t Sffv1::getTotalPaletteNumber() const
+{
+	return palettes.size();
+}
+
+void Sffv1::setPalette(size_t n)
+{
+	currentPalette = n;
+}
+
+sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
+{
+	sffv1palette_t s;
+	size_t paletteSpriteNumber;
+	size_t iterationNumber;
+	for (paletteSpriteNumber = spritenumber, iterationNumber = sprites.size(); sprites[paletteSpriteNumber].samePaletteAsPrevious && !sprites[paletteSpriteNumber].hasOwnPalette && iterationNumber > 0; paletteSpriteNumber--, iterationNumber--) {
+		if (!sprites[paletteSpriteNumber].samePaletteAsPrevious)
+			return palettes[currentPalette];
+		else if (paletteSpriteNumber < 0)
+			paletteSpriteNumber += sprites.size();
+	}
+	sffv1sprite_t & paletteSprite = sprites[paletteSpriteNumber];
+	if (paletteSprite.dataSize > 768 && paletteSprite.data[paletteSprite.dataSize - 768 - 1] == 0x0C) {
+		uint8_t * paletteData = paletteSprite.data + (paletteSprite.dataSize - 768);
+		for (int i = 0; i < 256; i++) {
+			s.colors[i] = (sffv1color_t) { *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2) };
+		}
+		return s;
+	}
+	return palettes[currentPalette];
 }
 
 SDL_Surface * Sffv1::getSurface()
@@ -107,83 +166,93 @@ SDL_Surface * Sffv1::getSurface()
 	bmask = 0x00ff0000;
 	amask = 0xff000000;
 #endif
-	size_t displayedSprite = currentSprite;
+	std::cout << (int) currentSprite << std::endl;
+	std::cout << "own palette: " << (sprites[currentSprite].hasOwnPalette ? "yes" : "no") << std::endl;
+	std::cout << "same as previous?: " << (sprites[currentSprite].samePaletteAsPrevious ? "yes" : "no") << std::endl;
+	size_t displayedSpriteNumber = currentSprite;
 	if (sprites[currentSprite].linkedindex && !sprites[currentSprite].dataSize)
-		displayedSprite = sprites[currentSprite].linkedindex;
-	sffv1sprite_t & sprite = sprites[displayedSprite];
-	std::ofstream outfile("testfile.pcx");
-	outfile.write((char *) sprite.data, sprite.dataSize);
-	outfile.close();
+		displayedSpriteNumber = sprites[currentSprite].linkedindex;
+	sffv1sprite_t & displayedSprite = sprites[displayedSpriteNumber];
+	
+// 	if the sprite is supposed to use the same palette as the previous sprite, then we get this palette
 	SDL_Surface * surface = nullptr;
-	// check if the image already has palette data
-	bool hasPalette = false;
-	if (sprite.dataSize > 768)
-		hasPalette = (sprite.data[sprite.dataSize - 1 - 768] == 0x0C);
-	if (!hasPalette) { // if the color has no palette data, we apply one
-		unsigned int width = *((uint16_t *) sprite.data + 4) - *((uint16_t *) sprite.data + 2); // Xend - Xstart
-		unsigned int height = *((uint16_t *) sprite.data + 5) - *((uint16_t *) sprite.data + 3); // Yend - Ystart
-		surface = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
-		sffv1palette_t & palette = palettes[0];
-		uint32_t * currentPixel = (uint32_t *) surface->pixels;
-		uint8_t * readPixel = (uint8_t *) sprite.data + 128;
-		// TODO fix this mess
-		for (size_t i = 0; i < width * height; i++) {
-			uint8_t colindex;
-			if (*readPixel & 0xC0) { // RLE decompression
-				uint8_t run_length = *readPixel & 0x3F;
-				readPixel++;
-				colindex = *readPixel;
-				uint32_t color;
-				if (colindex)
-					color = SDL_MapRGB(surface->format, palette.colors[colindex].red, palette.colors[colindex].green, palette.colors[colindex].blue);
-				else
-					color = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
-				for (uint8_t run_count = 0; run_count < run_length - 1; run_count++) {
-					*currentPixel = color;
-					currentPixel++;
-					i++;
-				}
-			}
-			else { // straight pixel byte
-				colindex = *readPixel;
-				// Applying transparency: color 0
-				if (colindex)
-					*currentPixel = SDL_MapRGB(surface->format, palette.colors[colindex].red, palette.colors[colindex].green, palette.colors[colindex].blue);
-				else
-					*currentPixel = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
-				currentPixel++, readPixel++;
-			}
+	
+	// decoding the PCX
+	uint16_t Xmin = *( (uint16_t * ) displayedSprite.data + 2);
+	uint16_t Ymin = *( (uint16_t * ) displayedSprite.data + 3);
+	uint16_t Xmax = *( (uint16_t * ) displayedSprite.data + 4);
+	uint16_t Ymax = *( (uint16_t * ) displayedSprite.data + 5);
+	uint8_t nplanes = *( (uint8_t * ) displayedSprite.data + 65);
+	uint16_t bytesPerLine = *( (uint16_t * ) displayedSprite.data + 33);
+	uint16_t width = Xmax - Xmin + 1;
+	uint16_t height = Ymax - Ymin + 1;
+	uint32_t totalBytesPerLine = nplanes * bytesPerLine;
+	surface = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
+	SDL_LockSurface(surface);
+	// find the right palette
+	sffv1palette_t palette = getPaletteForSprite(currentSprite);
+	uint8_t * dataStart = displayedSprite.data + 128;
+	uint32_t * pixels = (uint32_t * ) surface->pixels;
+	size_t i_pixel, i_byte;
+	for (i_pixel = 0, i_byte = 0; i_pixel < width * height && i_byte < (displayedSprite.dataSize - 128); i_byte++) {
+		uint16_t runLength;
+		SDL_Color sdlcolor;
+		uint8_t colorIndex;
+		if ((dataStart[i_byte] & 0xC0) == 0xC0) { // RLE byte
+			runLength = dataStart[i_byte] & 0x3F;
+			i_byte++;
+			colorIndex = dataStart[i_byte];
 		}
-	}
-	else { // if the color already has its own palette data
-		// use SDL to read it
-		SDL_RWops * imgdata = SDL_RWFromConstMem(sprite.data, sprite.dataSize);
-		SDL_Surface * pcx_surface = IMG_LoadPCX_RW(imgdata);
-		SDL_RWclose(imgdata);
-		// Converting to a 32-bit surface with transparency
-		surface = SDL_CreateRGBSurface(0, pcx_surface->w, pcx_surface->h, 32, rmask, gmask, bmask, amask);
-		sffv1palette_t & palette = palettes[0];
-		uint32_t * currentPixel = (uint32_t *) surface->pixels;
-		uint8_t * copiedPixel = (uint8_t *) pcx_surface->pixels;
-		for (size_t i = 0; i < surface->w * surface->h; i++, currentPixel++, copiedPixel++) {
-			uint8_t bytevalue = *copiedPixel;
-			SDL_Color * copiedColor = pcx_surface->format->palette->colors + bytevalue;
-			// Applying transparency: color 0
-			if (bytevalue)
-				*currentPixel = SDL_MapRGB(surface->format, copiedColor->r, copiedColor->g, copiedColor->b);
+		else { // simple pixel byte
+			runLength = 1;
+			colorIndex = dataStart[i_byte];
+		}
+		if (colorIndex) {
+				sffv1color_t & color = palette.colors[dataStart[i_byte]];
+				sdlcolor = (SDL_Color) { color.red, color.green, color.blue, 0xFF };
+			}
 			else
-				*currentPixel = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
-		}
-		SDL_FreeSurface(pcx_surface);
+				sdlcolor = (SDL_Color) { 0, 0, 0, 0 };
+		for (int runCount = runLength; runCount > 0; runCount--, i_pixel++)
+			*(pixels + i_pixel) = SDL_MapRGBA(surface->format, sdlcolor.r, sdlcolor.g, sdlcolor.b, sdlcolor.a);
 	}
+	SDL_UnlockSurface(surface);
+	
+	// use SDL_image to read the PCX data
+	
+	
+// 	SDL_RWops * imgdata = SDL_RWFromConstMem(sprite.data, sprite.dataSize);
+// 	SDL_Surface * surface = IMG_LoadPCX_RW(imgdata);
+// 	SDL_RWclose(imgdata);
+// 	// TODO deal with transparency
+// 	if (!sprite.dataPalette) {
+// 		// if it reuses the palette from some previous sprite
+// 		size_t spriteWithPalette = currentSprite;
+// 		size_t loopLimit = 0;
+// 		for (spriteWithPalette = currentSprite; spriteWithPalette >= 0 && sprites[spriteWithPalette].samePaletteAsPrevious && !sprites[spriteWithPalette].dataPalette && loopLimit < sprites.size(); loopLimit++)
+// 			spriteWithPalette = (spriteWithPalette - 1 + sprites.size()) % sprites.size();
+// 		if (spriteWithPalette >= 0 && sprites[spriteWithPalette].dataPalette && sprites[spriteWithPalette + 1].samePaletteAsPrevious) {
+// 			// copy palette from previous sprite
+// 			// first copy the colors
+// 			sffv1palette_t palette;
+// 			uint8_t * paletteData = sprites[spriteWithPalette].data + (sprites[spriteWithPalette].dataSize - 768);
+// 			for (int i = 0; i < 256; i++) {
+// 				palette.colors[i] = (sffv1color_t) { *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2) };
+// 			}
+// 			SDL_Surface * pcx_surface = surface;
+// 			surface = SDL_CreateRGBSurface(0, pcx_surface->w, pcx_surface->h, 32, rmask, gmask, bmask, amask);
+// 			SDL_FreeSurface(pcx_surface);
+// 		}
+// 	}
 	return surface;
 }
 
 bool Sffv1::readActPalette(const char * filepath)
 {
 	sffv1palette_t palette;
+	std::ifstream actfile;
 	try {
-		std::ifstream actfile(filepath);
+		actfile.open(filepath);
 		if (actfile.fail())
 			return false;
 		for (int i_palette = 0; i_palette < ACT_PALETTES_NUMBER && actfile.good(); i_palette++) {
@@ -193,6 +262,8 @@ bool Sffv1::readActPalette(const char * filepath)
 	}
 	catch
 		(std::ios_base::failure()) {
+		if (actfile.is_open())
+			actfile.close();
 		return false;
 	}
 	palettes.push_back(palette);

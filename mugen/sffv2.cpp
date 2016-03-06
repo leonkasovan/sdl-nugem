@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) Victor Nivet
+ * 
+ * This file is part of Nugem.
+ * 
+ * Nugem is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ * 
+ * Nugem is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "sffv2.h"
 
 #include <ios>
@@ -42,6 +61,7 @@ sffv2palette_t readPalette(std::ifstream & fileobj)
 Sffv2::Sffv2(const char * filename)
 {
 	currentSprite = 0;
+	currentPalette = 0;
 	ldata = nullptr;
 	tdata = nullptr;
 	readFile(filename);
@@ -117,14 +137,24 @@ void Sffv2::readFile(const char * filename)
 	charfile.close();
 }
 
-const uint32_t Sffv2::getTotalSpriteNumber() const
+const size_t Sffv2::getTotalSpriteNumber() const
 {
 	return nsprites;
 }
 
-void Sffv2::setSprite(int n)
+const size_t Sffv2::getTotalPaletteNumber() const
+{
+	return palettes.size();
+}
+
+void Sffv2::setSprite(size_t n)
 {
 	currentSprite = n;
+}
+
+void Sffv2::setPalette(size_t n)
+{
+	currentPalette = n;
 }
 
 void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
@@ -165,7 +195,7 @@ SDL_Surface * Sffv2::getSurface()
 	sffv2sprite_t & sprite = sprites[displayedSprite];
 	// Initializing the surface to be returned
 	SDL_Surface * surface = SDL_CreateRGBSurface(0, sprite.width, sprite.height, 32, rmask, gmask, bmask, amask);  // using the defaults masks
-	// 		SDL_LockSurface(surface);
+	SDL_LockSurface(surface);
 	// Initializing the variables we will need for the rest
 	uint8_t * sdata = ldata + sprite.dataOffset;
 	size_t paletteUsed = sprite.paletteIndex;
@@ -298,6 +328,7 @@ SDL_Surface * Sffv2::getSurface()
 		}
 		break;
 	}
+	SDL_UnlockSurface(surface);
 	return surface;
 }
 

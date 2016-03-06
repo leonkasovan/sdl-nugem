@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) Victor Nivet
+ * 
+ * This file is part of Nugem.
+ * 
+ * Nugem is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ * 
+ * Nugem is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef SFFV1_H
 #define SFFV1_H
 
@@ -16,10 +35,8 @@ struct sffv1color_t {
 };
 
 struct sffv1palette_t {
-	std::array<sffv1color_t, 256> colors;
+	sffv1color_t colors[256];
 };
-
-typedef std::array<sffv1color_t, 256> ActPalette;
 
 struct sffv1sprite_t {
 	// image coordinates
@@ -29,7 +46,8 @@ struct sffv1sprite_t {
 	uint16_t groupimage; // image number (in the group)
 	uint32_t dataSize;
 	uint16_t linkedindex; // only for a linked sprite
-	bool samePaletteAsPrevious;
+	bool samePaletteAsPrevious; // if the image owns its palette, or if it uses another image's palette
+	bool hasOwnPalette;
 	uint8_t * data;
 };
 
@@ -39,14 +57,18 @@ public:
 	Sffv1(Character & chara, const char* filename);
 	~Sffv1();
 	SDL_Surface * getSurface();
-	const uint32_t getTotalSpriteNumber() const;
-	void setSprite(int n);
+	const size_t getTotalSpriteNumber() const;
+	const size_t getTotalPaletteNumber() const;
+	void setSprite(size_t n);
+	void setPalette(size_t n);
 protected:
 	// true if there is a palette file that was sucessfully read
 	// false if not
 	bool readActPalette(const char* filepath);
+	sffv1palette_t getPaletteForSprite(size_t spritenumber);
 private:
-	uint32_t currentSprite;
+	size_t currentSprite;
+	size_t currentPalette;
 	uint32_t ngroups;
 	uint32_t nimages;
 	std::vector<sffv1sprite_t> sprites;
