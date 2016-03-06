@@ -199,6 +199,10 @@ SDL_Surface * Sffv2::getSurface()
 	// Initializing the variables we will need for the rest
 	uint8_t * sdata = ldata + sprite.dataOffset;
 	size_t paletteUsed = sprite.paletteIndex;
+	// Just a guess:
+	// if the sprite indicates a palette number other than 0, it's forcing that one
+	if (!paletteUsed)
+		paletteUsed = currentPalette;
 	// case of a linked palette
 	if (palettes[paletteUsed].linkedindex)
 		paletteUsed = palettes[paletteUsed].linkedindex;
