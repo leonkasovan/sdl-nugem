@@ -54,7 +54,7 @@ struct sffv1sprite_t {
 class Sffv1: public SpriteHandler
 {
 public:
-	Sffv1(Character & chara, const char* filename);
+	Sffv1(Character& character, const char* filename);
 	~Sffv1();
 	SDL_Surface * getSurface();
 	const size_t getTotalSpriteNumber() const;
@@ -62,11 +62,14 @@ public:
 	void setSprite(size_t n);
 	void setPalette(size_t n);
 protected:
+	void loadSffFile();
+	void loadSharedPalettes();
 	// true if there is a palette file that was sucessfully read
 	// false if not
 	bool readActPalette(const char* filepath);
 	sffv1palette_t getPaletteForSprite(size_t spritenumber);
 private:
+	std::string filename;
 	size_t currentSprite;
 	size_t currentPalette;
 	uint32_t ngroups;

@@ -28,18 +28,48 @@
 #include <fstream>
 #include <iostream>
 #include <array>
-#include <SDL_image.h>
 
 
-Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
+Sffv1::Sffv1(Character & character, const char * filename): character(character), filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
+	loadSffFile();
+	loadSharedPalettes();
+}
+
+Sffv1::~Sffv1()
+{
+	for (int i = 0; i < sprites.size(); i++) {
+		delete [] sprites[i].data;
+	}
+}
+
+const size_t Sffv1::getTotalSpriteNumber() const
+{
+	return sprites.size();
+}
+
+void Sffv1::setSprite(size_t n)
+{
+	currentSprite = n;
+}
+
+const size_t Sffv1::getTotalPaletteNumber() const
+{
+	return palettes.size();
+}
+
+void Sffv1::setPalette(size_t n)
+{
+	currentPalette = n;
+}
+
+void Sffv1::loadSffFile()
+{
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
-	std::ifstream charfile(filename);
-	// Reading the filename
-
+	std::ifstream charfile(filename.c_str());
 	// First 512 bytes: header
 	// Signature at the start of the file: 'ElecbyteSpr\0'
 	charfile.read((char *) readbuf, 12);
@@ -86,7 +116,10 @@ Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 		sprites.push_back(sprite);
 	}
 	charfile.close();
-	// Now we have to read the palette files
+}
+
+void Sffv1::loadSharedPalettes()
+{
 	bool continueLoop = true;
 	// We get the values of pal1, pal2, pal3, ... etc in order until pal12
 	for (int i = 1; continueLoop && i <= 12; i++) {
@@ -103,39 +136,14 @@ Sffv1::Sffv1(Character & chara, const char * filename): character(chara)
 	}
 }
 
-Sffv1::~Sffv1()
-{
-	for (int i = 0; i < sprites.size(); i++) {
-		delete [] sprites[i].data;
-	}
-}
-
-const size_t Sffv1::getTotalSpriteNumber() const
-{
-	return sprites.size();
-}
-
-void Sffv1::setSprite(size_t n)
-{
-	currentSprite = n;
-}
-
-const size_t Sffv1::getTotalPaletteNumber() const
-{
-	return palettes.size();
-}
-
-void Sffv1::setPalette(size_t n)
-{
-	currentPalette = n;
-}
 
 sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 {
 	sffv1palette_t s;
 	long paletteSpriteNumber = spritenumber;
 	size_t iterationNumber = sprites.size();
-	
+	if (sprites[paletteSpriteNumber].samePaletteAsPrevious)
+		return palettes[currentPalette];
 	while (sprites[paletteSpriteNumber].samePaletteAsPrevious && iterationNumber > 0) {
 		iterationNumber--;
 		paletteSpriteNumber--;
@@ -143,7 +151,7 @@ sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 			paletteSpriteNumber += sprites.size();
 	}
 	sffv1sprite_t & paletteSprite = sprites[paletteSpriteNumber];
-	if (paletteSprite.dataSize > 768 && paletteSprite.data[paletteSprite.dataSize - 768 - 1] == 0x0C) {
+	if (paletteSprite.dataSize > 768 && paletteSprite.hasOwnPalette) {
 		uint8_t * paletteData = paletteSprite.data + (paletteSprite.dataSize - 768);
 		for (int i = 0; i < 256; i++) {
 			s.colors[i] = (sffv1color_t) { *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2) };
@@ -216,32 +224,6 @@ SDL_Surface * Sffv1::getSurface()
 	}
 	SDL_UnlockSurface(surface);
 	
-	// use SDL_image to read the PCX data
-	
-	
-// 	SDL_RWops * imgdata = SDL_RWFromConstMem(sprite.data, sprite.dataSize);
-// 	SDL_Surface * surface = IMG_LoadPCX_RW(imgdata);
-// 	SDL_RWclose(imgdata);
-// 	// TODO deal with transparency
-// 	if (!sprite.dataPalette) {
-// 		// if it reuses the palette from some previous sprite
-// 		size_t spriteWithPalette = currentSprite;
-// 		size_t loopLimit = 0;
-// 		for (spriteWithPalette = currentSprite; spriteWithPalette >= 0 && sprites[spriteWithPalette].samePaletteAsPrevious && !sprites[spriteWithPalette].dataPalette && loopLimit < sprites.size(); loopLimit++)
-// 			spriteWithPalette = (spriteWithPalette - 1 + sprites.size()) % sprites.size();
-// 		if (spriteWithPalette >= 0 && sprites[spriteWithPalette].dataPalette && sprites[spriteWithPalette + 1].samePaletteAsPrevious) {
-// 			// copy palette from previous sprite
-// 			// first copy the colors
-// 			sffv1palette_t palette;
-// 			uint8_t * paletteData = sprites[spriteWithPalette].data + (sprites[spriteWithPalette].dataSize - 768);
-// 			for (int i = 0; i < 256; i++) {
-// 				palette.colors[i] = (sffv1color_t) { *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2) };
-// 			}
-// 			SDL_Surface * pcx_surface = surface;
-// 			surface = SDL_CreateRGBSurface(0, pcx_surface->w, pcx_surface->h, 32, rmask, gmask, bmask, amask);
-// 			SDL_FreeSurface(pcx_surface);
-// 		}
-// 	}
 	return surface;
 }
 
