@@ -32,13 +32,16 @@
 Character::Character(const char * charid): id(charid)
 {
 	texture = nullptr;
-	currentSprite = 0;
 	currentPalette = 0;
+	currentAnimSprite = 0;
 	spriteHandler = nullptr;
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
 	loadCharacterDef((directory + "/" + definitionfilename).c_str());
+	std::string airfile = (std::string) def["Files"]["anim"];
+	loadCharacterAnimations((directory + "/" + airfile).c_str());
 	needSpriteRefresh = true;
+	curAnimIterator = animations.begin();
 }
 
 Character::~Character()
@@ -74,7 +77,7 @@ void Character::loadCharacterDef(const char * filepath)
 		std::ifstream spritefile(spritepath);
 		spritefile.read(readbuf, 12);
 		if (strcmp(readbuf, "ElecbyteSpr")) {
-			throw std::runtime_error(std::string("Invalid sprite file: ") + spritepath);
+			throw CharacterLoadException(std::string("Invalid sprite file: ") + spritepath);
 		}
 		version = extract_version(spritefile);
 		spritefile.close();
@@ -85,24 +88,46 @@ void Character::loadCharacterDef(const char * filepath)
 		spriteHandler = new Sffv2(spritepath.c_str());
 }
 
+void Character::loadCharacterAnimations(const char * filepath)
+{
+	animations = mugen::loadAir(filepath);
+}
+
 void Character::render(SDL_Renderer * renderer)
 {
-	// TODO only get surface when needed (check currentSprite)
-	if (needSpriteRefresh) {
+	int h, w;
+	SDL_GetRendererOutputSize(renderer, &w, &h);
+	mugen::animation_t & animation = curAnimIterator->second;
+	mugen::animstep_t & animstep = animation.steps[currentAnimSprite];
+	spriteHandler->setSprite(animstep.group, animstep.image);
+	currentGameTick++;
+	if (currentGameTick >= animstep.ticks) {
+		currentAnimSprite++;
+		currentGameTick = 0;
+	}
+	if (currentAnimSprite >= animation.steps.size()) {
+		currentAnimSprite = 0;
+	} 
+// 	if (needSpriteRefresh) {
 		if (texture)
 			SDL_DestroyTexture(texture);
-		spriteHandler->setSprite(currentSprite);
+// 		spriteHandler->setSprite(currentSprite);
 		spriteHandler->setPalette(currentPalette);
 		SDL_Surface * surface = spriteHandler->getSurface();
 		width = surface->w;
 		height = surface->h;
 		texture = SDL_CreateTextureFromSurface(renderer, surface);
 		SDL_FreeSurface(surface);
-		needSpriteRefresh = false;
-	}
+// 		needSpriteRefresh = false;
+// 	}
 	SDL_Rect DestR;
-	DestR.x = 0;
-	DestR.y = 0;
+	// Centering the sprite in the middle of the screen
+	x = w / 2;
+	y = h / 2;
+	x -= spriteHandler->getImageXAxis() + animstep.x;
+	y -= spriteHandler->getImageYAxis() + animstep.y;
+	DestR.x = x;
+	DestR.y = y;
 	DestR.w = width;
 	DestR.h = height;
 	SDL_RenderCopy(renderer, texture, nullptr, &DestR);
@@ -110,7 +135,6 @@ void Character::render(SDL_Renderer * renderer)
 
 void Character::handleEvent(const SDL_Event e)
 {
-	const size_t nsprites = spriteHandler->getTotalSpriteNumber();
 	const size_t npalettes = spriteHandler->getTotalPaletteNumber();
 	if (e.type == SDL_KEYDOWN) {
 		// Select surfaces based on key press
@@ -119,12 +143,16 @@ void Character::handleEvent(const SDL_Event e)
 		switch (e.key.keysym.sym) {
 		// Changing sprites
 		case SDLK_UP:
-			currentSprite++;
+			curAnimIterator++;
+			currentAnimSprite = 0;
+			currentGameTick = 0;
 			needSpriteRefresh = true;
 			break;
 
 		case SDLK_DOWN:
-			currentSprite--;
+			curAnimIterator--;
+			currentAnimSprite = 0;
+			currentGameTick = 0;
 			needSpriteRefresh = true;
 			break;
 			
@@ -140,8 +168,9 @@ void Character::handleEvent(const SDL_Event e)
 			break;
 		}
 
-		currentSprite = (currentSprite + nsprites) % nsprites;
 		currentPalette = (currentPalette + npalettes) % npalettes;
+		if (curAnimIterator == animations.end())
+			curAnimIterator = animations.begin();
 	}
 }
 

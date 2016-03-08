@@ -20,9 +20,5 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include <vector>
-#include <string>
-
-std::vector<std::string> getCharacterList();
 
 #endif // PLATFORM_H

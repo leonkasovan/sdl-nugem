@@ -24,6 +24,9 @@
 #include <dirent.h>
 #include <SDL_image.h>
 
+// To be replaced ? it's not really cross-platform
+#include <dirent.h>
+
 Game::Game()
 {
 	// Initialize window constants
@@ -35,7 +38,7 @@ Game::Game()
 	                          SDL_WINDOWPOS_CENTERED,
 	                          SDL_WINDOWPOS_CENTERED,
 	                          w_width, w_height,
-	                          0);
+	                          SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	// SDL_image initialization
 	IMG_Init(0);
@@ -89,9 +92,22 @@ void Game::run()
 
 void Game::findCharacters()
 {
-	characters.push_back(new Character("Sakura"));
-	characters.push_back(new Character("ryusfa"));
-	characters.push_back(new Character("kfm"));
-	characters.push_back(new Character("kfm720"));
+	DIR * chardir = nullptr;
+	struct dirent * chardirent = nullptr;
+	chardir = opendir("chars");
+	if (chardir != nullptr) {
+		while (chardirent = readdir(chardir)) {
+			const char * name = chardirent->d_name;
+			if (name[0] == '.')
+				continue;
+			try {
+			characters.push_back(new Character(name));
+			}
+			catch (CharacterLoadException & error) {
+				std::cerr << "Couldn't load character " << name << ": " << error.what() << std::endl;
+			}
+		}
+		closedir(chardir);
+	}
 }
 

@@ -23,10 +23,17 @@
 #include <string>
 #include <vector>
 #include <SDL.h>
+#include <unordered_map>
 #include <exception>
 
 #include "spritehandler.h"
 #include "mugen/mugenutils.h"
+
+class CharacterLoadException: public std::runtime_error {
+public:
+explicit CharacterLoadException(const std::string& __arg): std::runtime_error(__arg) {};
+explicit CharacterLoadException(): std::runtime_error("Error loading character") {};
+};
 
 class Character
 {
@@ -39,17 +46,23 @@ public:
 	const std::string & getdir() const;
 protected:
 	void loadCharacterDef(const char* filepath);
+	void loadCharacterAnimations(const char* filepath);
 	std::string id;
 	std::string name;
 	mugen::defcontents def;
+	mugen::animationdict animations;
+	unsigned int x;
+	unsigned int y;
 private:
 	std::string directory;
 	std::string definitionfilename;
 	std::string spritefilename;
 	std::string mugenversion;
 	SDL_Texture * texture;
-	size_t currentSprite;
 	size_t currentPalette;
+	mugen::animationdict::iterator curAnimIterator;
+	size_t currentAnimSprite;
+	size_t currentGameTick;
 	bool needSpriteRefresh;
 	SpriteHandler * spriteHandler;
 	uint16_t width;
