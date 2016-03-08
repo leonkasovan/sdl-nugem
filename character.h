@@ -61,7 +61,7 @@ private:
 	SDL_Texture * texture;
 	size_t currentPalette;
 	mugen::animationdict::iterator curAnimIterator;
-	size_t currentAnimSprite;
+	size_t currentAnimStep;
 	size_t currentGameTick;
 	bool needSpriteRefresh;
 	SpriteHandler * spriteHandler;

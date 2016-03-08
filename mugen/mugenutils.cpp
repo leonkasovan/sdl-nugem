@@ -79,7 +79,7 @@ mugen::animationdict mugen::loadAir(const char * filepath)
 	std::regex sectionregex("[ \t\r\n]*\\[Begin Action ([0-9]+)\\][ \t\r\n]*");
 	std::regex clsninitregex("[ \t\r\n]*(Clsn2(?:Default)?): ([0-9]+)[ \t\r\n]*");
 	std::regex clsnregex("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(?:(-?[0-9]+),[ \t]*){3}(-?[0-9]+)[ \t\r\n]*");
-	std::regex stepregex("[ \t\r\n]*([0-9]+),[ \t]*([0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*([0-9]+)(?:[ \t]*,[ \t]*([A-Za-z0-9]*)){0,2}[ \r\n\t]*");
+	std::regex stepregex("[ \t\r\n]*([0-9]+),[ \t]*([0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*([0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*)[ \r\n\t]*");
 	while (mugen::_getline(air, line)) {
 		std::smatch sm;
 		// new action start (i.e. a section describing an animation)
@@ -111,6 +111,10 @@ mugen::animationdict mugen::loadAir(const char * filepath)
 				step.hinvert = (hinv != std::string::npos);
 				size_t vinv = arg.find('V');
 				step.vinvert = (vinv != std::string::npos);
+			}
+			else {
+				step.hinvert = false;
+				step.vinvert = false;
 			}
 			if (sm.size() > 7) {}
 			currentAnimation.steps.push_back(step);

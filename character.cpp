@@ -33,7 +33,7 @@ Character::Character(const char * charid): id(charid)
 {
 	texture = nullptr;
 	currentPalette = 0;
-	currentAnimSprite = 0;
+	currentAnimStep = 0;
 	spriteHandler = nullptr;
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
@@ -98,28 +98,24 @@ void Character::render(SDL_Renderer * renderer)
 	int h, w;
 	SDL_GetRendererOutputSize(renderer, &w, &h);
 	mugen::animation_t & animation = curAnimIterator->second;
-	mugen::animstep_t & animstep = animation.steps[currentAnimSprite];
+	mugen::animstep_t & animstep = animation.steps[currentAnimStep];
 	spriteHandler->setSprite(animstep.group, animstep.image);
 	currentGameTick++;
 	if (currentGameTick >= animstep.ticks) {
-		currentAnimSprite++;
+		currentAnimStep++;
 		currentGameTick = 0;
 	}
-	if (currentAnimSprite >= animation.steps.size()) {
-		currentAnimSprite = 0;
+	if (currentAnimStep >= animation.steps.size()) {
+		currentAnimStep = 0;
 	} 
-// 	if (needSpriteRefresh) {
-		if (texture)
-			SDL_DestroyTexture(texture);
-// 		spriteHandler->setSprite(currentSprite);
-		spriteHandler->setPalette(currentPalette);
-		SDL_Surface * surface = spriteHandler->getSurface();
-		width = surface->w;
-		height = surface->h;
-		texture = SDL_CreateTextureFromSurface(renderer, surface);
-		SDL_FreeSurface(surface);
-// 		needSpriteRefresh = false;
-// 	}
+	if (texture)
+		SDL_DestroyTexture(texture);
+	spriteHandler->setPalette(currentPalette);
+	SDL_Surface * surface = spriteHandler->getSurface();
+	width = surface->w;
+	height = surface->h;
+	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);
 	SDL_Rect DestR;
 	// Centering the sprite in the middle of the screen
 	x = w / 2;
@@ -130,7 +126,12 @@ void Character::render(SDL_Renderer * renderer)
 	DestR.y = y;
 	DestR.w = width;
 	DestR.h = height;
-	SDL_RenderCopy(renderer, texture, nullptr, &DestR);
+	SDL_RendererFlip flip = (SDL_RendererFlip) 0;
+	if (animstep.hinvert)
+		flip = (SDL_RendererFlip) ( SDL_FLIP_HORIZONTAL | flip );
+	if (animstep.vinvert)
+		flip = (SDL_RendererFlip) ( SDL_FLIP_VERTICAL | flip );
+	SDL_RenderCopyEx(renderer, texture, nullptr, &DestR, 0, nullptr, flip);
 }
 
 void Character::handleEvent(const SDL_Event e)
@@ -144,14 +145,16 @@ void Character::handleEvent(const SDL_Event e)
 		// Changing sprites
 		case SDLK_UP:
 			curAnimIterator++;
-			currentAnimSprite = 0;
+			currentAnimStep = 0;
 			currentGameTick = 0;
 			needSpriteRefresh = true;
 			break;
 
 		case SDLK_DOWN:
+			if (curAnimIterator == animations.begin())
+				curAnimIterator = animations.end();
 			curAnimIterator--;
-			currentAnimSprite = 0;
+			currentAnimStep = 0;
 			currentGameTick = 0;
 			needSpriteRefresh = true;
 			break;
