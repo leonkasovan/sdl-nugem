@@ -40,6 +40,8 @@ struct animstep_t {
 	unsigned int x;
 	unsigned int y;
 	unsigned int ticks; // duration. Unit: 1/60 of a second
+	bool hinvert; // horizontal inversion
+	bool vinvert; // vertical inversion
 };
 
 struct animbox_t {

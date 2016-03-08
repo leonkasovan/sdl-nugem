@@ -36,33 +36,33 @@ mugen::defcontents mugen::loadDef(const char * filepath)
 	std::ifstream defs(filepath);
 	std::string line;
 	std::string currentSection;
+	std::regex sectionregex("[ \t\r\n]*\\[([0-9A-Za-z]+)\\][ \t\r\n]*");
+	std::regex valueregex("[ \t\r\n]*([^ \t=]+)[ \t]*=[ \t]*([^ \t\r\n]+)[ \t\r\n]*");
+	std::regex stringregex("[ \t\r\n]*([^ \t=]+)[ \t]*=[ \t]*\"([^\"]*)\"[ \t\r\n]*");
 	while (mugen::_getline(defs, line)) {
-		// Processing the line
-		std::stringstream linestream(line);
-		std::string identifier, separator, value;
-		linestream >> identifier;
+		std::smatch sm;
+		std::string identifier;
 		// Check if it's a section
-		if (identifier[0] == '[' && identifier[identifier.size() - 1] == ']') {
-			currentSection = identifier.substr(1, identifier.size() - 2);
-		}
-		// Otherwise check if it's a value
-		linestream >> separator;
-		if (separator != "=")
+		if (std::regex_match(line, sm, sectionregex)) {
+			currentSection = sm[1];
 			continue;
-		std::getline(linestream, value);
-		// trim the value string
-		size_t start = value.find_first_not_of(" \t\r");
-		size_t end = value.find_last_not_of(" \t\r");
-		value = value.substr(start, end + 1 - start);
+		}
 		mugen::defkey newkey;
-		if (value[0] == '"' && value[value.size() - 1] == '"') {
+		// Otherwise check if it's a value
+		if (std::regex_match(line, sm, stringregex)) {
 			newkey.keytype = defkey::STRING;
-			newkey.value = value.substr(1, value.size() - 2);
+			identifier = sm[1];
+			newkey.value = sm[2];
+		}
+		else if (std::regex_match(line, sm, valueregex)) {
+			newkey.keytype = defkey::SIMPLE;
+			identifier = sm[1];
+			newkey.value = sm[2];
 		}
 		else {
-			newkey.keytype = defkey::SIMPLE;
-			newkey.value = value;
+			continue;
 		}
+		std::transform(identifier.begin(), identifier.end(),identifier.begin(), ::tolower);
 		s[currentSection][identifier] = newkey;
 	}
 	defs.close();
@@ -76,34 +76,28 @@ mugen::animationdict mugen::loadAir(const char * filepath)
 	std::string line;
 	int currentSection = -1;
 	mugen::animation_t currentAnimation;
-	std::regex stepregex("[ \t\r\n]*([0-9]+),[ \t]*([0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*([0-9]+)[ \t,A-Z]*[ \r\n\t]*");
+	std::regex sectionregex("[ \t\r\n]*\\[Begin Action ([0-9]+)\\][ \t\r\n]*");
+	std::regex clsninitregex("[ \t\r\n]*(Clsn2(?:Default)?): ([0-9]+)[ \t\r\n]*");
+	std::regex clsnregex("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(?:(-?[0-9]+),[ \t]*){3}(-?[0-9]+)[ \t\r\n]*");
+	std::regex stepregex("[ \t\r\n]*([0-9]+),[ \t]*([0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*([0-9]+)(?:[ \t]*,[ \t]*([A-Za-z0-9]*)){0,2}[ \r\n\t]*");
 	while (mugen::_getline(air, line)) {
-		std::stringstream linestream(line);
-		std::string elem;
-		linestream >> elem;
+		std::smatch sm;
 		// new action start (i.e. a section describing an animation)
-		if (elem == "[Begin") {
-			linestream >> elem;
-			if (elem != "Action")
-				continue;
-			linestream >> elem;
-			if (elem[elem.size() - 1] != ']')
-				continue;
+		if (std::regex_match(line, sm, sectionregex)) {
 			// first, if the current action is named, we add it
 			if (currentSection >= 0) {
 				s[currentSection] = currentAnimation;
 			}
 			// then start a new action
-			currentSection = std::stoi(elem.substr(0, elem.size() - 1));
+			currentSection = std::stoi(sm[1]);
 			currentAnimation.steps.clear();
 			currentAnimation.boxes.clear();
 			continue;
 		}
-		std::smatch sm;
 		// if it's not a new action, but a line with 5 numbers separated by commas
 		// Note: Putting -1,0 for the sprite means it does not draw anything
 		// elem is of the form "x,y" with x image group and y image number in group
-		if (std::regex_match(line, sm, stepregex)/* && sm.size() >= 6*/) {
+		if (std::regex_match(line, sm, stepregex)) {
 			// start at index 1 of sm because index 0 is the whole string
 			mugen::animstep_t step;
 			step.group = std::stoi(sm[1]);
@@ -111,6 +105,14 @@ mugen::animationdict mugen::loadAir(const char * filepath)
 			step.x = std::stoi(sm[3]);
 			step.y = std::stoi(sm[4]);
 			step.ticks = std::stoi(sm[5]);
+			if (sm.size() > 6) { // horizontal and vertical inversion
+				const std::string arg(sm[6]);
+				size_t hinv = arg.find('H');
+				step.hinvert = (hinv != std::string::npos);
+				size_t vinv = arg.find('V');
+				step.vinvert = (vinv != std::string::npos);
+			}
+			if (sm.size() > 7) {}
 			currentAnimation.steps.push_back(step);
 		}
 	}
