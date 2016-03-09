@@ -47,6 +47,12 @@ struct animstep_t {
 struct animbox_t {
 	enum { COLLISION, ATTACK } type;
 	unsigned int coordinates[4];
+	size_t framenumber;
+};
+
+struct animboxlist_t {
+	size_t framenumber;
+	
 };
 
 struct animation_t {

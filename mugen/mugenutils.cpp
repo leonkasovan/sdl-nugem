@@ -77,9 +77,9 @@ mugen::animationdict mugen::loadAir(const char * filepath)
 	int currentSection = -1;
 	mugen::animation_t currentAnimation;
 	std::regex sectionregex("[ \t\r\n]*\\[Begin Action ([0-9]+)\\][ \t\r\n]*");
-	std::regex clsninitregex("[ \t\r\n]*(Clsn2(?:Default)?):[ \t]*([0-9]+)[ \t\r\n]*");
+	std::regex clsninitregex("[ \t\r\n]*(Clsn([0-9]+)(?:Default)?):[ \t]*([0-9]+)[ \t\r\n]*");
 	std::regex clsnregex("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)[ \t\r\n]*");
-	std::regex stepregex("[ \t\r\n]*([0-9]+),[ \t]*([0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*([0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*),?[ \r\n\t]*");
+	std::regex stepregex("[ \t\r\n]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*),?[ \r\n\t]*");
 	while (mugen::_getline(air, line)) {
 		std::smatch sm;
 		// new action start (i.e. a section describing an animation)
