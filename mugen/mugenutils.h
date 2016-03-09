@@ -52,6 +52,10 @@ struct animbox_t {
 struct animation_t {
 	std::vector<animbox_t> boxes;
 	std::vector<animstep_t> steps;
+	size_t loopstart;
+	animation_t() {
+			loopstart = 0;
+	}
 };
 
 typedef std::unordered_map<std::string, defsection> defcontents;

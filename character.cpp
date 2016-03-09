@@ -106,7 +106,7 @@ void Character::render(SDL_Renderer * renderer)
 		currentGameTick = 0;
 	}
 	if (currentAnimStep >= animation.steps.size()) {
-		currentAnimStep = 0;
+		currentAnimStep = animation.loopstart;
 	} 
 	if (texture)
 		SDL_DestroyTexture(texture);
