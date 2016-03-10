@@ -56,37 +56,50 @@ Game::~Game()
 	SDL_Quit();
 }
 
+void Game::update(int32_t dt)
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e) != 0) {
+		if (e.type == SDL_KEYDOWN) {
+			//Select surfaces based on key press
+			switch (e.key.keysym.sym) {
+			case SDLK_LEFT:
+				currentCharacter--;
+				break;
+
+			case SDLK_RIGHT:
+				currentCharacter++;
+				break;
+			}
+
+			currentCharacter = (currentCharacter + characters.size()) % characters.size();
+		}
+		inputManager.processSDLEvent(e);
+		characters[currentCharacter]->handleEvent(e);
+	}
+	SDL_RenderClear(renderer);
+	//Place your simulation code and rendering code here
+	characters[currentCharacter]->render(renderer);
+	SDL_RenderPresent(renderer);
+}
+
 void Game::run()
 {
 	findCharacters();
-	unsigned int currentCharacter = 0;
+	currentCharacter = 0;
 	isprite = 1;
-	SDL_Event e;
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xC6, 0x00); // clear color: black
+	uint32_t tick;
+	uint32_t prevtick = SDL_GetTicks();
+	uint32_t tickdelay = 1000 / 60; // 60 fps
 	// Main game loop
 	while (!SDL_QuitRequested()) {
-		while (SDL_PollEvent(&e) != 0) {
-			if (e.type == SDL_KEYDOWN) {
-				//Select surfaces based on key press
-				switch (e.key.keysym.sym) {
-				case SDLK_LEFT:
-					currentCharacter--;
-					break;
-
-				case SDLK_RIGHT:
-					currentCharacter++;
-					break;
-				}
-
-				currentCharacter = (currentCharacter + characters.size()) % characters.size();
-			}
-			characters[currentCharacter]->handleEvent(e);
+		tick = SDL_GetTicks();
+		uint32_t dt = tick - prevtick;
+		if (dt >= tickdelay) {
+			update(dt);
+			prevtick = tick;
 		}
-		SDL_RenderClear(renderer);
-		//Place your simulation code and rendering code here
-		characters[currentCharacter]->render(renderer);
-		SDL_RenderPresent(renderer);
-		SDL_Delay(1000 / 60);  // 60 fps
 	}
 }
 

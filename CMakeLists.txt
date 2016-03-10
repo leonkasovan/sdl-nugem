@@ -10,6 +10,7 @@ set(SOURCE_FILES
 	spritehandler.cpp
 	mugen/sffv1.cpp
 	mugen/sffv2.cpp
+	input.cpp
     character.cpp
     scenefight.cpp
     scenemenu.cpp
