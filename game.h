@@ -23,12 +23,13 @@
 #include <SDL.h>
 #include <vector>
 #include "input.h"
+#include "character.h"
 
 #define DEFAULT_WINDOW_WIDTH 800
 #define DEFAULT_WINDOW_HEIGHT 600
 
 class Scene;
-class Character;
+class Player;
 
 class Game
 {
@@ -46,7 +47,7 @@ private:
 	SDL_Window * window;
 	SDL_Renderer * renderer;
 	uint32_t isprite;
-	std::vector<Character *> characters;
+	std::vector<Character> characters;
 	size_t currentCharacter;
 };
 

@@ -39,11 +39,13 @@ class Character
 {
 public:
 	Character(const char* charid);
+	Character(Character&& character);
 	virtual ~Character();
 	virtual void render(SDL_Renderer * renderer);
 	virtual void handleEvent(const SDL_Event e);
 	const mugen::defcontents & getdef() const;
 	const std::string & getdir() const;
+	SpriteHandler * getSpriteHandler();
 protected:
 	void loadCharacterDef(const char* filepath);
 	void loadCharacterAnimations(const char* filepath);
@@ -63,7 +65,6 @@ private:
 	mugen::animationdict::iterator curAnimIterator;
 	size_t currentAnimStep;
 	size_t currentGameTick;
-	bool needSpriteRefresh;
 	SpriteHandler * spriteHandler;
 	uint16_t width;
 	uint16_t height;

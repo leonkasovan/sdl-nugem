@@ -40,8 +40,28 @@ Character::Character(const char * charid): id(charid)
 	loadCharacterDef((directory + "/" + definitionfilename).c_str());
 	std::string airfile = (std::string) def["Files"]["anim"];
 	loadCharacterAnimations((directory + "/" + airfile).c_str());
-	needSpriteRefresh = true;
 	curAnimIterator = animations.begin();
+}
+
+Character::Character(Character && character)
+{
+	// Initialization
+	texture = nullptr;
+	
+	// Move
+	currentPalette = character.currentPalette;
+	currentAnimStep = character.currentAnimStep;
+	directory = character.directory;
+	definitionfilename = character.definitionfilename;
+	spriteHandler = character.spriteHandler;
+	std::swap(animations, character.animations);
+	std::swap(texture, character.texture);
+	std::swap(def, character.def);
+	curAnimIterator = animations.begin();
+	
+	// Removing references from the previous object
+	character.spriteHandler = nullptr;
+	character.texture = nullptr;
 }
 
 Character::~Character()
@@ -60,6 +80,11 @@ const mugen::defcontents & Character::getdef() const
 const std::__cxx11::string & Character::getdir() const
 {
 	return directory;
+}
+
+SpriteHandler * Character::getSpriteHandler()
+{
+	return spriteHandler;
 }
 
 void Character::loadCharacterDef(const char * filepath)
@@ -147,7 +172,6 @@ void Character::handleEvent(const SDL_Event e)
 			curAnimIterator++;
 			currentAnimStep = 0;
 			currentGameTick = 0;
-			needSpriteRefresh = true;
 			break;
 
 		case SDLK_DOWN:
@@ -156,18 +180,15 @@ void Character::handleEvent(const SDL_Event e)
 			curAnimIterator--;
 			currentAnimStep = 0;
 			currentGameTick = 0;
-			needSpriteRefresh = true;
 			break;
 			
 		
 		case SDLK_s:
 			currentPalette--;
-			needSpriteRefresh = true;
 			break;
 		
 		case SDLK_f:
 			currentPalette++;
-			needSpriteRefresh = true;
 			break;
 		}
 

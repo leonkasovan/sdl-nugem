@@ -46,8 +46,8 @@ Game::Game()
 
 Game::~Game()
 {
-	for (auto character = characters.begin(); character != characters.end(); character++)
-		delete *character;
+// 	for (auto character = characters.begin(); character != characters.end(); character++)
+// 		delete *character;
 	// SDL_image deinitialization
 	IMG_Quit();
 	// SDL deinitialization
@@ -75,11 +75,11 @@ void Game::update(int32_t dt)
 			currentCharacter = (currentCharacter + characters.size()) % characters.size();
 		}
 		inputManager.processSDLEvent(e);
-		characters[currentCharacter]->handleEvent(e);
+		characters[currentCharacter].handleEvent(e);
 	}
 	SDL_RenderClear(renderer);
 	//Place your simulation code and rendering code here
-	characters[currentCharacter]->render(renderer);
+	characters[currentCharacter].render(renderer);
 	SDL_RenderPresent(renderer);
 }
 
@@ -114,7 +114,7 @@ void Game::findCharacters()
 			if (name[0] == '.')
 				continue;
 			try {
-			characters.push_back(new Character(name));
+			characters.push_back(Character(name));
 			}
 			catch (CharacterLoadException & error) {
 				std::cerr << "Couldn't load character " << name << ": " << error.what() << std::endl;
