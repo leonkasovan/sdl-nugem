@@ -17,39 +17,23 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GAME_H
-#define GAME_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
-#include <SDL.h>
-#include <vector>
-#include "input.h"
 #include "character.h"
+#include "input.h"
 
-#define DEFAULT_WINDOW_WIDTH 800
-#define DEFAULT_WINDOW_HEIGHT 600
-
-class Scene;
-class Player;
-
-class Game
-{
+class Player {
 public:
-	Game();
-	~Game();
-	void run();
+	Player();
+	virtual ~Player();
+	void setCharacter(Character * c);
+	Character * getCharacter();
+	void setInputDevice(InputDevice * iD);
+	InputDevice * getInputDevice();
 protected:
-	unsigned int w_width;
-	unsigned int w_height;
-	void findCharacters();
-	void update(int32_t dt);
-	InputManager * inputManager;
-private:
-	SDL_Window * window;
-	SDL_Renderer * renderer;
-	uint32_t isprite;
-	std::vector<Character> characters;
-	size_t currentCharacter;
+	Character * character;
+	InputDevice * inputDevice;
 };
 
-#endif // GAME_H
-
+#endif // PLAYER_H

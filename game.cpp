@@ -29,25 +29,26 @@
 
 Game::Game()
 {
-	// Initialize window constants
+	// SDL initialization
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
+	// SDL_image
+	IMG_Init(0);
+	// Initialize window
 	w_width = DEFAULT_WINDOW_WIDTH;
 	w_height = DEFAULT_WINDOW_HEIGHT;
-	/* Initialize SDL */
-	SDL_Init(SDL_INIT_EVERYTHING);
 	window = SDL_CreateWindow("NEGUM",
 	                          SDL_WINDOWPOS_CENTERED,
 	                          SDL_WINDOWPOS_CENTERED,
 	                          w_width, w_height,
 	                          SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	// SDL_image initialization
-	IMG_Init(0);
+	// Initialization of objects
+	inputManager = new InputManager;
 }
 
 Game::~Game()
 {
-// 	for (auto character = characters.begin(); character != characters.end(); character++)
-// 		delete *character;
+	delete inputManager;
 	// SDL_image deinitialization
 	IMG_Quit();
 	// SDL deinitialization
@@ -60,22 +61,7 @@ void Game::update(int32_t dt)
 {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) {
-		if (e.type == SDL_KEYDOWN) {
-			//Select surfaces based on key press
-			switch (e.key.keysym.sym) {
-			case SDLK_LEFT:
-				currentCharacter--;
-				break;
-
-			case SDLK_RIGHT:
-				currentCharacter++;
-				break;
-			}
-
-			currentCharacter = (currentCharacter + characters.size()) % characters.size();
-		}
-		inputManager.processSDLEvent(e);
-		characters[currentCharacter].handleEvent(e);
+		inputManager->processSDLEvent(e);
 	}
 	SDL_RenderClear(renderer);
 	//Place your simulation code and rendering code here
@@ -109,7 +95,7 @@ void Game::findCharacters()
 	struct dirent * chardirent = nullptr;
 	chardir = opendir("chars");
 	if (chardir != nullptr) {
-		while (chardirent = readdir(chardir)) {
+		while ((chardirent = readdir(chardir))) {
 			const char * name = chardirent->d_name;
 			if (name[0] == '.')
 				continue;

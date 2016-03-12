@@ -49,11 +49,17 @@ Character::Character(Character && character)
 	texture = nullptr;
 	
 	// Move
-	currentPalette = character.currentPalette;
-	currentAnimStep = character.currentAnimStep;
-	directory = character.directory;
-	definitionfilename = character.definitionfilename;
-	spriteHandler = character.spriteHandler;
+	std::swap(id, character.id);
+	std::swap(name, character.name);
+	std::swap(x, character.x);
+	std::swap(y, character.y);
+	std::swap(currentPalette, character.currentPalette);
+	std::swap(currentAnimStep, character.currentAnimStep);
+	std::swap(directory, character.directory);
+	std::swap(definitionfilename, character.definitionfilename);
+	std::swap(definitionfilename, character.definitionfilename);
+	std::swap(spritefilename, character.spritefilename);
+	std::swap(spriteHandler, character.spriteHandler);
 	std::swap(animations, character.animations);
 	std::swap(texture, character.texture);
 	std::swap(def, character.def);
