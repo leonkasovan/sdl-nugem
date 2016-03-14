@@ -26,6 +26,8 @@
 #include <unordered_map>
 #include <SDL.h>
 
+namespace mugen {
+
 // SFFv2 sprite format, as documented in https://web.archive.org/web/20150510210608/http://elecbyte.com/wiki/index.php/SFFv2
 
 // This only provides support for SFF v2.00 ?
@@ -95,5 +97,7 @@ private:
 	uint32_t tdataLength;
 	SDL_Texture * texture;
 };
+
+}
 
 #endif // SFFV2_H

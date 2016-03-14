@@ -5,18 +5,20 @@ cmake_minimum_required(VERSION 2.8)
 
 # Add global definitions
 add_definitions("-Wall")
+set(SOURCEDIR src)
 set(SOURCE_FILES
-	mugen/mugenutils.cpp
-	spritehandler.cpp
-	mugen/sffv1.cpp
-	mugen/sffv2.cpp
-	input.cpp
-    character.cpp
-    scenefight.cpp
-    scenemenu.cpp
-    scene.cpp
-    game.cpp
-    main.cpp
+	${SOURCEDIR}/mugen/mugenutils.cpp
+	${SOURCEDIR}/mugen/cns.cpp
+	${SOURCEDIR}/spritehandler.cpp
+	${SOURCEDIR}/mugen/sffv1.cpp
+	${SOURCEDIR}/mugen/sffv2.cpp
+	${SOURCEDIR}/input.cpp
+    ${SOURCEDIR}/character.cpp
+    ${SOURCEDIR}/scenefight.cpp
+    ${SOURCEDIR}/scenemenu.cpp
+    ${SOURCEDIR}/scene.cpp
+    ${SOURCEDIR}/game.cpp
+    ${SOURCEDIR}/main.cpp
 )
 
 add_executable(${PROJECT} ${SOURCE_FILES})

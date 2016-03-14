@@ -113,10 +113,11 @@ void Character::loadCharacterDef(const char * filepath)
 		version = extract_version(spritefile);
 		spritefile.close();
 	}
+	// Choosing whether to use Sffv1 or Sffv2
 	if (version[0] < 2)
-		spriteHandler = new Sffv1(*this, spritepath.c_str());
+		spriteHandler = new mugen::Sffv1(*this, spritepath.c_str());
 	else if (version[0] == 2)
-		spriteHandler = new Sffv2(spritepath.c_str());
+		spriteHandler = new mugen::Sffv2(spritepath.c_str());
 }
 
 void Character::loadCharacterAnimations(const char * filepath)

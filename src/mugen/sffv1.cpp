@@ -29,7 +29,7 @@
 #include <array>
 
 
-Sffv1::Sffv1(Character & character, const char * filename): character(character), filename(filename)
+mugen::Sffv1::Sffv1(Character & character, const char * filename): character(character), filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
@@ -39,39 +39,39 @@ Sffv1::Sffv1(Character & character, const char * filename): character(character)
 	loadSharedPalettes();
 }
 
-Sffv1::~Sffv1()
+mugen::Sffv1::~Sffv1()
 {
 	for (int i = 0; i < sprites.size(); i++) {
 		delete [] sprites[i].data;
 	}
 }
 
-const size_t Sffv1::getTotalSpriteNumber() const
+const size_t mugen::Sffv1::getTotalSpriteNumber() const
 {
 	return sprites.size();
 }
 
-void Sffv1::setSprite(size_t n)
+void mugen::Sffv1::setSprite(size_t n)
 {
 	currentSprite = n;
 }
 
-void Sffv1::setSprite(size_t group, size_t image)
+void mugen::Sffv1::setSprite(size_t group, size_t image)
 {
 	currentSprite = groups[group].i[image];
 }
 
-const size_t Sffv1::getTotalPaletteNumber() const
+const size_t mugen::Sffv1::getTotalPaletteNumber() const
 {
 	return palettes.size();
 }
 
-void Sffv1::setPalette(size_t n)
+void mugen::Sffv1::setPalette(size_t n)
 {
 	currentPalette = n;
 }
 
-void Sffv1::loadSffFile()
+void mugen::Sffv1::loadSffFile()
 {
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
@@ -121,7 +121,7 @@ void Sffv1::loadSffFile()
 	charfile.close();
 }
 
-void Sffv1::loadSharedPalettes()
+void mugen::Sffv1::loadSharedPalettes()
 {
 	bool continueLoop = true;
 	// We get the values of pal1, pal2, pal3, ... etc in order until pal12
@@ -139,7 +139,7 @@ void Sffv1::loadSharedPalettes()
 	}
 }
 
-sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
+mugen::sffv1palette_t mugen::Sffv1::getPaletteForSprite(size_t spritenumber)
 {
 	sffv1palette_t s;
 	long paletteSpriteNumber = spritenumber;
@@ -163,7 +163,7 @@ sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 	return palettes[currentPalette];
 }
 
-SDL_Surface * Sffv1::getSurface()
+SDL_Surface * mugen::Sffv1::getSurface()
 {
 	Uint32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -229,7 +229,7 @@ SDL_Surface * Sffv1::getSurface()
 	return surface;
 }
 
-bool Sffv1::readActPalette(const char * filepath)
+bool mugen::Sffv1::readActPalette(const char * filepath)
 {
 	sffv1palette_t palette;
 	std::ifstream actfile;
@@ -257,12 +257,12 @@ bool Sffv1::readActPalette(const char * filepath)
 	return true;
 }
 
-const size_t Sffv1::getImageXAxis() const
+const size_t mugen::Sffv1::getImageXAxis() const
 {
 	return sprites[currentSprite].axisX;
 }
 
-const size_t Sffv1::getImageYAxis() const
+const size_t mugen::Sffv1::getImageYAxis() const
 {
 	return sprites[currentSprite].axisY;
 }

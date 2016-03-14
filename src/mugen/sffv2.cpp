@@ -26,7 +26,7 @@
 
 #define READBUF_SIZE 32
 
-Sffv2::Sffv2(const char * filename): filename(filename)
+mugen::Sffv2::Sffv2(const char * filename): filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
@@ -38,7 +38,7 @@ Sffv2::Sffv2(const char * filename): filename(filename)
 	loadSffFile();
 }
 
-Sffv2::~Sffv2()
+mugen::Sffv2::~Sffv2()
 {
 	if (ldata != nullptr)
 		delete [] ldata;
@@ -46,7 +46,7 @@ Sffv2::~Sffv2()
 		delete [] tdata;
 }
 
-void Sffv2::loadSffFile()
+void mugen::Sffv2::loadSffFile()
 {
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
@@ -108,7 +108,7 @@ void Sffv2::loadSffFile()
 	charfile.close();
 }
 
-sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
+mugen::sffv2sprite_t mugen::Sffv2::readSprite(std::ifstream & fileobj)
 {
 	sffv2sprite_t sprite;
 	sprite.groupno = read_uint16(fileobj);
@@ -129,7 +129,7 @@ sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
 	return sprite;
 }
 
-sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
+mugen::sffv2palette_t mugen::Sffv2::readPalette(std::ifstream & fileobj)
 {
 	sffv2palette_t palette;
 	palette.groupno = read_uint16(fileobj);
@@ -141,42 +141,42 @@ sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
 	return palette;
 }
 
-const size_t Sffv2::getTotalSpriteNumber() const
+const size_t mugen::Sffv2::getTotalSpriteNumber() const
 {
 	return nsprites;
 }
 
-const size_t Sffv2::getTotalPaletteNumber() const
+const size_t mugen::Sffv2::getTotalPaletteNumber() const
 {
 	return palettes.size();
 }
 
-void Sffv2::setSprite(size_t n)
+void mugen::Sffv2::setSprite(size_t n)
 {
 	currentSprite = n;
 }
 
-void Sffv2::setSprite(size_t group, size_t image)
+void mugen::Sffv2::setSprite(size_t group, size_t image)
 {
 	currentSprite = groups[group].i[image];
 }
 
-void Sffv2::setPalette(size_t n)
+void mugen::Sffv2::setPalette(size_t n)
 {
 	currentPalette = n;
 }
 
-const size_t Sffv2::getImageXAxis() const
+const size_t mugen::Sffv2::getImageXAxis() const
 {
 	return sprites[currentSprite].axisx;
 }
 
-const size_t Sffv2::getImageYAxis() const
+const size_t mugen::Sffv2::getImageYAxis() const
 {
 	return sprites[currentSprite].axisy;
 }
 
-void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
+void mugen::Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
 {
 	if (indexPixel < surfaceSize) {
 		uint32_t * pixels = (uint32_t *) surface->pixels;
@@ -193,7 +193,7 @@ void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const s
 	}
 }
 
-SDL_Surface * Sffv2::getSurface()
+SDL_Surface * mugen::Sffv2::getSurface()
 {
 	Uint32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN

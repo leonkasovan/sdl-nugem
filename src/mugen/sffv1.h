@@ -31,6 +31,8 @@
 
 class Character;
 
+namespace mugen {
+
 struct sffv1color_t {
 	uint8_t red;
 	uint8_t green;
@@ -90,5 +92,7 @@ private:
 	std::unordered_map<size_t, sffv1group_t> groups;
 	Character & character;
 };
+
+}
 
 #endif // SFFV1_H
