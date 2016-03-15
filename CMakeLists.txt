@@ -8,7 +8,7 @@ add_definitions("-Wall")
 set(SOURCEDIR src)
 set(SOURCE_FILES
 	${SOURCEDIR}/mugen/mugenutils.cpp
-	${SOURCEDIR}/mugen/cns.cpp
+	${SOURCEDIR}/mugen/state.cpp
 	${SOURCEDIR}/spritehandler.cpp
 	${SOURCEDIR}/mugen/sffv1.cpp
 	${SOURCEDIR}/mugen/sffv2.cpp

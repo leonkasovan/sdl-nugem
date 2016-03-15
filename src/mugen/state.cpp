@@ -17,7 +17,7 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "cns.h"
+#include "state.h"
 
 #include "mugenutils.h"
 
