@@ -41,7 +41,7 @@ protected:
 	unsigned int w_width;
 	unsigned int w_height;
 	void findCharacters();
-	void update(int32_t dt);
+	void update();
 	InputManager * inputManager;
 private:
 	SDL_Window * window;

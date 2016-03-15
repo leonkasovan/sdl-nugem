@@ -57,7 +57,7 @@ Game::~Game()
 	SDL_Quit();
 }
 
-void Game::update(int32_t dt)
+void Game::update()
 {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) {
@@ -75,17 +75,13 @@ void Game::run()
 	currentCharacter = 0;
 	isprite = 1;
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xC6, 0x00); // clear color: black
-	uint32_t tick;
-	uint32_t prevtick = SDL_GetTicks();
 	uint32_t tickdelay = 1000 / 60; // 60 fps
 	// Main game loop
 	while (!SDL_QuitRequested()) {
-		tick = SDL_GetTicks();
-		uint32_t dt = tick - prevtick;
-		if (dt >= tickdelay) {
-			update(dt);
-			prevtick = tick;
-		}
+		uint32_t tick = SDL_GetTicks();
+		update();
+		uint32_t dt = SDL_GetTicks() - tick;
+		SDL_Delay(tickdelay - dt);
 	}
 }
 
