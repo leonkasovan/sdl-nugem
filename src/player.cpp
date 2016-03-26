@@ -49,3 +49,8 @@ void Player::setInputDevice(InputDevice * iD)
 {
 	inputDevice = iD;
 }
+
+void Player::receiveInput(inputstate_t & inputState)
+{
+	inputs.push_back(inputState);
+}

@@ -9,11 +9,13 @@ set(SOURCEDIR src)
 set(SOURCE_FILES
 	${SOURCEDIR}/mugen/mugenutils.cpp
 	${SOURCEDIR}/mugen/state.cpp
+	${SOURCEDIR}/mugen/cmd.cpp
 	${SOURCEDIR}/spritehandler.cpp
 	${SOURCEDIR}/mugen/sffv1.cpp
 	${SOURCEDIR}/mugen/sffv2.cpp
 	${SOURCEDIR}/input.cpp
     ${SOURCEDIR}/character.cpp
+    ${SOURCEDIR}/player.cpp
     ${SOURCEDIR}/scenefight.cpp
     ${SOURCEDIR}/scenemenu.cpp
     ${SOURCEDIR}/scene.cpp

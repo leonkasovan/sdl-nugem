@@ -36,7 +36,7 @@ Game::Game()
 	// Initialize window
 	w_width = DEFAULT_WINDOW_WIDTH;
 	w_height = DEFAULT_WINDOW_HEIGHT;
-	window = SDL_CreateWindow("NEGUM",
+	window = SDL_CreateWindow("NUGEM",
 	                          SDL_WINDOWPOS_CENTERED,
 	                          SDL_WINDOWPOS_CENTERED,
 	                          w_width, w_height,

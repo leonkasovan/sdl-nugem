@@ -23,6 +23,8 @@
 #include "character.h"
 #include "input.h"
 
+#include <deque>
+
 class Player {
 public:
 	Player();
@@ -31,9 +33,11 @@ public:
 	Character * getCharacter();
 	void setInputDevice(InputDevice * iD);
 	InputDevice * getInputDevice();
+	void receiveInput(inputstate_t & inputState);
 protected:
 	Character * character;
 	InputDevice * inputDevice;
+	std::deque<inputstate_t> inputs;
 };
 
 #endif // PLAYER_H

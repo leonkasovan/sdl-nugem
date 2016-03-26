@@ -121,10 +121,6 @@ struct cns_state_t {
 	int juggle = -1;
 	/** \brief If set to true, P1 will be turned to face P2 at the beginning of the state. */
 	bool facep2 = false;
-	/** \brief If set to true, P1 will be turned to face P2 at the beginning of the state. */
-	bool facep2 = false;
-	/** \brief If set to true, P1 will be turned to face P2 at the beginning of the state. */
-	bool facep2 = false;
 	/** \brief If set to true, any HitDefs active at the time of a state transition to this state will remain active. If false, any such HitDefs will be disabled instead. */
 	bool hitdefpersist = false;
 	/** \brief If set to true, the move hit information from the previous state will be carried over into this state. If false, the move hit information will be reset. */
