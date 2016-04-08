@@ -104,6 +104,11 @@ bool InputDevice::hasPlayerAssigned() const
 	return (player != nullptr);
 }
 
+Player * InputDevice::getAssignedPlayer()
+{
+	return player;
+}
+
 inputstate_t InputDevice::getState()
 {
 	return currentState;
@@ -121,17 +126,6 @@ void InputDevice::assignToPlayer(Player * assignedPlayer)
 
 KeyboardInput::KeyboardInput()
 {
-	keyA = SDL_GetKeyFromScancode(scancodeA);
-	keyB = SDL_GetKeyFromScancode(scancodeB);
-	keyC = SDL_GetKeyFromScancode(scancodeC);
-	keyX = SDL_GetKeyFromScancode(scancodeX);
-	keyY = SDL_GetKeyFromScancode(scancodeY);
-	keyZ = SDL_GetKeyFromScancode(scancodeZ);
-	keyStart = SDL_GetKeyFromScancode(scancodeStart);
-	keyUp = SDL_GetKeyFromScancode(scancodeUp);
-	keyDown = SDL_GetKeyFromScancode(scancodeDown);
-	keyLeft = SDL_GetKeyFromScancode(scancodeLeft);
-	keyRight = SDL_GetKeyFromScancode(scancodeRight);
 }
 
 void KeyboardInput::processEvent(const SDL_Event & e)
@@ -144,10 +138,10 @@ void KeyboardInput::processEvent(const SDL_Event & e)
 	};
 }
 
-const inputbutton KeyboardInput::evaluateKey(SDL_Keycode key)
+const inputbutton KeyboardInput::evaluateKey(SDL_Scancode key)
 {
 	const uint8_t * keystate = SDL_GetKeyboardState(NULL);
-	if (keystate[keyA])
+	if (keystate[key])
 		return INPUT_B_PRESSED;
 	else
 		return INPUT_B_RELEASED;
@@ -155,39 +149,39 @@ const inputbutton KeyboardInput::evaluateKey(SDL_Keycode key)
 
 void KeyboardInput::updateState()
 {
-	currentState.a = evaluateKey(keyA);
-	currentState.b = evaluateKey(keyB);
-	currentState.c = evaluateKey(keyC);
-	currentState.x = evaluateKey(keyX);
-	currentState.y = evaluateKey(keyY);
-	currentState.z = evaluateKey(keyZ);
-	currentState.start = evaluateKey(keyStart);
+	currentState.a = evaluateKey(scancodeA);
+	currentState.b = evaluateKey(scancodeB);
+	currentState.c = evaluateKey(scancodeC);
+	currentState.x = evaluateKey(scancodeX);
+	currentState.y = evaluateKey(scancodeY);
+	currentState.z = evaluateKey(scancodeZ);
+	currentState.start = evaluateKey(scancodeStart);
 	const uint8_t * keystate = SDL_GetKeyboardState(NULL);
-	if (keystate[keyUp]) {
-		if (keystate[keyRight]) {
+	if (keystate[scancodeUp]) {
+		if (keystate[scancodeRight]) {
 			currentState.d = INPUT_D_NE;
 		}
-		else if (keystate[keyLeft]) {
+		else if (keystate[scancodeLeft]) {
 			currentState.d = INPUT_D_NW;
 		}
 		else {
 			currentState.d = INPUT_D_N;
 		}}
-	else if (keystate[keyDown]) {
-		if (keystate[keyRight]) {
+	else if (keystate[scancodeDown]) {
+		if (keystate[scancodeRight]) {
 			currentState.d = INPUT_D_SE;
 		}
-		else if (keystate[keyLeft]) {
+		else if (keystate[scancodeLeft]) {
 			currentState.d = INPUT_D_SW;
 		}
 		else {
 			currentState.d = INPUT_D_S;
 		}}
 	else {
-		if (keystate[keyRight]) {
+		if (keystate[scancodeRight]) {
 			currentState.d = INPUT_D_E;
 		}
-		else if (keystate[keyLeft]) {
+		else if (keystate[scancodeLeft]) {
 			currentState.d = INPUT_D_W;
 		}
 		else {

@@ -81,7 +81,8 @@ void Game::run()
 		uint32_t tick = SDL_GetTicks();
 		update();
 		uint32_t dt = SDL_GetTicks() - tick;
-		SDL_Delay(tickdelay - dt);
+		if (dt < tickdelay)
+			SDL_Delay(tickdelay - dt);
 	}
 }
 

@@ -3,9 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <regex>
 
-std::istream & mugen::_getline(std::istream & __is, std::__cxx11::string & __str)
+std::istream & mugen::_getline(std::istream & __is, std::string & __str)
 {
 	std::istream & _is = std::getline(__is, __str);
 	// Cut the line at the comments: find the ; character
@@ -30,100 +29,128 @@ std::istream & mugen::_getline(std::istream & __is, std::__cxx11::string & __str
 	return _is;
 }
 
-mugen::defcontents mugen::loadDef(const char * filepath)
+const std::regex mugen::MugenTextFile::regexSectionHeader("^[ \t]*\\[[ \t]*([^\\]]+?)[ \t]*\\][ \t\r]*$");
+const std::regex mugen::MugenTextFile::regexKeyValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*([^\r]+?)[ \t\r]*$");
+const std::regex mugen::MugenTextFile::regexKeyQuotedValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*\"([^\r\"]+?)\"[ \t\r]*$");
+
+mugen::MugenTextFile::MugenTextFile(std::string path): m_path(path), m_inputstream(path)
 {
-	mugen::defcontents s;
-	std::ifstream defs(filepath);
-	std::string line;
-	std::string currentSection;
-	std::regex sectionregex("[ \t\r\n]*\\[([0-9A-Za-z]+)\\][ \t\r\n]*");
-	std::regex valueregex("[ \t\r\n]*([^ \t=]+)[ \t]*=[ \t]*([^ \t\r\n]+)[ \t\r\n]*");
-	std::regex stringregex("[ \t\r\n]*([^ \t=]+)[ \t]*=[ \t]*\"([^\"]*)\"[ \t\r\n]*");
-	while (mugen::_getline(defs, line)) {
-		std::smatch sm;
-		std::string identifier;
-		// Check if it's a section
-		if (std::regex_match(line, sm, sectionregex)) {
-			currentSection = sm[1];
-			continue;
-		}
-		mugen::defkey newkey;
-		// Otherwise check if it's a value
-		if (std::regex_match(line, sm, stringregex)) {
-			newkey.keytype = defkey::STRING;
-			identifier = sm[1];
-			newkey.value = sm[2];
-		}
-		else if (std::regex_match(line, sm, valueregex)) {
-			newkey.keytype = defkey::SIMPLE;
-			identifier = sm[1];
-			newkey.value = sm[2];
-		}
-		else {
-			continue;
-		}
-		std::transform(identifier.begin(), identifier.end(), identifier.begin(), ::tolower);
-		s[currentSection][identifier] = newkey;
+	m_section = "";
+}
+
+mugen::MugenTextFile::~MugenTextFile()
+{
+	if (m_inputstream.is_open())
+		m_inputstream.close();
+}
+
+const std::string & mugen::MugenTextFile::section() const
+{
+	return m_section;
+}
+
+const bool mugen::MugenTextFile::newSection() const
+{
+	return m_newSection;
+}
+
+const std::string mugen::MugenTextFile::nextLine()
+{
+	m_newSection = false;
+	std::string s;
+	mugen::_getline(m_inputstream, s);
+	std::smatch sm;
+	if (std::regex_match(s, sm, regexSectionHeader)) {
+		m_section = sm[1];
+		m_newSection = true;
 	}
-	defs.close();
 	return s;
 }
 
-mugen::animationdict mugen::loadAir(const char * filepath)
+const mugen::MugenTextKeyValue mugen::MugenTextFile::nextValue()
 {
-	mugen::animationdict s;
-	std::ifstream air(filepath);
 	std::string line;
-	int currentSection = -1;
-	mugen::animation_t currentAnimation;
-	std::regex sectionregex("[ \t\r\n]*\\[Begin Action ([0-9]+)\\][ \t\r\n]*");
-	std::regex clsninitregex("[ \t\r\n]*(Clsn([0-9]+)(?:Default)?):[ \t]*([0-9]+)[ \t\r\n]*");
-	std::regex clsnregex("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)[ \t\r\n]*");
-	std::regex stepregex("[ \t\r\n]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*),?[ \r\n\t]*");
-	while (mugen::_getline(air, line)) {
+	m_newSection = false;
+	while (mugen::_getline(m_inputstream, line)) {
 		std::smatch sm;
-		// new action start (i.e. a section describing an animation)
-		if (std::regex_match(line, sm, sectionregex)) {
-			// first, if the current action is named, we add it
-			if (currentSection >= 0) {
-				s[currentSection] = currentAnimation;
-			}
-			// then start a new action
-			currentSection = std::stoi(sm[1]);
-			currentAnimation = mugen::animation_t();
-			continue;
+		if (std::regex_match(line, sm, regexSectionHeader)) {
+			m_section = sm[1];
+			m_newSection = true;
 		}
-		// if it's not a new action, but a line with 5 numbers separated by commas
-		// Note: Putting -1,0 for the sprite means it does not draw anything
-		// elem is of the form "x,y" with x image group and y image number in group
-		if (std::regex_match(line, sm, stepregex)) {
-			// start at index 1 of sm because index 0 is the whole string
-			mugen::animstep_t step;
-			step.group = std::stoi(sm[1]);
-			step.image = std::stoi(sm[2]);
-			step.x = std::stoi(sm[3]);
-			step.y = std::stoi(sm[4]);
-			step.ticks = std::stoi(sm[5]);
-			if (sm.size() > 6) { // horizontal and vertical inversion
-				const std::string arg(sm[6]);
-				size_t hinv = arg.find('H');
-				step.hinvert = (hinv != std::string::npos);
-				size_t vinv = arg.find('V');
-				step.vinvert = (vinv != std::string::npos);
-			}
-			else {
-				step.hinvert = false;
-				step.vinvert = false;
-			}
-			if (sm.size() > 7) {}
-			currentAnimation.steps.push_back(step);
+		else if (std::regex_match(line, sm, regexKeyQuotedValue)) {
+			return MugenTextKeyValue(sm[1], sm[2]);
 		}
-		else if (line.find("LoopStart") != std::string::npos) {
-			currentAnimation.loopstart = currentAnimation.steps.size();
+		else if (std::regex_match(line, sm, regexKeyValue)) {
+			return MugenTextKeyValue(sm[1], sm[2]);
 		}
-			
 	}
-	air.close();
-	return s;
+	return MugenTextKeyValue();
 }
 
+mugen::MugenTextKeyValue::MugenTextKeyValue(): isEmpty(true)
+{
+}
+
+mugen::MugenTextKeyValue mugen::MugenTextKeyValue::read(const std::string & stringToRead)
+{
+	std::smatch sm;
+	if (std::regex_match(stringToRead, sm, MugenTextFile::regexKeyQuotedValue)) {
+		return MugenTextKeyValue(sm[1], sm[2]);
+	}
+	else if (std::regex_match(stringToRead, sm, MugenTextFile::regexKeyValue)) {
+		return MugenTextKeyValue(sm[1], sm[2]);
+	}
+	return MugenTextKeyValue();
+}
+
+mugen::MugenTextKeyValue::MugenTextKeyValue(std::string key, std::string value): k(key), v(value)
+{
+}
+
+mugen::MugenTextKeyValue::MugenTextKeyValue(const mugen::MugenTextKeyValue & kvpair): k(kvpair.name()), v(kvpair.value())
+{
+}
+
+mugen::MugenTextKeyValue::MugenTextKeyValue(mugen::MugenTextKeyValue && kvpair)
+{
+	std::swap(isEmpty, kvpair.isEmpty);
+	if (!isEmpty) {
+		std::swap(k, kvpair.k);
+		std::swap(v, kvpair.v);
+	}
+}
+
+mugen::MugenTextKeyValue & mugen::MugenTextKeyValue::operator=(mugen::MugenTextKeyValue && kvpair)
+{
+	std::swap(isEmpty, kvpair.isEmpty);
+	if (!isEmpty) {
+		std::swap(k, kvpair.k);
+		std::swap(v, kvpair.v);
+	}
+	return *this;
+}
+
+mugen::MugenTextKeyValue & mugen::MugenTextKeyValue::operator=(const mugen::MugenTextKeyValue & kvpair)
+{
+	isEmpty = ! (bool) kvpair;
+	if (!isEmpty) {
+		k = kvpair.name();
+		v = kvpair.value();
+	}
+	return *this;
+}
+
+mugen::MugenTextKeyValue::operator bool() const
+{
+	return !isEmpty;
+}
+
+const std::string & mugen::MugenTextKeyValue::name() const
+{
+	return k;
+}
+
+const std::string & mugen::MugenTextKeyValue::value() const
+{
+	return v;
+}

@@ -28,6 +28,9 @@
 
 #include "spritehandler.h"
 #include "mugen/mugenutils.h"
+#include "mugen/def.h"
+#include "mugen/air.h"
+#include "mugen/cmd.h"
 
 class CharacterLoadException: public std::runtime_error {
 public:
@@ -43,16 +46,18 @@ public:
 	virtual ~Character();
 	virtual void render(SDL_Renderer * renderer);
 	virtual void handleEvent(const SDL_Event e);
-	const mugen::defcontents & getdef() const;
+	mugen::DefinitionFile& getdef();
 	const std::string & getdir() const;
 	SpriteHandler * getSpriteHandler();
 protected:
 	void loadCharacterDef(const char* filepath);
 	void loadCharacterAnimations(const char* filepath);
+	void loadCharacterCmd(const char* filepath);
 	std::string id;
 	std::string name;
-	mugen::defcontents def;
-	mugen::animationdict animations;
+	mugen::DefinitionFile def;
+	mugen::AnimationData animations;
+	mugen::CharacterCommands cmd;
 	unsigned int x;
 	unsigned int y;
 private:
@@ -62,7 +67,7 @@ private:
 	std::string mugenversion;
 	SDL_Texture * texture;
 	size_t currentPalette;
-	mugen::animationdict::iterator curAnimIterator;
+	mugen::AnimationData::iterator curAnimIterator;
 	size_t currentAnimStep;
 	size_t currentGameTick;
 	SpriteHandler * spriteHandler;

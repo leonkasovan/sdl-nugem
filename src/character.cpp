@@ -38,6 +38,8 @@ Character::Character(const char * charid): id(charid)
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
 	loadCharacterDef((directory + "/" + definitionfilename).c_str());
+	std::string cmdfile = (std::string) def["Files"]["cmd"];
+	loadCharacterCmd((directory + "/" + cmdfile).c_str());
 	std::string airfile = (std::string) def["Files"]["anim"];
 	loadCharacterAnimations((directory + "/" + airfile).c_str());
 	curAnimIterator = animations.begin();
@@ -78,7 +80,7 @@ Character::~Character()
 		SDL_DestroyTexture(texture);
 }
 
-const mugen::defcontents & Character::getdef() const
+mugen::DefinitionFile & Character::getdef()
 {
 	return def;
 }
@@ -97,7 +99,7 @@ void Character::loadCharacterDef(const char * filepath)
 {
 	if (spriteHandler)
 		delete spriteHandler;
-	def = mugen::loadDef(filepath);
+	def = mugen::DefinitionFile(filepath);
 	mugenversion = (std::string) def["Info"]["mugenversion"];
 	spritefilename = (std::string) def["Files"]["sprite"];
 	std::string spritepath = directory + "/" + spritefilename;
@@ -120,9 +122,14 @@ void Character::loadCharacterDef(const char * filepath)
 		spriteHandler = new mugen::Sffv2(spritepath.c_str());
 }
 
+void Character::loadCharacterCmd(const char * filepath)
+{
+	//cmd = mugen::CharacterCommands(filepath);
+}
+
 void Character::loadCharacterAnimations(const char * filepath)
 {
-	animations = mugen::loadAir(filepath);
+	animations = mugen::AnimationData(filepath);
 }
 
 void Character::render(SDL_Renderer * renderer)

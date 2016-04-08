@@ -112,6 +112,7 @@ public:
 	const inputstate_t getState() const;
 	void assignToPlayer(Player * assignedPlayer);
 	bool hasPlayerAssigned() const;
+	Player * getAssignedPlayer();
 protected:
 	inputstate_t currentState;
 	Player * player;
@@ -123,18 +124,7 @@ public:
 	virtual void processEvent(const SDL_Event & e);
 	virtual void updateState();
 private:
-	SDL_Keycode keyA;
-	SDL_Keycode keyB;
-	SDL_Keycode keyC;
-	SDL_Keycode keyX;
-	SDL_Keycode keyY;
-	SDL_Keycode keyZ;
-	SDL_Keycode keyStart;
-	SDL_Keycode keyUp;
-	SDL_Keycode keyDown;
-	SDL_Keycode keyLeft;
-	SDL_Keycode keyRight;
-	const inputbutton evaluateKey(SDL_Keycode key);
+	const inputbutton evaluateKey(SDL_Scancode key);
 	static const SDL_Scancode scancodeA = SDL_SCANCODE_A;
 	static const SDL_Scancode scancodeB = SDL_SCANCODE_S;
 	static const SDL_Scancode scancodeC = SDL_SCANCODE_D;
