@@ -38,6 +38,7 @@ public:
 	const std::string nextLine();
 	const std::string & section() const;
 	const bool newSection() const;
+	operator bool() const;
 	static const std::regex regexSectionHeader;
 	static const std::regex regexKeyValue;
 	static const std::regex regexKeyQuotedValue;

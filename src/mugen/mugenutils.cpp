@@ -67,6 +67,11 @@ const std::string mugen::MugenTextFile::nextLine()
 	return s;
 }
 
+mugen::MugenTextFile::operator bool() const
+{
+	return (bool) m_inputstream;
+}
+
 const mugen::MugenTextKeyValue mugen::MugenTextFile::nextValue()
 {
 	std::string line;

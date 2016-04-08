@@ -26,7 +26,7 @@ mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepa
 	std::string line;
 	mugen::animation_t currentAnimation;
 	int actionNumber = -1;
-	for (line = air.nextLine(); !line.empty(); line = air.nextLine()) {
+	for (line = air.nextLine(); air; line = air.nextLine()) {
 		std::smatch sm;
 		// new action start (i.e. a section describing an animation)
 		if (air.newSection()) {
@@ -79,6 +79,7 @@ mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepa
 	}
 	if (actionNumber >= 0)
 		(*this)[actionNumber] = currentAnimation;
+	return *this;
 }
 
 mugen::AnimationData & mugen::AnimationData::operator=(mugen::AnimationData && animationData)
