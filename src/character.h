@@ -44,7 +44,7 @@ public:
 	Character(const char* charid);
 	Character(Character&& character);
 	virtual ~Character();
-	virtual void render(SDL_Renderer * renderer);
+	virtual void render();
 	virtual void handleEvent(const SDL_Event e);
 	mugen::DefinitionFile& getdef();
 	const std::string & getdir() const;

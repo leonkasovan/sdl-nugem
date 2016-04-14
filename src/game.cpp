@@ -20,40 +20,35 @@
 #include "game.h"
 #include "character.h"
 
+#include "scenemenu.h"
+
 #include <iostream>
 #include <dirent.h>
-#include <SDL_image.h>
 
-// To be replaced ? it's not really cross-platform
 #include <dirent.h>
 
-Game::Game()
+Game::Game(): m_currentScene(nullptr)
 {
 	// SDL initialization
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
-	// SDL_image
-	IMG_Init(0);
 	// Initialize window
-	w_width = DEFAULT_WINDOW_WIDTH;
-	w_height = DEFAULT_WINDOW_HEIGHT;
-	window = SDL_CreateWindow("NUGEM",
+	m_winWidth = DEFAULT_WINDOW_WIDTH;
+	m_winHeight = DEFAULT_WINDOW_HEIGHT;
+	m_window = SDL_CreateWindow("NUGEM",
 	                          SDL_WINDOWPOS_CENTERED,
 	                          SDL_WINDOWPOS_CENTERED,
-	                          w_width, w_height,
-	                          SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	// Initialization of objects
-	inputManager = new InputManager;
+	                          m_winWidth, m_winHeight,
+	                          SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+	glGraphics.initialize(m_window);
 }
 
 Game::~Game()
 {
-	delete inputManager;
-	// SDL_image deinitialization
-	IMG_Quit();
+	if (m_currentScene)
+		delete m_currentScene;
 	// SDL deinitialization
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+	glGraphics.finish();
+	SDL_DestroyWindow(m_window);
 	SDL_Quit();
 }
 
@@ -61,21 +56,20 @@ void Game::update()
 {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) {
-		inputManager->processSDLEvent(e);
+		m_inputManager.processSDLEvent(e);
 	}
-	SDL_RenderClear(renderer);
+	glGraphics.clear();
 	//Place your simulation code and rendering code here
-	characters[currentCharacter].render(renderer);
-	SDL_RenderPresent(renderer);
+	if (m_currentScene)
+		m_currentScene->render(glGraphics);
 }
 
 void Game::run()
 {
-	findCharacters();
-	currentCharacter = 0;
-	isprite = 1;
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xC6, 0x00); // clear color: black
-	uint32_t tickdelay = 1000 / 60; // 60 fps
+	m_currentScene = new SceneMenu();
+	glGraphics.clear();
+	// 60 fps
+	uint32_t tickdelay = 1000 / 60;
 	// Main game loop
 	while (!SDL_QuitRequested()) {
 		uint32_t tick = SDL_GetTicks();
@@ -83,27 +77,6 @@ void Game::run()
 		uint32_t dt = SDL_GetTicks() - tick;
 		if (dt < tickdelay)
 			SDL_Delay(tickdelay - dt);
-	}
-}
-
-void Game::findCharacters()
-{
-	DIR * chardir = nullptr;
-	struct dirent * chardirent = nullptr;
-	chardir = opendir("chars");
-	if (chardir != nullptr) {
-		while ((chardirent = readdir(chardir))) {
-			const char * name = chardirent->d_name;
-			if (name[0] == '.')
-				continue;
-			try {
-			characters.push_back(Character(name));
-			}
-			catch (CharacterLoadException & error) {
-				std::cerr << "Couldn't load character " << name << ": " << error.what() << std::endl;
-			}
-		}
-		closedir(chardir);
 	}
 }
 

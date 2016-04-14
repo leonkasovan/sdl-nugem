@@ -132,10 +132,10 @@ void Character::loadCharacterAnimations(const char * filepath)
 	animations = mugen::AnimationData(filepath);
 }
 
-void Character::render(SDL_Renderer * renderer)
+void Character::render()
 {
 	int h, w;
-	SDL_GetRendererOutputSize(renderer, &w, &h);
+	//SDL_GetRendererOutputSize(renderer, &w, &h);
 	mugen::animation_t & animation = curAnimIterator->second;
 	mugen::animstep_t & animstep = animation.steps[currentAnimStep];
 	spriteHandler->setSprite(animstep.group, animstep.image);
@@ -153,7 +153,7 @@ void Character::render(SDL_Renderer * renderer)
 	SDL_Surface * surface = spriteHandler->getSurface();
 	width = surface->w;
 	height = surface->h;
-	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	//texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 	SDL_Rect DestR;
 	// Centering the sprite in the middle of the screen
@@ -170,7 +170,7 @@ void Character::render(SDL_Renderer * renderer)
 		flip = (SDL_RendererFlip) ( SDL_FLIP_HORIZONTAL | flip );
 	if (animstep.vinvert)
 		flip = (SDL_RendererFlip) ( SDL_FLIP_VERTICAL | flip );
-	SDL_RenderCopyEx(renderer, texture, nullptr, &DestR, 0, nullptr, flip);
+	//SDL_RenderCopyEx(renderer, texture, nullptr, &DestR, 0, nullptr, flip);
 }
 
 void Character::handleEvent(const SDL_Event e)

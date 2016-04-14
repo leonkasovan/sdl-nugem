@@ -16,7 +16,8 @@ set(SOURCE_FILES
 	${SOURCEDIR}/mugen/sffv1.cpp
 	${SOURCEDIR}/mugen/sffv2.cpp
 	${SOURCEDIR}/input.cpp
-    ${SOURCEDIR}/character.cpp
+	${SOURCEDIR}/glgraphics.cpp
+	${SOURCEDIR}/character.cpp
     ${SOURCEDIR}/player.cpp
     ${SOURCEDIR}/scenefight.cpp
     ${SOURCEDIR}/scenemenu.cpp
@@ -33,7 +34,8 @@ set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD_REQUIRED 11)
 # Find SDL2
 INCLUDE(FindPkgConfig REQUIRED)
 PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
-include_directories(${SDL2_INCLUDE_DIRS})
+PKG_CHECK_MODULES(GL REQUIRED gl)
+include_directories(${SDL2_INCLUDE_DIRS} ${GL_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT} ${SDL2_LIBRARIES})
+target_link_libraries(${PROJECT} ${SDL2_LIBRARIES} ${GL_LIBRARIES})
 install(TARGETS ${PROJECT} DESTINATION bin)
