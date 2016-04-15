@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "sprites.h"
+
 std::istream & mugen::_getline(std::istream & __is, std::string & __str)
 {
 	std::istream & _is = std::getline(__is, __str);
@@ -92,7 +94,7 @@ const mugen::MugenTextKeyValue mugen::MugenTextFile::nextValue()
 	return MugenTextKeyValue();
 }
 
-mugen::MugenTextKeyValue::MugenTextKeyValue(): isEmpty(true)
+mugen::MugenTextKeyValue::MugenTextKeyValue(): m_empty(true)
 {
 }
 
@@ -108,54 +110,55 @@ mugen::MugenTextKeyValue mugen::MugenTextKeyValue::read(const std::string & stri
 	return MugenTextKeyValue();
 }
 
-mugen::MugenTextKeyValue::MugenTextKeyValue(std::string key, std::string value): k(key), v(value)
+mugen::MugenTextKeyValue::MugenTextKeyValue(std::string key, std::string value): m_key(key), m_value(value)
 {
 }
 
-mugen::MugenTextKeyValue::MugenTextKeyValue(const mugen::MugenTextKeyValue & kvpair): k(kvpair.name()), v(kvpair.value())
+mugen::MugenTextKeyValue::MugenTextKeyValue(const mugen::MugenTextKeyValue & kvpair): m_key(kvpair.name()), m_value(kvpair.value())
 {
 }
 
 mugen::MugenTextKeyValue::MugenTextKeyValue(mugen::MugenTextKeyValue && kvpair)
 {
-	std::swap(isEmpty, kvpair.isEmpty);
-	if (!isEmpty) {
-		std::swap(k, kvpair.k);
-		std::swap(v, kvpair.v);
+	std::swap(m_empty, kvpair.m_empty);
+	if (!m_empty) {
+		std::swap(m_key, kvpair.m_key);
+		std::swap(m_value, kvpair.m_value);
 	}
 }
 
 mugen::MugenTextKeyValue & mugen::MugenTextKeyValue::operator=(mugen::MugenTextKeyValue && kvpair)
 {
-	std::swap(isEmpty, kvpair.isEmpty);
-	if (!isEmpty) {
-		std::swap(k, kvpair.k);
-		std::swap(v, kvpair.v);
+	std::swap(m_empty, kvpair.m_empty);
+	if (!m_empty) {
+		std::swap(m_key, kvpair.m_key);
+		std::swap(m_value, kvpair.m_value);
 	}
 	return *this;
 }
 
 mugen::MugenTextKeyValue & mugen::MugenTextKeyValue::operator=(const mugen::MugenTextKeyValue & kvpair)
 {
-	isEmpty = ! (bool) kvpair;
-	if (!isEmpty) {
-		k = kvpair.name();
-		v = kvpair.value();
+	m_empty = ! (bool) kvpair;
+	if (!m_empty) {
+		m_key = kvpair.name();
+		m_value = kvpair.value();
 	}
 	return *this;
 }
 
 mugen::MugenTextKeyValue::operator bool() const
 {
-	return !isEmpty;
+	return !m_empty;
 }
 
 const std::string & mugen::MugenTextKeyValue::name() const
 {
-	return k;
+	return m_key;
 }
 
 const std::string & mugen::MugenTextKeyValue::value() const
 {
-	return v;
+	return m_value;
 }
+

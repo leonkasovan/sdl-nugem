@@ -12,7 +12,7 @@ set(SOURCE_FILES
 	${SOURCEDIR}/mugen/def.cpp
 	${SOURCEDIR}/mugen/state.cpp
 	${SOURCEDIR}/mugen/cmd.cpp
-	${SOURCEDIR}/spritehandler.cpp
+	${SOURCEDIR}/mugen/sprites.cpp
 	${SOURCEDIR}/mugen/sffv1.cpp
 	${SOURCEDIR}/mugen/sffv2.cpp
 	${SOURCEDIR}/input.cpp

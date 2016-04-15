@@ -40,7 +40,7 @@ class StateEntry {};
 class CharacterCommands {
 public:
 	CharacterCommands() {};
-	CharacterCommands(std::string cmdfile);
+	CharacterCommands(const std::string & cmdfile);
 	CharacterCommands(CharacterCommands && characterCommands);
 private:
 	std::vector<CommandDefinition> commandDefinitions;

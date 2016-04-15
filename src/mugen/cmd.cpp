@@ -23,7 +23,7 @@
 #include <string>
 #include <deque>
 
-mugen::CharacterCommands::CharacterCommands(std::__cxx11::string cmdfile)
+mugen::CharacterCommands::CharacterCommands(const std::string & cmdfile)
 {
 	std::ifstream file = std::ifstream(cmdfile);
 	std::string line;

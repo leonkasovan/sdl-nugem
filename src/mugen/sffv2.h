@@ -20,7 +20,7 @@
 #ifndef SFFV2_H
 #define SFFV2_H
 
-#include "../spritehandler.h"
+#include "sprites.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -71,19 +71,14 @@ class Sffv2: public SpriteHandler {
 public:
 	Sffv2(const char* filename);
 	~Sffv2();
-	const size_t getTotalSpriteNumber() const;
-	const size_t getTotalPaletteNumber() const;
-	void setSprite(size_t n);
-	void setSprite(size_t group, size_t image);
-	void setPalette(size_t n);
-	SDL_Surface * getSurface();
-	const size_t getImageXAxis() const;
-	const size_t getImageYAxis() const;
+	void load();
+	void load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last);
 protected:
 	void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
 	void loadSffFile();
 	sffv2sprite_t readSprite(std::ifstream & fileobj);
 	sffv2palette_t readPalette(std::ifstream & fileobj);
+	SDL_Surface * renderToSurface();
 private:
 	std::string filename;
 	std::vector<sffv2sprite_t> sprites;

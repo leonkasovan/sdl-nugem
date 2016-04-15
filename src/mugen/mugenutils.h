@@ -25,9 +25,9 @@ public:
 	MugenTextKeyValue & operator=(MugenTextKeyValue && kvpair);
 	MugenTextKeyValue & operator=(const MugenTextKeyValue & kvpair);
 private:
-	std::string k;
-	std::string v;
-	bool isEmpty = false;
+	std::string m_key;
+	std::string m_value;
+	bool m_empty = false;
 };
 
 class MugenTextFile {

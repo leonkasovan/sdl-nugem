@@ -141,41 +141,6 @@ mugen::sffv2palette_t mugen::Sffv2::readPalette(std::ifstream & fileobj)
 	return palette;
 }
 
-const size_t mugen::Sffv2::getTotalSpriteNumber() const
-{
-	return nsprites;
-}
-
-const size_t mugen::Sffv2::getTotalPaletteNumber() const
-{
-	return palettes.size();
-}
-
-void mugen::Sffv2::setSprite(size_t n)
-{
-	currentSprite = n;
-}
-
-void mugen::Sffv2::setSprite(size_t group, size_t image)
-{
-	currentSprite = groups[group].i[image];
-}
-
-void mugen::Sffv2::setPalette(size_t n)
-{
-	currentPalette = n;
-}
-
-const size_t mugen::Sffv2::getImageXAxis() const
-{
-	return sprites[currentSprite].axisx;
-}
-
-const size_t mugen::Sffv2::getImageYAxis() const
-{
-	return sprites[currentSprite].axisy;
-}
-
 void mugen::Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
 {
 	if (indexPixel < surfaceSize) {
@@ -193,7 +158,7 @@ void mugen::Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, 
 	}
 }
 
-SDL_Surface * mugen::Sffv2::getSurface()
+SDL_Surface * mugen::Sffv2::renderToSurface()
 {
 	Uint32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -355,4 +320,31 @@ SDL_Surface * mugen::Sffv2::getSurface()
 	return surface;
 }
 
+void mugen::Sffv2::load()
+{
+	m_sprites.clear();
+	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
+		std::unordered_map<spriteref, Sprite> currentPaletteSprites;
+		for (currentSprite = 0; currentSprite < sprites.size(); currentSprite++) {
+			sffv2sprite_t & sprite = sprites[currentSprite];
+			spriteref ref(sprite.groupno, sprite.itemno);
+			currentPaletteSprites.insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+		}
+		m_sprites.push_back(currentPaletteSprites);
+	}
+}
+
+void mugen::Sffv2::load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last)
+{
+	m_sprites.clear();
+	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
+		std::unordered_map<spriteref, Sprite> currentPaletteSprites;
+		for (; first != last; first++) {
+			spriteref & ref = *first;
+			currentSprite = groups[ref.group].i[ref.image];
+			currentPaletteSprites.insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+		}
+		m_sprites.push_back(currentPaletteSprites);
+	}
+}
 

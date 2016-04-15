@@ -22,7 +22,7 @@
 
 #define PALETTE_NCOLORS 256
 
-#include "../spritehandler.h"
+#include "sprites.h"
 #include <string>
 #include <vector>
 #include <array>
@@ -65,14 +65,8 @@ class Sffv1: public SpriteHandler
 public:
 	Sffv1(Character& character, const char* filename);
 	~Sffv1();
-	SDL_Surface * getSurface();
-	const size_t getTotalSpriteNumber() const;
-	const size_t getTotalPaletteNumber() const;
-	void setSprite(size_t n);
-	void setSprite(size_t group, size_t image);
-	void setPalette(size_t n);
-	const size_t getImageXAxis() const;
-	const size_t getImageYAxis() const;
+	void load();
+	void load(std::vector< spriteref >::iterator first, std::vector< spriteref >::iterator last);
 protected:
 	void loadSffFile();
 	void loadSharedPalettes();
@@ -80,7 +74,9 @@ protected:
 	// false if not
 	bool readActPalette(const char* filepath);
 	sffv1palette_t getPaletteForSprite(size_t spritenumber);
+	SDL_Surface * renderToSurface();
 private:
+	Character & character;
 	std::string filename;
 	size_t currentSprite;
 	size_t currentPalette;
@@ -90,7 +86,6 @@ private:
 	bool sharedPalette; // if not, it's an individual palette
 	std::vector<sffv1palette_t> palettes;
 	std::unordered_map<size_t, sffv1group_t> groups;
-	Character & character;
 };
 
 }

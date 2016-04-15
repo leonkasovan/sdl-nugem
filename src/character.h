@@ -26,11 +26,10 @@
 #include <unordered_map>
 #include <exception>
 
-#include "spritehandler.h"
-#include "mugen/mugenutils.h"
-#include "mugen/def.h"
 #include "mugen/air.h"
 #include "mugen/cmd.h"
+#include "mugen/sprites.h"
+#include "mugen/def.h"
 
 class CharacterLoadException: public std::runtime_error {
 public:
@@ -38,17 +37,22 @@ explicit CharacterLoadException(const std::string& __arg): std::runtime_error(__
 explicit CharacterLoadException(): std::runtime_error("Error loading character") {};
 };
 
+namespace mugen {
+class DefinitionFile;
+class AnimationData;
+class CharacterCommands;
+class SpriteLoader;
+}
+
 class Character
 {
 public:
 	Character(const char* charid);
 	Character(Character&& character);
 	virtual ~Character();
-	virtual void render();
 	virtual void handleEvent(const SDL_Event e);
 	mugen::DefinitionFile& getdef();
 	const std::string & getdir() const;
-	SpriteHandler * getSpriteHandler();
 protected:
 	void loadCharacterDef(const char* filepath);
 	void loadCharacterAnimations(const char* filepath);
@@ -58,19 +62,19 @@ protected:
 	mugen::DefinitionFile def;
 	mugen::AnimationData animations;
 	mugen::CharacterCommands cmd;
+	mugen::SpriteLoader spriteLoader;
 	unsigned int x;
 	unsigned int y;
+	std::unordered_map<mugen::spriteref, mugen::Sprite> sprites;
 private:
 	std::string directory;
 	std::string definitionfilename;
 	std::string spritefilename;
 	std::string mugenversion;
-	SDL_Texture * texture;
 	size_t currentPalette;
 	mugen::AnimationData::iterator curAnimIterator;
 	size_t currentAnimStep;
 	size_t currentGameTick;
-	SpriteHandler * spriteHandler;
 	uint16_t width;
 	uint16_t height;
 };

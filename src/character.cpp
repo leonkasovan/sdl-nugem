@@ -31,10 +31,8 @@
 
 Character::Character(const char * charid): id(charid)
 {
-	texture = nullptr;
 	currentPalette = 0;
 	currentAnimStep = 0;
-	spriteHandler = nullptr;
 	directory = "chars/" + id;
 	definitionfilename = id + ".def";
 	loadCharacterDef((directory + "/" + definitionfilename).c_str());
@@ -47,9 +45,6 @@ Character::Character(const char * charid): id(charid)
 
 Character::Character(Character && character)
 {
-	// Initialization
-	texture = nullptr;
-	
 	// Move
 	std::swap(id, character.id);
 	std::swap(name, character.name);
@@ -61,23 +56,13 @@ Character::Character(Character && character)
 	std::swap(definitionfilename, character.definitionfilename);
 	std::swap(definitionfilename, character.definitionfilename);
 	std::swap(spritefilename, character.spritefilename);
-	std::swap(spriteHandler, character.spriteHandler);
 	std::swap(animations, character.animations);
-	std::swap(texture, character.texture);
 	std::swap(def, character.def);
 	curAnimIterator = animations.begin();
-	
-	// Removing references from the previous object
-	character.spriteHandler = nullptr;
-	character.texture = nullptr;
 }
 
 Character::~Character()
 {
-	if (spriteHandler)
-		delete spriteHandler;
-	if (texture)
-		SDL_DestroyTexture(texture);
 }
 
 mugen::DefinitionFile & Character::getdef()
@@ -85,41 +70,17 @@ mugen::DefinitionFile & Character::getdef()
 	return def;
 }
 
-const std::__cxx11::string & Character::getdir() const
+const std::string & Character::getdir() const
 {
 	return directory;
 }
 
-SpriteHandler * Character::getSpriteHandler()
-{
-	return spriteHandler;
-}
-
 void Character::loadCharacterDef(const char * filepath)
 {
-	if (spriteHandler)
-		delete spriteHandler;
 	def = mugen::DefinitionFile(filepath);
 	mugenversion = (std::string) def["Info"]["mugenversion"];
 	spritefilename = (std::string) def["Files"]["sprite"];
-	std::string spritepath = directory + "/" + spritefilename;
-	std::array<uint8_t, 4> version;
-	// Determining sprite version
-	{
-		char readbuf[12];
-		std::ifstream spritefile(spritepath);
-		spritefile.read(readbuf, 12);
-		if (strcmp(readbuf, "ElecbyteSpr")) {
-			throw CharacterLoadException(std::string("Invalid sprite file: ") + spritepath);
-		}
-		version = extract_version(spritefile);
-		spritefile.close();
-	}
-	// Choosing whether to use Sffv1 or Sffv2
-	if (version[0] < 2)
-		spriteHandler = new mugen::Sffv1(*this, spritepath.c_str());
-	else if (version[0] == 2)
-		spriteHandler = new mugen::Sffv2(spritepath.c_str());
+// 	spriteLoader.initialize(directory + "/" + spritefilename, this);
 }
 
 void Character::loadCharacterCmd(const char * filepath)
@@ -131,7 +92,7 @@ void Character::loadCharacterAnimations(const char * filepath)
 {
 	animations = mugen::AnimationData(filepath);
 }
-
+/*
 void Character::render()
 {
 	int h, w;
@@ -150,7 +111,7 @@ void Character::render()
 	if (texture)
 		SDL_DestroyTexture(texture);
 	spriteHandler->setPalette(currentPalette);
-	SDL_Surface * surface = spriteHandler->getSurface();
+	SDL_Surface * surface = spriteHandler->surface();
 	width = surface->w;
 	height = surface->h;
 	//texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -171,10 +132,10 @@ void Character::render()
 	if (animstep.vinvert)
 		flip = (SDL_RendererFlip) ( SDL_FLIP_VERTICAL | flip );
 	//SDL_RenderCopyEx(renderer, texture, nullptr, &DestR, 0, nullptr, flip);
-}
+}*/
 
 void Character::handleEvent(const SDL_Event e)
-{
+{/*
 	const size_t npalettes = spriteHandler->getTotalPaletteNumber();
 	if (e.type == SDL_KEYDOWN) {
 		// Select surfaces based on key press
@@ -209,7 +170,7 @@ void Character::handleEvent(const SDL_Event e)
 		currentPalette = (currentPalette + npalettes) % npalettes;
 		if (curAnimIterator == animations.end())
 			curAnimIterator = animations.begin();
-	}
+	}*/
 }
 
 
