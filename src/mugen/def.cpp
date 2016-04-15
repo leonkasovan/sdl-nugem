@@ -36,7 +36,9 @@ mugen::DefinitionFile & mugen::DefinitionFile::readFile(const std::string & file
 	while (kv = def.nextValue()) {
 		std::string identifier = kv.name();
 		std::transform(identifier.begin(), identifier.end(), identifier.begin(), ::tolower);
-		m_sections[def.section()][identifier] = kv.value();
+		std::string section = def.section();
+		std::transform(section.begin(), section.end(), section.begin(), ::tolower);
+		m_sections[section][identifier] = kv.value();
 	}
 	return *this;
 }

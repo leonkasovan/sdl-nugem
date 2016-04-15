@@ -78,8 +78,8 @@ const std::string & Character::getdir() const
 void Character::loadCharacterDef(const char * filepath)
 {
 	def = mugen::DefinitionFile(filepath);
-	mugenversion = (std::string) def["Info"]["mugenversion"];
-	spritefilename = (std::string) def["Files"]["sprite"];
+	mugenversion = (std::string) def["info"]["mugenversion"];
+	spritefilename = (std::string) def["files"]["sprite"];
 }
 
 void Character::loadCharacterCmd(const char * filepath)
@@ -185,6 +185,7 @@ void Character::loadForMenu()
 	sprites = spriteLoader.load(menurefs.begin(), menurefs.end());
 	m_currentSprite.group = 9000;
 	m_currentSprite.image = 0;
+	m_currentPalette = 0;
 }
 
 

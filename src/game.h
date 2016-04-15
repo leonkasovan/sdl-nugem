@@ -39,6 +39,7 @@ public:
 	Game();
 	~Game();
 	void run();
+	GlGraphics & glGraphics() { return m_glGraphics; };
 protected:
 	unsigned int m_winWidth;
 	unsigned int m_winHeight;
@@ -48,7 +49,7 @@ private:
 	SDL_Window * m_window;
 	SDL_GLContext m_glContext;
 	Scene * m_currentScene;
-	GlGraphics glGraphics;
+	GlGraphics m_glGraphics;
 };
 
 #endif // GAME_H
