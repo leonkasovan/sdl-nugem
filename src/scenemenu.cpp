@@ -6,6 +6,9 @@
 SceneMenu::SceneMenu()
 {
 	findCharacters();
+	for (Character & chara: characters) {
+		chara.loadForMenu();
+	}
 }
 
 bool SceneMenu::render(GlGraphics & glGraphics)

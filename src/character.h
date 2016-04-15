@@ -53,6 +53,8 @@ public:
 	virtual void handleEvent(const SDL_Event e);
 	mugen::DefinitionFile& getdef();
 	const std::string & getdir() const;
+	const mugen::Sprite & currentSprite() const;
+	void loadForMenu();
 protected:
 	void loadCharacterDef(const char* filepath);
 	void loadCharacterAnimations(const char* filepath);
@@ -65,7 +67,7 @@ protected:
 	mugen::SpriteLoader spriteLoader;
 	unsigned int x;
 	unsigned int y;
-	std::unordered_map<mugen::spriteref, mugen::Sprite> sprites;
+	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > sprites;
 private:
 	std::string directory;
 	std::string definitionfilename;
@@ -75,8 +77,8 @@ private:
 	mugen::AnimationData::iterator curAnimIterator;
 	size_t currentAnimStep;
 	size_t currentGameTick;
-	uint16_t width;
-	uint16_t height;
+	mugen::spriteref m_currentSprite;
+	int m_currentPalette = 0;
 };
 
 class CharacterException: public std::exception

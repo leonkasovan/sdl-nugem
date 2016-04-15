@@ -156,6 +156,7 @@ void KeyboardInput::updateState()
 	currentState.y = evaluateKey(scancodeY);
 	currentState.z = evaluateKey(scancodeZ);
 	currentState.start = evaluateKey(scancodeStart);
+	currentState.back = evaluateKey(scancodeBack);
 	const uint8_t * keystate = SDL_GetKeyboardState(NULL);
 	if (keystate[scancodeUp]) {
 		if (keystate[scancodeRight]) {
@@ -232,6 +233,7 @@ void GameController::updateState()
 	currentState.y = getButtonValue(SDL_CONTROLLER_BUTTON_Y);
 	currentState.z = getButtonValue(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
 	currentState.start = getButtonValue(SDL_CONTROLLER_BUTTON_START);
+	currentState.back = getButtonValue(SDL_CONTROLLER_BUTTON_BACK);
 	currentState.d = getDirection();
 }
 

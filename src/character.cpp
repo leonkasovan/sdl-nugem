@@ -80,7 +80,6 @@ void Character::loadCharacterDef(const char * filepath)
 	def = mugen::DefinitionFile(filepath);
 	mugenversion = (std::string) def["Info"]["mugenversion"];
 	spritefilename = (std::string) def["Files"]["sprite"];
-// 	spriteLoader.initialize(directory + "/" + spritefilename, this);
 }
 
 void Character::loadCharacterCmd(const char * filepath)
@@ -172,5 +171,23 @@ void Character::handleEvent(const SDL_Event e)
 			curAnimIterator = animations.begin();
 	}*/
 }
+
+const mugen::Sprite & Character::currentSprite() const
+{
+	return sprites.at(m_currentPalette).at(m_currentSprite);
+}
+
+void Character::loadForMenu()
+{
+	if (!spriteLoader.isInitialized())
+		spriteLoader.initialize(directory + "/" + spritefilename, this);
+	std::vector<mugen::spriteref> menurefs { mugen::spriteref(9000, 0), mugen::spriteref(9000, 1) };
+	sprites = spriteLoader.load(menurefs.begin(), menurefs.end());
+	m_currentSprite.group = 9000;
+	m_currentSprite.image = 0;
+}
+
+
+
 
 

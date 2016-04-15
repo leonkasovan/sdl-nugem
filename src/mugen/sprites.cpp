@@ -63,13 +63,13 @@ mugen::Sprite::~Sprite()
 	}
 }
 
-mugen::Sprite::Sprite(const Sprite & originalSprite)
+mugen::Sprite::Sprite(const Sprite & originalSprite): m_surface(nullptr)
 {
 	m_ref = originalSprite.ref();
 	m_surface = copySurface(originalSprite.m_surface);
 }
 
-mugen::Sprite::Sprite(Sprite && originalSprite)
+mugen::Sprite::Sprite(Sprite && originalSprite): m_surface(nullptr)
 {
 	std::swap(m_ref, originalSprite.m_ref);
 	std::swap(m_surface, originalSprite.m_surface);

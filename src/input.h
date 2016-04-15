@@ -34,7 +34,7 @@
  */
 
 /** Number of buttons on the pad. */
-#define INPUTSTATE_NBUTTONS 7
+#define INPUTSTATE_NBUTTONS 8
 /** Identifier of the A button. */
 #define INPUTSTATE_BUTTON_A 0
 /** Identifier of the B button. */
@@ -49,6 +49,8 @@
 #define INPUTSTATE_BUTTON_Z 5
 /** Identifier of the Start button. */
 #define INPUTSTATE_BUTTON_S 6
+/** Identifier of the Back button. */
+#define INPUTSTATE_BUTTON_BACK 7
 
 /** @} */
 
@@ -96,6 +98,7 @@ struct inputstate_t {
 	inputbutton y = INPUT_B_UNDEFINED;
 	inputbutton z = INPUT_B_UNDEFINED;
 	inputbutton start = INPUT_B_UNDEFINED;
+	inputbutton back = INPUT_B_UNDEFINED;
 	inputdir d = INPUT_D_UNDEFINED;
 };
 
@@ -136,6 +139,7 @@ private:
 	static const SDL_Scancode scancodeDown = SDL_SCANCODE_DOWN;
 	static const SDL_Scancode scancodeLeft = SDL_SCANCODE_LEFT;
 	static const SDL_Scancode scancodeRight = SDL_SCANCODE_RIGHT;
+	static const SDL_Scancode scancodeBack = SDL_SCANCODE_ESCAPE;
 };
 
 class Joystick: public InputDevice {

@@ -44,3 +44,9 @@ void GlGraphics::clear()
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void GlGraphics::renderSurface(SDL_Surface * surface, const SDL_Rect * srcrect, const SDL_Rect * dstrect)
+{
+
+}
+
+

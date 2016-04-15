@@ -31,6 +31,7 @@ public:
 	void initialize(SDL_Window * window);
 	void finish();
 	void clear();
+	void renderSurface(SDL_Surface * surface, const SDL_Rect* srcrect, const SDL_Rect* dstrect);
 private:
 	SDL_Window * m_window;
 	SDL_GLContext m_sdlglctx;
