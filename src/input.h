@@ -100,16 +100,29 @@ struct inputstate_t {
 	inputbutton start = INPUT_B_UNDEFINED;
 	inputbutton back = INPUT_B_UNDEFINED;
 	inputdir d = INPUT_D_UNDEFINED;
+	bool operator != (const inputstate_t & state) {
+		return a != state.a ||
+			b != state.b ||
+			c != state.c ||
+			x != state.x ||
+			y != state.y ||
+			z != state.z ||
+			start != state.start ||
+			back != state.back ||
+			d != state.d;
+	}
 };
 
 class Player;
+class Game;
+class InputManager;
 
 class InputDevice {
 public:
-	InputDevice();
+	InputDevice(InputManager & manager);
 	virtual ~InputDevice() {};
-	virtual void processEvent(const SDL_Event & e) = 0;
-	virtual void updateState() = 0;
+	void receiveEvent(const SDL_Event & e );
+	virtual void updateGlobalState() = 0;
 	void initialize();
 	inputstate_t getState();
 	const inputstate_t getState() const;
@@ -117,15 +130,19 @@ public:
 	bool hasPlayerAssigned() const;
 	Player * getAssignedPlayer();
 protected:
-	inputstate_t currentState;
-	Player * player;
+	virtual inputstate_t processEvent(const SDL_Event & e) = 0;
+	inputstate_t m_currentState;
+	InputManager & m_manager;
+	Player * m_player;
+private:
+	inputstate_t m_previousChange;
 };
 
 class KeyboardInput: public InputDevice {
 public:
-	KeyboardInput();
-	virtual void processEvent(const SDL_Event & e);
-	virtual void updateState();
+	KeyboardInput(InputManager & manager);
+	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual void updateGlobalState();
 private:
 	const inputbutton evaluateKey(SDL_Scancode key);
 	static const SDL_Scancode scancodeA = SDL_SCANCODE_A;
@@ -144,30 +161,31 @@ private:
 
 class Joystick: public InputDevice {
 public:
-	Joystick(const uint32_t jid);
+	Joystick(InputManager & manager, const uint32_t jid);
 	Joystick(Joystick && joystick);
 	virtual ~Joystick();
-	virtual void processEvent(const SDL_Event & e);
-	virtual void updateState();
+	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual void updateGlobalState();
 private:
-	const uint32_t jid;
-	SDL_Joystick * joysdl;
+	const uint32_t m_jid;
+	SDL_Joystick * m_joysdl;
 };
 
 class GameController: public InputDevice {
 public:
-	GameController(const uint32_t jid);
+	GameController(InputManager & manager, const uint32_t jid);
 	GameController(GameController && gameController);
 	virtual ~GameController();
-	virtual void processEvent(const SDL_Event & e);
-	virtual void updateState();
+	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual void updateGlobalState();
 protected:
 	inputbutton getButtonValue(SDL_GameControllerButton button);
 	inputbutton getButtonValueForAxis(SDL_GameControllerAxis axis);
+	inputdir getDirection(Sint16 hor, Sint16 vert);
 	inputdir getDirection();
 private:
-	const uint32_t jid;
-	SDL_GameController * gcsdl;
+	const uint32_t m_jid;
+	SDL_GameController * m_gcsdl;
 	static const Sint16 threshold = 32767 / 3;
 };
 
@@ -175,11 +193,15 @@ class InputManager {
 public:
 	InputManager();
 	~InputManager();
+	unsigned int initialize(Game * game);
 	void processSDLEvent(const SDL_Event& e);
 	const InputDevice & getDevice(size_t n) const;
 	const size_t getDeviceNumber() const;
+	void registerInput(InputDevice * device, inputstate_t state);
+	void assignDeviceToPlayer(InputDevice * device, Player * player);
 protected:
-	std::vector<InputDevice *> devices;
+	std::vector<InputDevice *> m_devices;
+	Game * m_game;
 	bool loadGameControllerDB();
 	static const char * controllerDBfilename;
 };

@@ -32,12 +32,10 @@ Game::Game(): m_currentScene(nullptr)
 	// SDL initialization
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
 	// Initialize window
-	m_winWidth = DEFAULT_WINDOW_WIDTH;
-	m_winHeight = DEFAULT_WINDOW_HEIGHT;
 	m_window = SDL_CreateWindow("NUGEM",
 	                          SDL_WINDOWPOS_CENTERED,
 	                          SDL_WINDOWPOS_CENTERED,
-	                          m_winWidth, m_winHeight,
+	                          DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
 	                          SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
 }
 
@@ -55,10 +53,14 @@ void Game::update()
 {
 	SDL_Event e;
 	if (!m_currentScene->loaded())
-		m_currentScene->load(this);
+		m_currentScene->load(*this);
 	while (SDL_PollEvent(&e) != 0) {
 		m_inputManager.processSDLEvent(e);
 	}
+	// update
+	if (m_currentScene->loaded())
+		m_currentScene->update();
+	
 	m_glGraphics.clear();
 	//Place your simulation code and rendering code here
 	if (m_currentScene)
@@ -68,6 +70,7 @@ void Game::update()
 
 void Game::run()
 {
+	m_inputManager.initialize(this);
 	m_currentScene = new SceneMenu();
 	m_glGraphics.initialize(this, m_window);
 	// 60 fps
@@ -81,4 +84,25 @@ void Game::run()
 			SDL_Delay(tickdelay - dt);
 	}
 }
+
+InputManager & Game::inputManager()
+{
+	return m_inputManager;
+}
+
+Scene * Game::currentScene()
+{
+	return m_currentScene;
+}
+
+void Game::setScene(Scene * newScene)
+{
+	if (m_currentScene) {
+		delete m_currentScene;
+		m_currentScene = nullptr;
+	}
+	m_currentScene = newScene;
+}
+
+
 

@@ -1,7 +1,7 @@
 #include "scene.h"
 
-void Scene::load(Game * game)
+void Scene::load(Game & game)
 {
-	m_game = game;
-	m_loaded = _load();
+	m_game = &game;
+	m_loaded = loader();
 }

@@ -76,8 +76,11 @@ GlTexture GlGraphics::surfaceToTexture(const SDL_Surface * surface)
 	}
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, Mode, surface->w, surface->h, 0, Mode, GL_UNSIGNED_BYTE, surface->pixels);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	
 	GlTexture tx(tid, surface->w, surface->h);
 	
@@ -94,8 +97,14 @@ void GlGraphics::render2DTexture(GlTexture & texture, const SDL_Rect * dstrect)
 	if (dstrect != nullptr) {
 		X = dstrect->x;
 		Y = dstrect->y;
-		Width = dstrect->w;
-		Height = dstrect->h;
+		if (dstrect->w >= 0)
+			Width = dstrect->w;
+		else
+			Width = texture.w;
+		if (dstrect->h >= 0)
+			Height = dstrect->h;
+		else
+			Height = texture.h;
 	}
 	else {
 		X = 0;
@@ -132,8 +141,10 @@ GlTexture::~GlTexture()
 {
 	if (tid) {
 		useCounters[tid]--;
-		if (useCounters[tid] == 0)
+		if (useCounters[tid] <= 0) {
 			glDeleteTextures(1, &tid);
+			useCounters.erase(tid);
+		}
 	}
 }
 
@@ -146,7 +157,7 @@ GlTexture::GlTexture(const GlTexture & glTexture)
 		useCounters[tid]++;
 }
 
-GlTexture::GlTexture(GlTexture && glTexture)
+GlTexture::GlTexture(GlTexture && glTexture): tid(0), w(0), h(0)
 {
 	std::swap(tid, glTexture.tid);
 	std::swap(w, glTexture.w);

@@ -40,9 +40,10 @@ public:
 	~Game();
 	void run();
 	GlGraphics & glGraphics() { return m_glGraphics; };
+	Scene * currentScene();
+	InputManager & inputManager();
+	void setScene(Scene * newScene);
 protected:
-	unsigned int m_winWidth;
-	unsigned int m_winHeight;
 	void update();
 	InputManager m_inputManager;
 private:
