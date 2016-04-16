@@ -174,7 +174,7 @@ void Character::handleEvent(const SDL_Event e)
 
 const mugen::Sprite & Character::currentSprite() const
 {
-	return sprites.at(m_currentPalette).at(m_currentSprite);
+	return m_sprites.at(m_currentPalette).at(m_currentSprite);
 }
 
 void Character::loadForMenu()
@@ -182,11 +182,25 @@ void Character::loadForMenu()
 	if (!spriteLoader.isInitialized())
 		spriteLoader.initialize(directory + "/" + spritefilename, this);
 	std::vector<mugen::spriteref> menurefs { mugen::spriteref(9000, 0), mugen::spriteref(9000, 1) };
-	sprites = spriteLoader.load(menurefs.begin(), menurefs.end());
-	m_currentSprite.group = 9000;
-	m_currentSprite.image = 0;
+	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > menusprites = spriteLoader.load(menurefs.begin(), menurefs.end());
 	m_currentPalette = 0;
+	for ( int i = 0; i < menusprites.size(); i++) {
+		std::unordered_map< mugen::spriteref, mugen::Sprite > & palettesprites = menusprites[i]; 
+		m_selectionSprite.push_back(palettesprites.at(mugen::spriteref(9000, 0)));
+		m_faceSprite.push_back(palettesprites.at(mugen::spriteref(9000, 1)));
+	}
 }
+
+const mugen::Sprite & Character::faceSprite() const
+{
+	return m_faceSprite[currentPalette];
+}
+
+const mugen::Sprite & Character::selectionSprite() const
+{
+	return m_selectionSprite[currentPalette];
+}
+
 
 
 

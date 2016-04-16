@@ -54,6 +54,8 @@ public:
 	mugen::DefinitionFile& getdef();
 	const std::string & getdir() const;
 	const mugen::Sprite & currentSprite() const;
+	const mugen::Sprite & selectionSprite() const;
+	const mugen::Sprite & faceSprite() const;
 	void loadForMenu();
 protected:
 	void loadCharacterDef(const char* filepath);
@@ -67,7 +69,9 @@ protected:
 	mugen::SpriteLoader spriteLoader;
 	unsigned int x;
 	unsigned int y;
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > sprites;
+	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > m_sprites;
+	std::vector<mugen::Sprite> m_selectionSprite;
+	std::vector<mugen::Sprite> m_faceSprite;
 private:
 	std::string directory;
 	std::string definitionfilename;

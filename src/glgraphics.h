@@ -22,14 +22,18 @@
 
 #include <GL/gl.h>
 #include <SDL.h>
+#include <unordered_map>
 
 struct GlTexture {
 	GLuint tid = 0;
 	int w;
 	int h;
-	GlTexture(): tid(0), w(0), h(0) {};
-	GlTexture(GLuint tid, int w, int h): tid(tid), w(w), h(h) {};
+	GlTexture(GLuint tid, int w, int h);
+	GlTexture(const GlTexture & glTexture);
+	GlTexture(GlTexture && glTexture);
 	~GlTexture();
+private:
+	static std::unordered_map<GLuint, unsigned int> useCounters;
 };
 
 class Game;

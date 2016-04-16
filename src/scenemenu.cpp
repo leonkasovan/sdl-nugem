@@ -57,7 +57,7 @@ bool SceneMenu::_load()
 	findCharacters();
 	for (Character & chara: m_characters) {
 		chara.loadForMenu();
-		m_faces.push_back(m_game->glGraphics().surfaceToTexture(chara.currentSprite().surface()));
+		m_faces.push_back(m_game->glGraphics().surfaceToTexture(chara.selectionSprite().surface()));
 	}
 	return true;
 }

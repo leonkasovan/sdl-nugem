@@ -338,13 +338,15 @@ void mugen::Sffv2::load(std::vector<spriteref>::iterator first, std::vector<spri
 {
 	m_sprites.clear();
 	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-		std::unordered_map<spriteref, Sprite> currentPaletteSprites;
-		for (; first != last; first++) {
+		m_sprites.push_back(std::unordered_map<spriteref, Sprite>());
+	}
+	
+	for (; first != last; first++) {
+		for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
 			spriteref & ref = *first;
 			currentSprite = groups[ref.group].i[ref.image];
-			currentPaletteSprites.insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+			m_sprites[currentPalette].insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
 		}
-		m_sprites.push_back(currentPaletteSprites);
 	}
 }
 

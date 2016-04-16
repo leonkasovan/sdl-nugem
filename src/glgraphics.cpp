@@ -79,11 +79,7 @@ GlTexture GlGraphics::surfaceToTexture(const SDL_Surface * surface)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	GlTexture tx;
-	
-	tx.tid = tid;
-	tx.w = surface->w;
-	tx.h = surface->h;
+	GlTexture tx(tid, surface->w, surface->h);
 	
 	return tx;
 }
@@ -123,9 +119,38 @@ void GlGraphics::display()
 	SDL_GL_SwapWindow(m_window);
 }
 
+std::unordered_map<GLuint, unsigned int> GlTexture::useCounters;
+
+GlTexture::GlTexture(GLuint tid, int w, int h): tid(tid), w(w), h(h)
+{
+	if (tid)
+		useCounters[tid]++;
+}
+
+
 GlTexture::~GlTexture()
 {
-// 	if (tid)
-// 		glDeleteTextures(1, &tid);
+	if (tid) {
+		useCounters[tid]--;
+		if (useCounters[tid] == 0)
+			glDeleteTextures(1, &tid);
+	}
 }
+
+GlTexture::GlTexture(const GlTexture & glTexture)
+{
+	tid = glTexture.tid;
+	w = glTexture.w;
+	h = glTexture.h;
+	if (tid)
+		useCounters[tid]++;
+}
+
+GlTexture::GlTexture(GlTexture && glTexture)
+{
+	std::swap(tid, glTexture.tid);
+	std::swap(w, glTexture.w);
+	std::swap(h, glTexture.h);
+}
+
 
