@@ -78,6 +78,11 @@ void SceneMenu::update()
 
 void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
 {
+	if (state.back == INPUT_B_PRESSED) {
+		m_game->requestQuit();
+		return;
+	}
+	
 	int value = 0;
 	
 	if (state.d >= 7)

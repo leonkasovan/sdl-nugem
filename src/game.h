@@ -43,6 +43,8 @@ public:
 	Scene * currentScene();
 	InputManager & inputManager();
 	void setScene(Scene * newScene);
+	std::vector<Player *> players();
+	bool requestQuit();
 protected:
 	void update();
 	InputManager m_inputManager;
@@ -50,7 +52,10 @@ private:
 	SDL_Window * m_window;
 	SDL_GLContext m_glContext;
 	Scene * m_currentScene;
+	Scene * m_nextScene;
 	GlGraphics m_glGraphics;
+	std::vector<Player *> m_players;
+	bool m_continueMainLoop;
 };
 
 #endif // GAME_H

@@ -27,7 +27,7 @@
 
 class Player {
 public:
-	Player();
+	Player(unsigned int number);
 	virtual ~Player();
 	void setCharacter(Character * c);
 	Character * getCharacter();
@@ -35,7 +35,8 @@ public:
 	InputDevice * getInputDevice();
 	void receiveInput(inputstate_t & inputState);
 protected:
-	Character * character;
+	unsigned int m_number;
+	Character * m_character;
 	InputDevice * inputDevice;
 	std::deque<inputstate_t> inputs;
 };

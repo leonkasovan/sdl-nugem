@@ -19,9 +19,9 @@
 
 #include "player.h"
 
-Player::Player()
+Player::Player(unsigned int number): m_number(number)
 {
-	character = nullptr;
+	m_character = nullptr;
 	inputDevice = nullptr;
 }
 
@@ -32,12 +32,12 @@ Player::~Player()
 
 Character * Player::getCharacter()
 {
-	return character;
+	return m_character;
 }
 
 void Player::setCharacter(Character * c)
 {
-	character = c;
+	m_character = c;
 }
 
 InputDevice * Player::getInputDevice()

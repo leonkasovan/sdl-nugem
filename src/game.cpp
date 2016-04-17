@@ -23,11 +23,8 @@
 #include "scenemenu.h"
 
 #include <iostream>
-#include <dirent.h>
 
-#include <dirent.h>
-
-Game::Game(): m_currentScene(nullptr)
+Game::Game(): m_currentScene(nullptr), m_nextScene(nullptr)
 {
 	// SDL initialization
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
@@ -37,12 +34,18 @@ Game::Game(): m_currentScene(nullptr)
 	                          SDL_WINDOWPOS_CENTERED,
 	                          DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
 	                          SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+	if (m_window)
+		m_continueMainLoop = true;
+	else
+		std::cerr << "Failed to open a window" << std::endl;
 }
 
 Game::~Game()
 {
 	if (m_currentScene)
 		delete m_currentScene;
+	if (m_nextScene)
+		delete m_nextScene;
 	// SDL deinitialization
 	m_glGraphics.finish();
 	SDL_DestroyWindow(m_window);
@@ -66,6 +69,13 @@ void Game::update()
 	if (m_currentScene)
 		m_currentScene->render(m_glGraphics);
 	m_glGraphics.display();
+	
+	if (m_nextScene) {
+		if (m_currentScene)
+			delete m_currentScene;
+		m_currentScene = m_nextScene;
+		m_nextScene = nullptr;
+	}
 }
 
 void Game::run()
@@ -76,13 +86,19 @@ void Game::run()
 	// 60 fps
 	uint32_t tickdelay = 1000 / 60;
 	// Main game loop
-	while (!SDL_QuitRequested()) {
+	while (m_continueMainLoop && !SDL_QuitRequested()) {
 		uint32_t tick = SDL_GetTicks();
 		update();
 		uint32_t dt = SDL_GetTicks() - tick;
 		if (dt < tickdelay)
 			SDL_Delay(tickdelay - dt);
 	}
+}
+
+bool Game::requestQuit()
+{
+	m_continueMainLoop = false;
+	return true;
 }
 
 InputManager & Game::inputManager()
@@ -97,12 +113,15 @@ Scene * Game::currentScene()
 
 void Game::setScene(Scene * newScene)
 {
-	if (m_currentScene) {
-		delete m_currentScene;
-		m_currentScene = nullptr;
+	if (m_nextScene) {
+		delete m_nextScene;
+		m_nextScene = nullptr;
 	}
-	m_currentScene = newScene;
+	m_nextScene = newScene;
 }
 
-
+std::vector< Player * > Game::players()
+{
+	return m_players;
+}
 
