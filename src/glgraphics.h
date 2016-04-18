@@ -54,6 +54,7 @@ private:
 	SDL_Window * m_window;
 	SDL_GLContext m_sdlglctx;
 	Game * m_game;
+	GLfloat m_currentZ;
 };
 
 #endif // GLGRAPHICS_H

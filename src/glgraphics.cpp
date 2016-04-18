@@ -48,6 +48,9 @@ void GlGraphics::initialize(Game * game, SDL_Window * window)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 	glPushMatrix(); //Start phase
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glOrtho(0, winw, winh, 0, -1, 1);
 }
@@ -61,6 +64,7 @@ void GlGraphics::clear()
 {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	m_currentZ = 0;
 }
 
 GlTexture GlGraphics::surfaceToTexture(const SDL_Surface * surface)

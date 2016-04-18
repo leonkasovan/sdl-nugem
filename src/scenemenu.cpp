@@ -24,7 +24,7 @@ bool SceneMenu::render(GlGraphics & glGraphics)
 		glGraphics.render2DTexture(m_selectionfaces[i], &rectangle);
 	}
 	if (m_bigface) {
-		SDL_Rect bigrect { 400, 400, -1, -1 };
+		SDL_Rect bigrect { 0, 0, -1, -1 };
 		glGraphics.render2DTexture(*m_bigface, &bigrect);
 	}
 	return true;
