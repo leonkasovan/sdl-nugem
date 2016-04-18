@@ -108,10 +108,37 @@ void InputDevice::receiveEvent(const SDL_Event & e)
 		eventstate != m_previousChange) {
 		m_previousChange = eventstate;
 		m_manager.registerInput(this, eventstate);
+		
+		if (eventstate.d != INPUT_D_UNDEFINED)
+			m_currentState.d = eventstate.d;
+		
+		if (eventstate.a != INPUT_B_UNDEFINED)
+			m_currentState.a = eventstate.a;
+		
+		if (eventstate.b != INPUT_B_UNDEFINED)
+			m_currentState.b = eventstate.b;
+		
+		if (eventstate.c != INPUT_B_UNDEFINED)
+			m_currentState.c = eventstate.c;
+		
+		if (eventstate.x != INPUT_B_UNDEFINED)
+			m_currentState.x = eventstate.x;
+		
+		if (eventstate.y != INPUT_B_UNDEFINED)
+			m_currentState.y = eventstate.y;
+		
+		if (eventstate.z != INPUT_B_UNDEFINED)
+			m_currentState.z = eventstate.z;
+		
+		if (eventstate.start != INPUT_B_UNDEFINED)
+			m_currentState.start = eventstate.start;
+		
+		if (eventstate.back != INPUT_B_UNDEFINED)
+			m_currentState.back = eventstate.back;
 	}
 }
 
-const InputDevice & InputManager::getDevice(size_t n) const
+InputDevice & InputManager::device(size_t n)
 {
 	return *m_devices[n];
 }
@@ -133,7 +160,7 @@ void InputManager::registerInput(InputDevice * device, inputstate_t state)
 	}
 }
 
-const size_t InputManager::getDeviceNumber() const
+const size_t InputManager::deviceNumber() const
 {
 	return m_devices.size();
 }

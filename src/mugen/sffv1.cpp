@@ -104,7 +104,7 @@ void mugen::Sffv1::loadSharedPalettes()
 		std::string keyname = "pal";
 		keyname += std::to_string(i);
 		try {
-			std::string actfilename = character.getdir() + "/" + (std::string) character.getdef()["Files"][keyname];
+			std::string actfilename = character.dir() + "/" + (std::string) character.def()["Files"][keyname];
 			continueLoop = readActPalette(actfilename.c_str());
 		}
 		catch

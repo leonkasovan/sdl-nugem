@@ -195,8 +195,8 @@ public:
 	~InputManager();
 	unsigned int initialize(Game * game);
 	void processSDLEvent(const SDL_Event& e);
-	const InputDevice & getDevice(size_t n) const;
-	const size_t getDeviceNumber() const;
+	InputDevice& device(size_t n);
+	const size_t deviceNumber() const;
 	void registerInput(InputDevice * device, inputstate_t state);
 	void assignDeviceToPlayer(InputDevice * device, Player * player);
 protected:

@@ -48,11 +48,14 @@ class Character
 {
 public:
 	Character(const char* charid);
+	Character(const Character & character);
 	Character(Character&& character);
 	virtual ~Character();
 	virtual void handleEvent(const SDL_Event e);
-	mugen::DefinitionFile& getdef();
-	const std::string & getdir() const;
+	mugen::DefinitionFile& def();
+	const std::string & id() const;
+	const std::string & name() const;
+	const std::string & dir() const;
 	const mugen::Sprite & currentSprite() const;
 	const mugen::Sprite & selectionSprite() const;
 	const mugen::Sprite & faceSprite() const;
@@ -61,28 +64,26 @@ protected:
 	void loadCharacterDef(const char* filepath);
 	void loadCharacterAnimations(const char* filepath);
 	void loadCharacterCmd(const char* filepath);
-	std::string id;
-	std::string name;
-	mugen::DefinitionFile def;
-	mugen::AnimationData animations;
-	mugen::CharacterCommands cmd;
-	mugen::SpriteLoader spriteLoader;
-	unsigned int x;
-	unsigned int y;
+	std::string m_id;
+	std::string m_name;
+	mugen::DefinitionFile m_def;
+	mugen::AnimationData m_animations;
+	mugen::CharacterCommands m_cmd;
+	mugen::SpriteLoader m_spriteLoader;
+	unsigned int m_x;
+	unsigned int m_y;
 	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > m_sprites;
 	std::vector<mugen::Sprite> m_selectionSprite;
 	std::vector<mugen::Sprite> m_faceSprite;
 private:
-	std::string directory;
-	std::string definitionfilename;
-	std::string spritefilename;
-	std::string mugenversion;
-	size_t currentPalette;
-	mugen::AnimationData::iterator curAnimIterator;
-	size_t currentAnimStep;
-	size_t currentGameTick;
+	std::string m_directory;
+	std::string m_definitionfilename;
+	std::string m_spritefilename;
+	std::string m_mugenversion;
+	size_t m_currentPalette;
+	size_t m_currentAnimStep;
+	size_t m_currentGameTick;
 	mugen::spriteref m_currentSprite;
-	int m_currentPalette = 0;
 };
 
 class CharacterException: public std::exception

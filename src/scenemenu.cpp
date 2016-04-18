@@ -6,6 +6,7 @@
 #include <SDL.h>
 
 #include <SDL_image.h>
+#include "scenefight.h"
 #include "game.h"
 
 SceneMenu::SceneMenu()
@@ -24,7 +25,7 @@ bool SceneMenu::render(GlGraphics & glGraphics)
 		glGraphics.render2DTexture(m_selectionfaces[i], &rectangle);
 	}
 	if (m_bigface) {
-		SDL_Rect bigrect { 0, 0, -1, -1 };
+		SDL_Rect bigrect { 20, 20, -1, -1 };
 		glGraphics.render2DTexture(*m_bigface, &bigrect);
 	}
 	return true;
@@ -81,6 +82,10 @@ void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
 	if (state.back == INPUT_B_PRESSED) {
 		m_game->requestQuit();
 		return;
+	}
+	
+	if (state.start == INPUT_B_PRESSED) {
+		m_game->setScene(new SceneFight(new Character(m_characters.at(selectedCharacter))));
 	}
 	
 	int value = 0;
