@@ -20,7 +20,7 @@ set(SOURCE_FILES
 	${SOURCEDIR}/glgraphics.cpp
 	${SOURCEDIR}/character.cpp
     ${SOURCEDIR}/player.cpp
-    ${SOURCEDIR}/scenefight.cpp
+    ${SOURCEDIR}/fight/fight.cpp
     ${SOURCEDIR}/scenemenu.cpp
     ${SOURCEDIR}/scene.cpp
     ${SOURCEDIR}/game.cpp

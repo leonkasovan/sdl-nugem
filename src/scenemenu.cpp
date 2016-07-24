@@ -6,12 +6,12 @@
 #include <SDL.h>
 
 #include <SDL_image.h>
-#include "scenefight.h"
+#include "fight/fight.h"
 #include "game.h"
 
 SceneMenu::SceneMenu()
 {
-	m_bigface = nullptr;
+	   m_bigFace = nullptr;
 }
 
 bool SceneMenu::render(GlGraphics & glGraphics)
@@ -20,13 +20,13 @@ bool SceneMenu::render(GlGraphics & glGraphics)
 	int rw = 50;
 	int rh = 50;
 	int margin = 20;
-	for (int i = 0; i < m_characters.size(); i++) {
-		SDL_Rect rectangle { rw * 2 * (i % ncols), rh * 2 * (i / ncols), rw, rh};
+	for (size_t i = 0; i < m_characters.size(); i++) {
+		SDL_Rect rectangle { rw * 2 * ( (int) i % ncols), rh * 2 * ( (int) i / ncols), rw, rh};
 		glGraphics.render2DTexture(m_selectionfaces[i], &rectangle);
 	}
-	if (m_bigface) {
+	if (m_bigFace) {
 		SDL_Rect bigrect { 20, 20, -1, -1 };
-		glGraphics.render2DTexture(*m_bigface, &bigrect);
+		glGraphics.render2DTexture(*m_bigFace, &bigrect);
 	}
 	return true;
 }
@@ -55,8 +55,8 @@ void SceneMenu::findCharacters()
 
 SceneMenu::~SceneMenu()
 {
-	if (m_bigface)
-		delete m_bigface;
+	if (m_bigFace)
+		delete m_bigFace;
 }
 
 bool SceneMenu::loader()
@@ -67,9 +67,9 @@ bool SceneMenu::loader()
 		m_selectionfaces.push_back(m_game->glGraphics().surfaceToTexture(chara.selectionSprite().surface()));
 	}
 	selectedCharacter = 0;
-	if (m_bigface)
-		delete m_bigface;
-	m_bigface = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
+	if (m_bigFace)
+		delete m_bigFace;
+	   m_bigFace = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
 	return true;
 }
 
@@ -85,7 +85,7 @@ void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
 	}
 	
 	if (state.start == INPUT_B_PRESSED) {
-		m_game->setScene(new SceneFight(new Character(m_characters.at(selectedCharacter))));
+		m_game->setScene(new Fight(new Character(m_characters.at(selectedCharacter))));
 	}
 	
 	int value = 0;
@@ -98,9 +98,9 @@ void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
 	if (value) {
 		selectedCharacter += m_characters.size() + value;
 		selectedCharacter %= m_characters.size();
-		if (m_bigface)
-			delete m_bigface;
-		m_bigface = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
+		if (m_bigFace)
+			delete m_bigFace;
+		      m_bigFace = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
 	}
 }
 

@@ -20,7 +20,7 @@ protected:
 	void findCharacters();
 	std::vector<Character> m_characters;
 	std::vector<GlTexture> m_selectionfaces;
-	GlTexture * m_bigface;
+	GlTexture * m_bigFace;
 	int selectedCharacter;
 };
 

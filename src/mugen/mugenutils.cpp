@@ -35,7 +35,7 @@ const std::regex mugen::MugenTextFile::regexSectionHeader("^[ \t]*\\[[ \t]*([^\\
 const std::regex mugen::MugenTextFile::regexKeyValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*([^\r]+?)[ \t\r]*$");
 const std::regex mugen::MugenTextFile::regexKeyQuotedValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*\"([^\r\"]+?)\"[ \t\r]*$");
 
-mugen::MugenTextFile::MugenTextFile(std::string path): m_path(path), m_inputstream(path)
+mugen::MugenTextFile::MugenTextFile(const std::string & path): m_path(path), m_inputstream(path)
 {
 	m_section = "";
 }

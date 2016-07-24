@@ -32,7 +32,7 @@ private:
 
 class MugenTextFile {
 public:
-	MugenTextFile(std::string path);
+	MugenTextFile(const std::string & path);
 	~MugenTextFile();
 	const MugenTextKeyValue nextValue();
 	const std::string nextLine();

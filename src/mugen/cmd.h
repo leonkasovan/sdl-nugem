@@ -27,24 +27,53 @@
 
 namespace mugen {
 
-class CommandDefinition {
-protected:
-	std::string name;
-	std::vector<inputstate_t> commands;
-	int16_t time;
-	int16_t buffertime;
-};
-
-class StateEntry {};
-
 class CharacterCommands {
 public:
 	CharacterCommands() {};
-	CharacterCommands(const std::string & cmdfile);
-	CharacterCommands(CharacterCommands && characterCommands);
+	void readFile(const std::string & filepath);
+protected:
+	
+	enum CommandButton { a, b, c, x, y, z };
+
+	enum CommandDirection { B, DB, D, DF, F, UF, U, UB };
+
+	struct CommandButtonModif {
+		bool heldDown = false;
+		bool released = false;
+		unsigned int chargeTicks = 0; // the number of game ticks the key must be held down for
+		CommandButton button;
+	};
+
+	struct CommandInput {
+		bool exclusive = false; // '>' modifier
+	};
+
+	struct CommandInputDirection: public CommandInput {
+		bool heldDown = false;
+		bool released = false;
+		unsigned int chargeTicks = 0; // the number of game ticks the key must be held down for
+		bool wideDirection = false; // detect the direction as 4-way
+		CommandDirection direction;
+		CommandInputDirection(CommandDirection _direction): direction(_direction) {};
+	};
+
+	struct CommandInputButtons: public CommandInput {
+		std::vector<CommandButtonModif> symbols; // simultaneous button events
+	};
+
+	struct CommandDefinition {
+		std::string name;
+		std::vector<std::unique_ptr<CommandInput>> inputs;
+		int16_t time;
+		int16_t buffertime;
+	};
+
+	class StateEntry {};
+
+	std::vector<std::unique_ptr<CommandInput>> readInputDefinition(const std::string & entryString);
 private:
-	std::vector<CommandDefinition> commandDefinitions;
-	std::vector<StateEntry> stateEntries;
+	std::vector<std::unique_ptr<CommandDefinition>> m_commands;
+	std::vector<StateEntry> m_stateEntries;
 	static const std::regex sectionCommand;
 	static const std::regex commandName;
 	static const std::regex commandCmd;

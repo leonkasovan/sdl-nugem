@@ -21,25 +21,133 @@
 #include "mugenutils.h"
 #include <fstream>
 #include <string>
-#include <deque>
+#include <memory>
+#include <iostream>
 
-mugen::CharacterCommands::CharacterCommands(const std::string & cmdfile)
+using namespace mugen;
+
+void mugen::CharacterCommands::readFile(const std::string & filepath)
 {
-	std::ifstream file = std::ifstream(cmdfile);
-	std::string line;
-	while (mugen::_getline(file, line)) {
+	mugen::MugenTextFile cmdfile(filepath);
+	mugen::MugenTextKeyValue kv;
+	std::cout << filepath << std::endl;
+	std::unique_ptr<CommandDefinition> currentDefinition;
+	std::unique_ptr<StateEntry> currentStateEntry;
+	while ((kv = cmdfile.nextValue())) {
+		if (cmdfile.newSection()) {
+			if (currentDefinition)
+				m_commands.push_back(std::unique_ptr<CommandDefinition>(currentDefinition.release()));
+			if (cmdfile.section() == "Command")
+				currentDefinition.reset(new CommandDefinition());
+		}
+		if (currentDefinition) {
+			if (kv.name() == "name")
+				currentDefinition->name = kv.value();
+			else if (kv.name() == "command")
+				currentDefinition->inputs = readInputDefinition(kv.value());
+			else if (kv.name() == "time")
+				currentDefinition->time = std::stoi(kv.value());
+			else if (kv.name() == "buffer.time")
+				currentDefinition->buffertime = std::stoi(kv.value());
+		}
 	}
-	file.close();
+	std::cout << "Loaded " << std::to_string(m_commands.size()) << " commands" << std::endl;
 }
 
-const std::regex mugen::CharacterCommands::sectionCommand("[  \t\r\n]*\\[Command\\][ \t\r\n]*");
-const std::regex mugen::CharacterCommands::commandName("[ \t\r\n]*name[ \t]*=[ \t]*([^\r\n]+?)|(?:\"([^\"]|(?:\\\\\"))*\")[ \t\r\n]*");
-const std::regex mugen::CharacterCommands::commandCmd("[ \t\r\n]*command[ \t]*=[ \t]*((?:[a-cx-zBDFU\\~\\/\\$\\+\\>0-9]+,?[ \t]*?)*)[ \t\r\n]*");
-const std::regex mugen::CharacterCommands::commandTime("[ \t\r\n]*time[ \t]*=[ \t]*(-?[0-9]*)[ \t\r\n]*");
-const std::regex mugen::CharacterCommands::commandBufferTime("[ \t\r\n]*buffer\\.time[ \t]*=[ \t]*(-?[0-9]*)[ \t\r\n]*");
-const std::regex mugen::CharacterCommands::sectionStateEntry("");
-
-mugen::CharacterCommands::CharacterCommands(mugen::CharacterCommands && characterCommands)
+std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCommands::readInputDefinition(const std::string& entryString)
 {
-
+	std::vector<std::unique_ptr<CharacterCommands::CommandInput>> result;
+	for (int index = 0; index < entryString.size(); index++)
+	{
+		char ch = entryString[index];
+		bool isDirection = false;
+		std::vector<CharacterCommands::CommandButtonModif> buttonList;
+		CommandButtonModif currentButton;
+		bool wideDirection = false; // detect the direction as 4-way
+		std::string directionString;
+		// Between commas: block for a single symbol
+		while (ch != ',' && index < entryString.size())
+		{
+			if (ch >= 'a' && ch <= 'z')
+			{
+				isDirection = false;
+				switch (ch) {
+					case 'a':
+						currentButton.button = a;
+						break;
+					case 'b':
+						currentButton.button = b;
+						break;
+					case 'c':
+						currentButton.button = c;
+						break;
+					case 'x':
+						currentButton.button = x;
+						break;
+					case 'y':
+						currentButton.button = y;
+						break;
+					case 'z':
+						currentButton.button = z;
+						break;
+				};
+			}
+			else
+			if (ch >= 'A' && ch <= 'Z')
+			{
+				directionString += ch;
+				isDirection = true;
+			}
+			else if (ch >= '0' && ch <= '9')
+				currentButton.chargeTicks = currentButton.chargeTicks * 10 + (ch - '0');
+			else if (ch == '$')
+				wideDirection = true;
+			else if (ch == '~')
+				currentButton.released = true;
+			else if (ch == '/')
+				currentButton.heldDown = true;
+			else if (ch == '+')
+			{
+				buttonList.push_back(currentButton);
+				currentButton.heldDown = false;
+				currentButton.released = false;
+				currentButton.chargeTicks = 0;
+				isDirection = false;
+			}
+			index++;
+			ch = entryString[index];
+		}
+		buttonList.push_back(currentButton);
+		if (isDirection)
+		{
+			CommandInputDirection *direction = nullptr;
+			if (directionString == "B")
+				direction = new CommandInputDirection(B);
+			else if (directionString == "DB")
+				direction = new CommandInputDirection(DB);
+			else if (directionString == "UB")
+				direction = new CommandInputDirection(UB);
+			else if (directionString == "U")
+				direction = new CommandInputDirection(U);
+			else if (directionString == "UF")
+				direction = new CommandInputDirection(UF);
+			if (directionString == "F")
+				direction = new CommandInputDirection(F);
+			else if (directionString == "DF")
+				direction = new CommandInputDirection(DF);
+			else if (directionString == "D")
+				direction = new CommandInputDirection(D);
+			if (direction)
+			{
+				direction->wideDirection = wideDirection;
+				result.push_back(std::unique_ptr<CommandInput>(direction));
+			}
+		}
+		else
+		{
+			CommandInputButtons *buttons = new CommandInputButtons;
+			result.push_back(std::unique_ptr<CommandInput>(buttons));
+		}
+	}
+	return result;
 }
