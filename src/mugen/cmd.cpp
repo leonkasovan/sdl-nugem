@@ -64,6 +64,7 @@ std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCo
 		std::vector<CharacterCommands::CommandButtonModif> buttonList;
 		CommandButtonModif currentButton;
 		bool wideDirection = false; // detect the direction as 4-way
+		bool exclusive = false;
 		std::string directionString;
 		// Between commas: block for a single symbol
 		while (ch != ',' && index < entryString.size())
@@ -114,10 +115,11 @@ std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCo
 				currentButton.chargeTicks = 0;
 				isDirection = false;
 			}
+			else if (ch == '<')
+				exclusive = true;
 			index++;
 			ch = entryString[index];
 		}
-		buttonList.push_back(currentButton);
 		if (isDirection)
 		{
 			CommandInputDirection *direction = nullptr;
@@ -140,12 +142,19 @@ std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCo
 			if (direction)
 			{
 				direction->wideDirection = wideDirection;
+				direction->exclusive = exclusive;
+				direction->chargeTicks = currentButton.chargeTicks;
+				direction->heldDown = currentButton.heldDown;
+				direction->released = currentButton.released;
 				result.push_back(std::unique_ptr<CommandInput>(direction));
 			}
 		}
 		else
 		{
+			buttonList.push_back(currentButton);
 			CommandInputButtons *buttons = new CommandInputButtons;
+			buttons->symbols = buttonList;
+			buttons->exclusive = exclusive;
 			result.push_back(std::unique_ptr<CommandInput>(buttons));
 		}
 	}
