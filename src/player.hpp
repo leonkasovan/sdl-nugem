@@ -20,8 +20,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "character.h"
-#include "input.h"
+#include "character.hpp"
+#include "input.hpp"
 
 #include <deque>
 

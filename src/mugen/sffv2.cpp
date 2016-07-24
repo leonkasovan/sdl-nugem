@@ -17,7 +17,7 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "sffv2.h"
+#include "sffv2.hpp"
 
 #include <ios>
 #include <fstream>

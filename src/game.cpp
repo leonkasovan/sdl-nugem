@@ -17,10 +17,10 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "game.h"
-#include "character.h"
+#include "game.hpp"
+#include "character.hpp"
 
-#include "scenemenu.h"
+#include "scenemenu.hpp"
 
 #include <iostream>
 

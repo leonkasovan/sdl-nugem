@@ -20,7 +20,7 @@
 #ifndef SFFV2_H
 #define SFFV2_H
 
-#include "sprites.h"
+#include "sprites.hpp"
 #include <string>
 #include <vector>
 #include <unordered_map>

@@ -17,8 +17,8 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "cmd.h"
-#include "mugenutils.h"
+#include "cmd.hpp"
+#include "mugenutils.hpp"
 #include <fstream>
 #include <string>
 #include <memory>

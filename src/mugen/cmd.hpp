@@ -19,7 +19,7 @@
 
 #ifndef CMD_H
 #define CMD_H
-#include "../input.h"
+#include "../input.hpp"
 
 #include <vector>
 #include <string>

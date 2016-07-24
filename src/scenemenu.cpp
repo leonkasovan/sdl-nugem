@@ -1,13 +1,13 @@
-#include "scenemenu.h"
-#include "game.h"
+#include "scenemenu.hpp"
+#include "game.hpp"
 
 #include <iostream>
 #include <dirent.h>
 #include <SDL.h>
 
 #include <SDL_image.h>
-#include "fight/fight.h"
-#include "game.h"
+#include "fight/fight.hpp"
+#include "game.hpp"
 
 SceneMenu::SceneMenu()
 {

@@ -17,15 +17,15 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "input.h"
+#include "input.hpp"
 
 #include <stdio.h>
 #include <iostream>
 
-#include "game.h"
-#include "player.h"
-#include "scene.h"
-#include "scenemenu.h"
+#include "game.hpp"
+#include "player.hpp"
+#include "scene.hpp"
+#include "scenemenu.hpp"
 
 const char * InputManager::controllerDBfilename = "gamecontrollerdb.txt";
 

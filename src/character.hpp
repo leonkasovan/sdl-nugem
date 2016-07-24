@@ -26,10 +26,10 @@
 #include <unordered_map>
 #include <exception>
 
-#include "mugen/air.h"
-#include "mugen/cmd.h"
-#include "mugen/sprites.h"
-#include "mugen/def.h"
+#include "mugen/air.hpp"
+#include "mugen/cmd.hpp"
+#include "mugen/sprites.hpp"
+#include "mugen/def.hpp"
 
 class CharacterLoadException: public std::runtime_error {
 public:

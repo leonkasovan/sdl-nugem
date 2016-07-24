@@ -22,7 +22,7 @@
 
 #define PALETTE_NCOLORS 256
 
-#include "sprites.h"
+#include "sprites.hpp"
 #include <string>
 #include <vector>
 #include <array>

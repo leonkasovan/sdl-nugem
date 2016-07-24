@@ -1,8 +1,8 @@
 #ifndef SCENE_FIGHT_H
 #define SCENE_FIGHT_H
 
-#include "../scene.h"
-#include "../character.h"
+#include "../scene.hpp"
+#include "../character.hpp"
 
 class FightCharacter
 {

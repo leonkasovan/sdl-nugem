@@ -1,7 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "glgraphics.h"
+#include "glgraphics.hpp"
 
 class Scene
 {

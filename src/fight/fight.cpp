@@ -1,6 +1,6 @@
-#include "fight.h"
-#include "../scenemenu.h"
-#include "../game.h"
+#include "fight.hpp"
+#include "../scenemenu.hpp"
+#include "../game.hpp"
 
 Fight::Fight(Character * charLeft)
 {

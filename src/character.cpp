@@ -17,7 +17,7 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "character.h"
+#include "character.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -26,8 +26,8 @@
 #include <string>
 #include <ios>
 #include <SDL.h>
-#include "mugen/sffv1.h"
-#include "mugen/sffv2.h"
+#include "mugen/sffv1.hpp"
+#include "mugen/sffv2.hpp"
 
 Character::Character(const char * charid): m_id(charid)
 {

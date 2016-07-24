@@ -1,6 +1,6 @@
-#include "def.h"
+#include "def.hpp"
 
-#include "mugenutils.h"
+#include "mugenutils.hpp"
 
 mugen::DefinitionFile::DefinitionFile()
 {

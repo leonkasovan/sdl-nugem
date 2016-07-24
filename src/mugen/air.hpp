@@ -1,7 +1,7 @@
 #ifndef AIR_H
 #define AIR_H
 
-#include "mugenutils.h"
+#include "mugenutils.hpp"
 
 namespace mugen {
 

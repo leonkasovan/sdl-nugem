@@ -17,9 +17,9 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "sffv1.h"
+#include "sffv1.hpp"
 
-#include "../character.h"
+#include "../character.hpp"
 
 #define READBUF_SIZE 12
 

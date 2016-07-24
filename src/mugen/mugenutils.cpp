@@ -1,10 +1,10 @@
-#include "mugenutils.h"
+#include "mugenutils.hpp"
 
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
-#include "sprites.h"
+#include "sprites.hpp"
 
 std::istream & mugen::_getline(std::istream & __is, std::string & __str)
 {

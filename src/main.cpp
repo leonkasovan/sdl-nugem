@@ -17,7 +17,7 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "game.h"
+#include "game.hpp"
 #include <iostream>
 
 int main (int argc, char ** argv)

@@ -17,7 +17,7 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "player.h"
+#include "player.hpp"
 
 Player::Player(unsigned int number): m_number(number)
 {

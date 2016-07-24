@@ -22,10 +22,10 @@
 
 #include <SDL.h>
 #include <vector>
-#include "input.h"
-#include "scene.h"
-#include "character.h"
-#include "glgraphics.h"
+#include "input.hpp"
+#include "scene.hpp"
+#include "character.hpp"
+#include "glgraphics.hpp"
 
 #define DEFAULT_WINDOW_WIDTH 800
 #define DEFAULT_WINDOW_HEIGHT 600

@@ -1,8 +1,8 @@
 #ifndef SCENEMENU_H
 #define SCENEMENU_H
 
-#include "scene.h"
-#include "character.h"
+#include "scene.hpp"
+#include "character.hpp"
 
 #include <vector>
 

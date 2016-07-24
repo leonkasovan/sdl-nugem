@@ -17,13 +17,13 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "sprites.h"
+#include "sprites.hpp"
 
-#include "sffv1.h"
+#include "sffv1.hpp"
 
-#include "sffv2.h"
+#include "sffv2.hpp"
 
-#include "../character.h"
+#include "../character.hpp"
 
 std::array<uint8_t, 4> mugen::extract_version(std::ifstream & fileobj)
 {
