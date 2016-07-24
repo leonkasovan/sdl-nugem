@@ -22,7 +22,6 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include <iostream>
 
 using namespace mugen;
 
@@ -30,7 +29,6 @@ void mugen::CharacterCommands::readFile(const std::string & filepath)
 {
 	mugen::MugenTextFile cmdfile(filepath);
 	mugen::MugenTextKeyValue kv;
-	std::cout << filepath << std::endl;
 	std::unique_ptr<CommandDefinition> currentDefinition;
 	std::unique_ptr<StateEntry> currentStateEntry;
 	while ((kv = cmdfile.nextValue())) {
@@ -51,7 +49,6 @@ void mugen::CharacterCommands::readFile(const std::string & filepath)
 				currentDefinition->buffertime = std::stoi(kv.value());
 		}
 	}
-	std::cout << "Loaded " << std::to_string(m_commands.size()) << " commands" << std::endl;
 }
 
 std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCommands::readInputDefinition(const std::string& entryString)
