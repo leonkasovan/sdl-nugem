@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -17,12 +17,13 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef STATE_H
-#define STATE_H
+#ifndef STATE_HPP
+#define STATE_HPP
 
 #include <vector>
 
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
 /**
  * 
@@ -135,5 +136,6 @@ struct cns_state_t {
 };
 
 }
+}
 
-#endif // STATE_H
+#endif // STATE_HPP

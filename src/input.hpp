@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -21,6 +21,8 @@
 #define INPUT_H
 
 #include <vector>
+#include <memory>
+#include <functional>
 
 #include <SDL.h>
 
@@ -28,36 +30,15 @@
  * Input methods definitions.
  */
 
-/**
- * \name Input state constants
- * @{
- */
+namespace Nugem {
 
-/** Number of buttons on the pad. */
-#define INPUTSTATE_NBUTTONS 8
-/** Identifier of the A button. */
-#define INPUTSTATE_BUTTON_A 0
-/** Identifier of the B button. */
-#define INPUTSTATE_BUTTON_B 1
-/** Identifier of the C button. */
-#define INPUTSTATE_BUTTON_C 2
-/** Identifier of the X button. */
-#define INPUTSTATE_BUTTON_X 3
-/** Identifier of the Y button. */
-#define INPUTSTATE_BUTTON_Y 4
-/** Identifier of the Z button. */
-#define INPUTSTATE_BUTTON_Z 5
-/** Identifier of the Start button. */
-#define INPUTSTATE_BUTTON_S 6
-/** Identifier of the Back button. */
-#define INPUTSTATE_BUTTON_BACK 7
-
-/** @} */
+class Player;
+class Game;
 
 /**
 * \brief Possible input states for a given button
 */
-enum inputbutton {
+enum InputButtonState {
 	INPUT_B_UNDEFINED = 0,
 	INPUT_B_RELEASED = 1,
 	INPUT_B_PRESSED = 2
@@ -74,7 +55,7 @@ enum inputbutton {
  * 
  * 1 2 3
  */
-enum inputdir {
+enum InputDirection {
 	INPUT_D_UNDEFINED = 0,
 	INPUT_D_SW = 1,
 	INPUT_D_S = 2,
@@ -90,17 +71,17 @@ enum inputdir {
 /** \brief A single input state.
  * This input layout is lifted straight from Mugen.
  */
-struct inputstate_t {
-	inputbutton a = INPUT_B_UNDEFINED;
-	inputbutton b = INPUT_B_UNDEFINED;
-	inputbutton c = INPUT_B_UNDEFINED;
-	inputbutton x = INPUT_B_UNDEFINED;
-	inputbutton y = INPUT_B_UNDEFINED;
-	inputbutton z = INPUT_B_UNDEFINED;
-	inputbutton start = INPUT_B_UNDEFINED;
-	inputbutton back = INPUT_B_UNDEFINED;
-	inputdir d = INPUT_D_UNDEFINED;
-	bool operator != (const inputstate_t & state) {
+struct InputState {
+	InputButtonState a = INPUT_B_UNDEFINED;
+	InputButtonState b = INPUT_B_UNDEFINED;
+	InputButtonState c = INPUT_B_UNDEFINED;
+	InputButtonState x = INPUT_B_UNDEFINED;
+	InputButtonState y = INPUT_B_UNDEFINED;
+	InputButtonState z = INPUT_B_UNDEFINED;
+	InputButtonState start = INPUT_B_UNDEFINED;
+	InputButtonState back = INPUT_B_UNDEFINED;
+	InputDirection d = INPUT_D_UNDEFINED;
+	bool operator != (const InputState & state) {
 		return a != state.a ||
 			b != state.b ||
 			c != state.c ||
@@ -112,9 +93,6 @@ struct inputstate_t {
 			d != state.d;
 	}
 };
-
-class Player;
-class Game;
 class InputManager;
 
 class InputDevice {
@@ -124,27 +102,27 @@ public:
 	void receiveEvent(const SDL_Event & e );
 	virtual void updateGlobalState() = 0;
 	void initialize();
-	inputstate_t getState();
-	const inputstate_t getState() const;
+	InputState getState();
+	const InputState getState() const;
 	void assignToPlayer(Player * assignedPlayer);
 	bool hasPlayerAssigned() const;
 	Player * getAssignedPlayer();
 protected:
-	virtual inputstate_t processEvent(const SDL_Event & e) = 0;
-	inputstate_t m_currentState;
-	InputManager & m_manager;
-	Player * m_player;
+	virtual InputState processEvent(const SDL_Event & e) = 0;
+	InputState mCurrentState;
+	Player *mPlayer;
+	InputManager & mManager;
 private:
-	inputstate_t m_previousChange;
+	   InputState m_previousChange;
 };
 
 class KeyboardInput: public InputDevice {
 public:
 	KeyboardInput(InputManager & manager);
-	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual InputState processEvent(const SDL_Event & e);
 	virtual void updateGlobalState();
 private:
-	const inputbutton evaluateKey(SDL_Scancode key);
+	const InputButtonState evaluateKey(SDL_Scancode key);
 	static const SDL_Scancode scancodeA = SDL_SCANCODE_A;
 	static const SDL_Scancode scancodeB = SDL_SCANCODE_S;
 	static const SDL_Scancode scancodeC = SDL_SCANCODE_D;
@@ -164,7 +142,7 @@ public:
 	Joystick(InputManager & manager, const uint32_t jid);
 	Joystick(Joystick && joystick);
 	virtual ~Joystick();
-	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual InputState processEvent(const SDL_Event & e);
 	virtual void updateGlobalState();
 private:
 	const uint32_t m_jid;
@@ -176,17 +154,23 @@ public:
 	GameController(InputManager & manager, const uint32_t jid);
 	GameController(GameController && gameController);
 	virtual ~GameController();
-	virtual inputstate_t processEvent(const SDL_Event & e);
+	virtual InputState processEvent(const SDL_Event & e);
 	virtual void updateGlobalState();
 protected:
-	inputbutton getButtonValue(SDL_GameControllerButton button);
-	inputbutton getButtonValueForAxis(SDL_GameControllerAxis axis);
-	inputdir getDirection(Sint16 hor, Sint16 vert);
-	inputdir getDirection();
+	   InputButtonState getButtonValue(SDL_GameControllerButton button);
+	   InputButtonState getButtonValueForAxis(SDL_GameControllerAxis axis);
+	   InputDirection getDirection(Sint16 hor, Sint16 vert);
+	   InputDirection getDirection();
 private:
 	const uint32_t m_jid;
 	SDL_GameController * m_gcsdl;
 	static const Sint16 threshold = 32767 / 3;
+};
+
+class InputReceiver {
+public:
+	virtual ~InputReceiver() {};
+	virtual void receiveInput(InputDevice *, InputState) = 0;
 };
 
 class InputManager {
@@ -197,13 +181,18 @@ public:
 	void processSDLEvent(const SDL_Event& e);
 	InputDevice& device(size_t n);
 	const size_t deviceNumber() const;
-	void registerInput(InputDevice * device, inputstate_t state);
+	void addReceiver(InputReceiver &);
+	void removeReceiver(InputReceiver &);
+	void registerInput(InputDevice * device, InputState state);
 	void assignDeviceToPlayer(InputDevice * device, Player * player);
 protected:
-	std::vector<InputDevice *> m_devices;
-	Game * m_game;
+	std::vector<std::unique_ptr<InputDevice>> mDevices;
+	std::vector<std::reference_wrapper<InputReceiver>> mReceivers;
+	Game * mGame;
 	bool loadGameControllerDB();
 	static const char * controllerDBfilename;
 };
+
+}
 
 #endif // INPUT_H

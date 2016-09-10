@@ -2,34 +2,37 @@
 
 #include "mugenutils.hpp"
 
-mugen::DefinitionFile::DefinitionFile()
+namespace Nugem {
+namespace Mugen {
+
+DefinitionFile::DefinitionFile()
 {
 
 }
 
-mugen::DefinitionFile::DefinitionFile(mugen::DefinitionFile && definitionFile)
+DefinitionFile::DefinitionFile(DefinitionFile && definitionFile)
 {
 	std::swap(m_sections, definitionFile.m_sections);
 }
 
-mugen::DefinitionFile::DefinitionFile(const std::string & filepath)
+DefinitionFile::DefinitionFile(const std::string & filepath)
 {
 	readFile(filepath);
 }
 
-mugen::DefinitionFile & mugen::DefinitionFile::operator=(mugen::DefinitionFile && definitionFile)
+DefinitionFile & DefinitionFile::operator=(DefinitionFile && definitionFile)
 {
 	std::swap(m_sections, definitionFile.m_sections);
 	return *this;
 }
 
-mugen::DefinitionFile & mugen::DefinitionFile::operator=(const mugen::DefinitionFile & definitionFile)
+DefinitionFile & DefinitionFile::operator=(const DefinitionFile & definitionFile)
 {
 	m_sections = definitionFile.sections();
 	return *this;
 }
 
-mugen::DefinitionFile & mugen::DefinitionFile::readFile(const std::string & filepath)
+DefinitionFile & DefinitionFile::readFile(const std::string & filepath)
 {
 	MugenTextFile def(filepath);
 	MugenTextKeyValue kv;
@@ -43,12 +46,15 @@ mugen::DefinitionFile & mugen::DefinitionFile::readFile(const std::string & file
 	return *this;
 }
 
-const std::unordered_map<std::string, std::unordered_map<std::string, std::string>> & mugen::DefinitionFile::sections() const
+const std::unordered_map<std::string, std::unordered_map<std::string, std::string>> & DefinitionFile::sections() const
 {
 	return m_sections;
 }
 
-std::unordered_map< std::string, std::string > & mugen::DefinitionFile::operator[] (const std::string & section)
+std::unordered_map< std::string, std::string > & DefinitionFile::operator[] (const std::string & section)
 {
 	return m_sections[section];
+}
+
+}
 }

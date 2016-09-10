@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -25,15 +25,20 @@
 
 #include "../character.hpp"
 
-std::array<uint8_t, 4> mugen::extract_version(std::ifstream & fileobj)
+using namespace std;
+
+namespace Nugem {
+namespace Mugen {
+
+array<uint8_t, 4> extract_version(ifstream & fileobj)
 {
-	std::array<uint8_t, 4> version;
+	array<uint8_t, 4> version;
 	for (int i = 0; i < 4; i++)
 		version[3 - i] = fileobj.get();
 	return version;
 }
 
-uint32_t mugen::read_uint32(std::ifstream & fileobj)
+uint32_t read_uint32(ifstream & fileobj)
 {
 	uint32_t e = 0;
 	// Little endian reading
@@ -42,20 +47,20 @@ uint32_t mugen::read_uint32(std::ifstream & fileobj)
 	return e;
 }
 
-uint16_t mugen::read_uint16(std::ifstream & fileobj)
+uint16_t read_uint16(ifstream & fileobj)
 {
 	return fileobj.get() | (fileobj.get() << 8);
 }
 
-mugen::Sprite::Sprite(spriteref reference, SDL_Surface * surface, int palette): m_ref(reference), m_surface(surface), m_npalette(palette)
+Sprite::Sprite(Spriteref reference, SDL_Surface * surface, int palette): m_ref(reference), m_surface(surface), m_npalette(palette)
 {
 }
 
-mugen::Sprite::Sprite(mugen::spriteref reference, SDL_Surface * surface): m_ref(reference), m_surface(surface), m_npalette(-1)
+Sprite::Sprite(Spriteref reference, SDL_Surface * surface): m_ref(reference), m_surface(surface), m_npalette(-1)
 {
 }
 
-mugen::Sprite::~Sprite()
+Sprite::~Sprite()
 {
 	if (m_surface != nullptr) {
 		SDL_FreeSurface(m_surface);
@@ -63,49 +68,49 @@ mugen::Sprite::~Sprite()
 	}
 }
 
-mugen::Sprite::Sprite(const Sprite & originalSprite): m_surface(nullptr)
+Sprite::Sprite(const Sprite & originalSprite): m_surface(nullptr)
 {
 	m_ref = originalSprite.ref();
 	m_surface = copySurface(originalSprite.m_surface);
 }
 
-mugen::Sprite::Sprite(Sprite && originalSprite): m_surface(nullptr)
+Sprite::Sprite(Sprite && originalSprite): m_surface(nullptr)
 {
-	std::swap(m_ref, originalSprite.m_ref);
-	std::swap(m_surface, originalSprite.m_surface);
+	swap(m_ref, originalSprite.m_ref);
+	swap(m_surface, originalSprite.m_surface);
 }
 
-mugen::Sprite & mugen::Sprite::operator=(const Sprite & originalSprite)
+Sprite & Sprite::operator=(const Sprite & originalSprite)
 {
 	m_ref = originalSprite.ref();
 	m_surface = copySurface(originalSprite.m_surface);
 	return *this;
 }
 
-mugen::Sprite & mugen::Sprite::operator=(Sprite && originalSprite)
+Sprite & Sprite::operator=(Sprite && originalSprite)
 {
-	std::swap(m_ref, originalSprite.m_ref);
-	std::swap(m_surface, originalSprite.m_surface);
+	swap(m_ref, originalSprite.m_ref);
+	swap(m_surface, originalSprite.m_surface);
 	return *this;
 }
 
-SDL_Surface * mugen::Sprite::copySurface(SDL_Surface * surface)
+SDL_Surface * Sprite::copySurface(SDL_Surface * surface)
 {
 	return SDL_ConvertSurface(surface, surface->format, 0);
 }
 
-mugen::SpriteLoader::SpriteLoader(): m_sffFile("")
+SpriteLoader::SpriteLoader(): m_sffFile("")
 {
 }
 
-void mugen::SpriteLoader::initialize(const std::__cxx11::string & sffpath, Character * character)
+void SpriteLoader::initialize(const __cxx11::string & sffpath, Character * character)
 {
 	m_sffFile = sffpath;
 	
 	// Determining sprite version
 	{
 		char readbuf[12];
-		std::ifstream spritefile(sffpath);
+		ifstream spritefile(sffpath);
 		spritefile.read(readbuf, 12);
 		if (strcmp(readbuf, "ElecbyteSpr")) {
 			return;
@@ -117,34 +122,34 @@ void mugen::SpriteLoader::initialize(const std::__cxx11::string & sffpath, Chara
 	m_character = character;
 }
 
-std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > mugen::SpriteLoader::load()
+vector< unordered_map< Spriteref, Sprite > > SpriteLoader::load()
 {
 	SpriteHandler * handler = createHandler();
 	handler->load();
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > s = handler->sprites();
+	vector< unordered_map< Spriteref, Sprite > > s = handler->sprites();
 	delete handler;
 	return s;
 }
 
-std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > mugen::SpriteLoader::load(std::vector< spriteref >::iterator first, std::vector< spriteref >::iterator last)
+vector< unordered_map< Spriteref, Sprite > > SpriteLoader::load(vector< Spriteref >::iterator first, vector< Spriteref >::iterator last)
 {
 	SpriteHandler * handler = createHandler();
 	handler->load(first, last);
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > s = handler->sprites();
+	vector< unordered_map< Spriteref, Sprite > > s = handler->sprites();
 	delete handler;
 	return s;
 }
 
-std::unordered_map< mugen::spriteref, mugen::Sprite > mugen::SpriteLoader::loadForPalette(int palette)
+unordered_map< Spriteref, Sprite > SpriteLoader::loadForPalette(int palette)
 {
 	SpriteHandler * handler = createHandler();
 	handler->load();
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > s = handler->sprites();
+	vector< unordered_map< Spriteref, Sprite > > s = handler->sprites();
 	delete handler;
 	return s[palette];
 }
 
-mugen::SpriteHandler * mugen::SpriteLoader::createHandler()
+SpriteHandler * SpriteLoader::createHandler()
 {
 	if (m_sffVersion[0] >= 2)
 		return new Sffv2(m_sffFile.c_str());
@@ -152,8 +157,11 @@ mugen::SpriteHandler * mugen::SpriteLoader::createHandler()
 		return new Sffv1(*m_character, m_sffFile.c_str());
 }
 
-bool mugen::SpriteLoader::isInitialized() const
+bool SpriteLoader::isInitialized() const
 {
 	return (m_character != nullptr) && (m_sffFile.length() > 0);
+}
+
+}
 }
 

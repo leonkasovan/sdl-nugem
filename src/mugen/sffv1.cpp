@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -21,15 +21,15 @@
 
 #include "../character.hpp"
 
-#define READBUF_SIZE 12
-
 #include <ios>
 #include <fstream>
 #include <iostream>
 #include <array>
 
+namespace Nugem {
+namespace Mugen {
 
-mugen::Sffv1::Sffv1(Character & character, const char * filename): character(character), filename(filename)
+Sffv1::Sffv1(Character & character, const char * filename): character(character), filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
@@ -39,14 +39,14 @@ mugen::Sffv1::Sffv1(Character & character, const char * filename): character(cha
 	loadSharedPalettes();
 }
 
-mugen::Sffv1::~Sffv1()
+Sffv1::~Sffv1()
 {
 	for (int i = 0; i < sprites.size(); i++) {
 		delete [] sprites[i].data;
 	}
 }
 
-void mugen::Sffv1::loadSffFile()
+void Sffv1::loadSffFile()
 {
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
@@ -96,7 +96,7 @@ void mugen::Sffv1::loadSffFile()
 	charfile.close();
 }
 
-void mugen::Sffv1::loadSharedPalettes()
+void Sffv1::loadSharedPalettes()
 {
 	bool continueLoop = true;
 	// We get the values of pal1, pal2, pal3, ... etc in order until pal12
@@ -114,7 +114,7 @@ void mugen::Sffv1::loadSharedPalettes()
 	}
 }
 
-mugen::sffv1palette_t mugen::Sffv1::getPaletteForSprite(size_t spritenumber)
+sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
 {
 	sffv1palette_t s;
 	long paletteSpriteNumber = spritenumber;
@@ -138,7 +138,7 @@ mugen::sffv1palette_t mugen::Sffv1::getPaletteForSprite(size_t spritenumber)
 	return palettes[currentPalette];
 }
 
-SDL_Surface * mugen::Sffv1::renderToSurface()
+SDL_Surface * Sffv1::renderToSurface()
 {
 	Uint32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -204,7 +204,7 @@ SDL_Surface * mugen::Sffv1::renderToSurface()
 	return surface;
 }
 
-bool mugen::Sffv1::readActPalette(const char * filepath)
+bool Sffv1::readActPalette(const char * filepath)
 {
 	sffv1palette_t palette;
 	std::ifstream actfile;
@@ -232,32 +232,35 @@ bool mugen::Sffv1::readActPalette(const char * filepath)
 	return true;
 }
 
-void mugen::Sffv1::load()
+void Sffv1::load()
 {
 	m_sprites.clear();
 	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-		std::unordered_map<spriteref, Sprite> currentPaletteSprites;
+		std::unordered_map<Spriteref, Sprite> currentPaletteSprites;
 		for (currentSprite = 0; currentSprite < sprites.size(); currentSprite++) {
 			sffv1sprite_t & sprite = sprites[currentSprite];
-			spriteref ref(sprite.group, sprite.groupimage);
-			currentPaletteSprites.insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+			Spriteref ref(sprite.group, sprite.groupimage);
+			currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
 		}
 		m_sprites.push_back(currentPaletteSprites);
 	}
 }
 
-void mugen::Sffv1::load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last)
+void Sffv1::load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last)
 {
 	m_sprites.clear();
 	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-		m_sprites.push_back(std::unordered_map<spriteref, Sprite>());
+		m_sprites.push_back(std::unordered_map<Spriteref, Sprite>());
 	}
 	
 	for (; first != last; first++) {
 		for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-			spriteref & ref = *first;
+			Spriteref & ref = *first;
 			currentSprite = groups[ref.group].i[ref.image];
-			m_sprites[currentPalette].insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+			m_sprites[currentPalette].insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
 		}
 	}
+}
+
+}
 }

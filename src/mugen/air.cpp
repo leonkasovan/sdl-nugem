@@ -1,30 +1,33 @@
 #include "air.hpp"
 
+using namespace std;
 
+namespace Nugem {
+namespace Mugen {
 
-mugen::AnimationData::AnimationData()
+AnimationData::AnimationData()
 {
 }
 
-mugen::AnimationData::AnimationData(mugen::AnimationData && animationData): std::map<size_t, animation_t>(animationData)
+AnimationData::AnimationData(AnimationData && animationData): std::map<size_t, animation_t>(animationData)
 {
 }
 
-const std::regex mugen::AnimationData::regexSection("Begin Action ([0-9]+)");
-const std::regex mugen::AnimationData::regexClsnInit("[ \t\r\n]*(Clsn([0-9]+)(?:Default)?):[ \t]*([0-9]+)[ \t\r\n]*");
-const std::regex mugen::AnimationData::regexClsn("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)[ \t\r\n]*");
-const std::regex mugen::AnimationData::regexStep("[ \t\r\n]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*)[ \t\r\n]*");
+const std::regex AnimationData::regexSection("Begin Action ([0-9]+)");
+const std::regex AnimationData::regexClsnInit("[ \t\r\n]*(Clsn([0-9]+)(?:Default)?):[ \t]*([0-9]+)[ \t\r\n]*");
+const std::regex AnimationData::regexClsn("[ \t\r\n]*Clsn2\\[([0-9]+)\\][ \t]*=[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)[ \t\r\n]*");
+const std::regex AnimationData::regexStep("[ \t\r\n]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+),[ \t]*(-?[0-9]+)((?:[ \t]*,[ \t]*[A-Za-z0-9]*)*)[ \t\r\n]*");
 
-mugen::AnimationData::AnimationData(const std::string & filepath)
+AnimationData::AnimationData(const std::string & filepath)
 {
 	readFile(filepath);
 }
 
-mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepath)
+AnimationData & AnimationData::readFile(const std::string & filepath)
 {
-	mugen::MugenTextFile air(filepath);
+	MugenTextFile air(filepath);
 	std::string line;
-	mugen::animation_t currentAnimation;
+	animation_t currentAnimation;
 	int actionNumber = -1;
 	for (line = air.nextLine(); air; line = air.nextLine()) {
 		std::smatch sm;
@@ -42,7 +45,7 @@ mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepa
 			}
 			// then start a new action
 			actionNumber = std::stoi(sm[1]);
-			currentAnimation = mugen::animation_t();
+			currentAnimation = animation_t();
 			continue;
 		}
 		// if we're not actually in a numbered action then we skip this key-value pair
@@ -53,7 +56,7 @@ mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepa
 		// elem is of the form "x,y" with x image group and y image number in group
 		if (std::regex_match(line, sm, regexStep)) {
 			// start at index 1 of sm because index 0 is the whole string
-			mugen::animstep_t step;
+			animstep_t step;
 			step.group = std::stoi(sm[1]);
 			step.image = std::stoi(sm[2]);
 			step.x = std::stoi(sm[3]);
@@ -82,15 +85,17 @@ mugen::AnimationData & mugen::AnimationData::readFile(const std::string & filepa
 	return *this;
 }
 
-mugen::AnimationData & mugen::AnimationData::operator=(mugen::AnimationData && animationData)
+AnimationData & AnimationData::operator=(AnimationData && animationData)
 {
 	std::map<size_t, animation_t>::operator=(animationData);
 	return *this;
 }
 
-mugen::AnimationData & mugen::AnimationData::operator=(const mugen::AnimationData & animationData)
+AnimationData & AnimationData::operator=(const AnimationData & animationData)
 {
 	std::map<size_t, animation_t>::operator=(animationData);
 	return *this;
 }
 
+}
+}

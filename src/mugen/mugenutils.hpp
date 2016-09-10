@@ -1,5 +1,5 @@
-#ifndef MUGENUTILS_H
-#define MUGENUTILS_H
+#ifndef MUGENUTILS_HPP
+#define MUGENUTILS_HPP
 
 #include <string>
 #include <vector>
@@ -7,48 +7,50 @@
 #include <fstream>
 #include <regex>
 
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
-// std::getline adjusted for the ; comment character
-std::istream& _getline(std::istream& __is, std::__cxx11::string& __str);
+// ::std::getline adjusted for the ; comment character
+::std::istream& _getline(::std::istream& __is, ::std::__cxx11::string& __str);
 
 class MugenTextKeyValue {
 public:
-	static MugenTextKeyValue read(const std::string & stringToRead);
+	static MugenTextKeyValue read(const ::std::string & stringToRead);
 	MugenTextKeyValue();
-	MugenTextKeyValue(std::string key, std::string value);
+	MugenTextKeyValue(::std::string key, ::std::string value);
 	MugenTextKeyValue(const MugenTextKeyValue & kvpair);
 	MugenTextKeyValue(MugenTextKeyValue && kvpair);
-	const std::string & name() const;
-	const std::string & value() const;
+	const ::std::string & name() const;
+	const ::std::string & value() const;
 	operator bool() const;
 	MugenTextKeyValue & operator=(MugenTextKeyValue && kvpair);
 	MugenTextKeyValue & operator=(const MugenTextKeyValue & kvpair);
 private:
-	std::string m_key;
-	std::string m_value;
+	::std::string m_key;
+	::std::string m_value;
 	bool m_empty = false;
 };
 
 class MugenTextFile {
 public:
-	MugenTextFile(const std::string & path);
+	MugenTextFile(const ::std::string & path);
 	~MugenTextFile();
 	const MugenTextKeyValue nextValue();
-	const std::string nextLine();
-	const std::string & section() const;
+	const ::std::string nextLine();
+	const ::std::string & section() const;
 	const bool newSection() const;
 	operator bool() const;
-	static const std::regex regexSectionHeader;
-	static const std::regex regexKeyValue;
-	static const std::regex regexKeyQuotedValue;
+	static const ::std::regex regexSectionHeader;
+	static const ::std::regex regexKeyValue;
+	static const ::std::regex regexKeyQuotedValue;
 private:
 	bool m_newSection = false;
-	std::string m_section;
-	const std::string m_path;
-	std::ifstream m_inputstream;
+	::std::string m_section;
+	const ::std::string m_path;
+	::std::ifstream m_inputstream;
 };
 
 }
+}
 
-#endif // MUGENUTILS_H
+#endif // MUGENUTILS_HPP

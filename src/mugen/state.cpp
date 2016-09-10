@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -21,3 +21,8 @@
 
 #include "mugenutils.hpp"
 
+
+namespace Nugem {
+namespace Mugen {
+}
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -23,12 +23,11 @@
 #include <SDL.h>
 #include <vector>
 #include "input.hpp"
-#include "scene.hpp"
 #include "character.hpp"
+#include "window.hpp"
 #include "glgraphics.hpp"
 
-#define DEFAULT_WINDOW_WIDTH 800
-#define DEFAULT_WINDOW_HEIGHT 600
+namespace Nugem {
 
 class Scene;
 class Player;
@@ -39,24 +38,25 @@ public:
 	Game();
 	~Game();
 	void run();
-	GlGraphics & glGraphics() { return m_glGraphics; };
-	Scene * currentScene();
+	GlGraphics & glGraphics() { return mGlGraphics; };
+	Scene &currentScene();
 	InputManager & inputManager();
-	void setScene(Scene * newScene);
-	std::vector<Player *> players();
+	void changeScene(Scene *newScene);
+	auto &players() { return mPlayers; };
 	bool requestQuit();
 protected:
 	void update();
-	InputManager m_inputManager;
+	InputManager mInputManager;
 private:
-	SDL_Window * m_window;
-	SDL_GLContext m_glContext;
-	Scene * m_currentScene;
-	Scene * m_nextScene;
-	GlGraphics m_glGraphics;
-	std::vector<Player *> m_players;
-	bool m_continueMainLoop;
+	Window mWindow;
+	GlGraphics mGlGraphics;
+	std::unique_ptr<Scene> mCurrentScene;
+	std::unique_ptr<Scene> mNextScene;
+	std::vector<std::unique_ptr<Player>> mPlayers;
+	bool mContinueMainLoop;
 };
+
+}
 
 #endif // GAME_H
 

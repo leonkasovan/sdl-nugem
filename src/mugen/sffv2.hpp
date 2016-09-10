@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -26,7 +26,8 @@
 #include <unordered_map>
 #include <SDL.h>
 
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
 /**
  * SFFv2 sprite format, as documented in https://web.archive.org/web/20150510210608/http://elecbyte.com/wiki/index.php/SFFv2
@@ -72,7 +73,7 @@ public:
 	Sffv2(const char* filename);
 	~Sffv2();
 	void load();
-	void load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last);
+	void load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last);
 protected:
 	void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
 	void loadSffFile();
@@ -80,6 +81,7 @@ protected:
 	sffv2palette_t readPalette(std::ifstream & fileobj);
 	SDL_Surface * renderToSurface();
 private:
+	static const size_t READBUF_SIZE = 32;
 	std::string filename;
 	std::vector<sffv2sprite_t> sprites;
 	std::vector<sffv2palette_t> palettes;
@@ -95,6 +97,7 @@ private:
 	SDL_Texture * texture;
 };
 
+}
 }
 
 #endif // SFFV2_H

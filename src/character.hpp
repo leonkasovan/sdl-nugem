@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -31,18 +31,13 @@
 #include "mugen/sprites.hpp"
 #include "mugen/def.hpp"
 
+namespace Nugem {
+
 class CharacterLoadException: public std::runtime_error {
 public:
 explicit CharacterLoadException(const std::string& __arg): std::runtime_error(__arg) {};
 explicit CharacterLoadException(): std::runtime_error("Error loading character") {};
 };
-
-namespace mugen {
-class DefinitionFile;
-class AnimationData;
-class CharacterCommands;
-class SpriteLoader;
-}
 
 class Character
 {
@@ -52,13 +47,13 @@ public:
 	Character(Character&& character);
 	virtual ~Character();
 	virtual void handleEvent(const SDL_Event e);
-	mugen::DefinitionFile& def();
+	Mugen::DefinitionFile& def();
 	const std::string & id() const;
 	const std::string & name() const;
 	const std::string & dir() const;
-	const mugen::Sprite & currentSprite() const;
-	const mugen::Sprite & selectionSprite() const;
-	const mugen::Sprite & faceSprite() const;
+	const Mugen::Sprite & currentSprite() const;
+	const Mugen::Sprite & selectionSprite() const;
+	const Mugen::Sprite & faceSprite() const;
 	void loadForMenu();
 protected:
 	void loadCharacterDef(const char* filepath);
@@ -66,24 +61,24 @@ protected:
 	void loadCharacterCmd(const char* filepath);
 	std::string m_id;
 	std::string m_name;
-	mugen::DefinitionFile m_def;
-	mugen::AnimationData m_animations;
-	mugen::CharacterCommands m_cmd;
-	mugen::SpriteLoader m_spriteLoader;
+	Mugen::DefinitionFile m_def;
+	Mugen::AnimationData m_animations;
+	Mugen::CharacterCommands m_cmd;
+	Mugen::SpriteLoader m_spriteLoader;
 	unsigned int m_x;
 	unsigned int m_y;
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > m_sprites;
-	std::vector<mugen::Sprite> m_selectionSprite;
-	std::vector<mugen::Sprite> m_faceSprite;
+	std::vector< std::unordered_map< Mugen::Spriteref, Mugen::Sprite > > m_sprites;
+	std::vector<Mugen::Sprite> m_selectionSprite;
+	std::vector<Mugen::Sprite> m_faceSprite;
 private:
-	std::string m_directory;
-	std::string m_definitionfilename;
-	std::string m_spritefilename;
-	std::string m_mugenversion;
-	size_t m_currentPalette;
-	size_t m_currentAnimStep;
-	size_t m_currentGameTick;
-	mugen::spriteref m_currentSprite;
+	std::string mDirectory;
+	std::string mDefinitionFilename;
+	std::string mSpriteFilename;
+	std::string mMugenVersion;
+	size_t mCurrentPalette;
+	size_t mCurrentAnimStep;
+	size_t mCurrentGameTick;
+	Mugen::Spriteref mCurrentSprite;
 };
 
 class CharacterException: public std::exception
@@ -91,6 +86,8 @@ class CharacterException: public std::exception
 
 class CharacterSpriteError: public CharacterException
 {};
+
+}
 
 #endif // CHARACTER_H
 

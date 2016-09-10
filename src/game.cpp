@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -19,74 +19,59 @@
 
 #include "game.hpp"
 #include "character.hpp"
+#include "scene.hpp"
+#include "player.hpp"
 
 #include "scenemenu.hpp"
 
 #include <iostream>
 
-Game::Game(): m_currentScene(nullptr), m_nextScene(nullptr)
+namespace Nugem {
+
+Game::Game(): mGlGraphics(mWindow)
 {
-	// SDL initialization
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
-	// Initialize window
-	m_window = SDL_CreateWindow("NUGEM",
-	                          SDL_WINDOWPOS_CENTERED,
-	                          SDL_WINDOWPOS_CENTERED,
-	                          DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
-	                          SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-	if (m_window)
-		m_continueMainLoop = true;
+	if (mWindow)
+		mContinueMainLoop = true;
 	else
 		std::cerr << "Failed to open a window" << std::endl;
 }
 
 Game::~Game()
 {
-	if (m_currentScene)
-		delete m_currentScene;
-	if (m_nextScene)
-		delete m_nextScene;
 	// SDL deinitialization
-	m_glGraphics.finish();
-	SDL_DestroyWindow(m_window);
-	SDL_Quit();
+	mGlGraphics.finish();
 }
 
 void Game::update()
 {
 	SDL_Event e;
-	if (!m_currentScene->loaded())
-		m_currentScene->load(*this);
 	while (SDL_PollEvent(&e) != 0) {
-		m_inputManager.processSDLEvent(e);
+		mInputManager.processSDLEvent(e);
 	}
+	
+	mGlGraphics.clear();
 	// update
-	if (m_currentScene->loaded())
-		m_currentScene->update();
+	if (mCurrentScene) {
+		mCurrentScene->update();
+		mCurrentScene->render(mGlGraphics);
+	}
+	mGlGraphics.display();
 	
-	m_glGraphics.clear();
-	//Place your simulation code and rendering code here
-	if (m_currentScene)
-		m_currentScene->render(m_glGraphics);
-	m_glGraphics.display();
-	
-	if (m_nextScene) {
-		if (m_currentScene)
-			delete m_currentScene;
-		m_currentScene = m_nextScene;
-		m_nextScene = nullptr;
+	if (mNextScene) {
+		mCurrentScene.reset(nullptr);
+		mNextScene.swap(mCurrentScene);
 	}
 }
 
 void Game::run()
 {
-	m_inputManager.initialize(this);
-	m_currentScene = new SceneMenu();
-	m_glGraphics.initialize(this, m_window);
+	mInputManager.initialize(this);
+	changeScene(new SceneMenu(*this));
+	mGlGraphics.initialize(this);
 	// 60 fps
 	uint32_t tickdelay = 1000 / 60;
 	// Main game loop
-	while (m_continueMainLoop && !SDL_QuitRequested()) {
+	while (mContinueMainLoop && !SDL_QuitRequested()) {
 		uint32_t tick = SDL_GetTicks();
 		update();
 		uint32_t dt = SDL_GetTicks() - tick;
@@ -97,31 +82,24 @@ void Game::run()
 
 bool Game::requestQuit()
 {
-	m_continueMainLoop = false;
+	   mContinueMainLoop = false;
 	return true;
 }
 
 InputManager & Game::inputManager()
 {
-	return m_inputManager;
+	return mInputManager;
 }
 
-Scene * Game::currentScene()
+Scene &Game::currentScene()
 {
-	return m_currentScene;
+	return *mCurrentScene;
 }
 
-void Game::setScene(Scene * newScene)
+void Game::changeScene(Scene *newScene)
 {
-	if (m_nextScene) {
-		delete m_nextScene;
-		m_nextScene = nullptr;
-	}
-	m_nextScene = newScene;
+	mNextScene.reset(newScene);
 }
 
-std::vector< Player * > Game::players()
-{
-	return m_players;
-}
 
+}

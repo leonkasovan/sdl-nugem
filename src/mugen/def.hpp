@@ -4,7 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
 class DefinitionFile {
 private:
@@ -20,6 +21,7 @@ public:
 	const std::unordered_map<std::string, std::unordered_map<std::string, std::string>> & sections() const;
 };
 
+}
 }
 
 #endif // DEF_H

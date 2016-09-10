@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -20,9 +20,14 @@
 #ifndef GLGRAPHICS_H
 #define GLGRAPHICS_H
 
-#include <GL/gl.h>
 #include <SDL.h>
+#include <GL/glew.h>
+#include <SDL_opengl.h>
+#include <GL/glu.h>
 #include <unordered_map>
+#include "window.hpp"
+
+namespace Nugem {
 
 struct GlTexture {
 	GLuint tid = 0;
@@ -41,20 +46,25 @@ class Game;
 class GlGraphics
 {
 public:
-	GlGraphics();
+	GlGraphics(Window &);
 	~GlGraphics();
-	void initialize(Game * game, SDL_Window* window);
+	void initialize(Game * game);
 	void finish();
 	void clear();
 	GlTexture surfaceToTexture(const SDL_Surface * surface);
 	void render2DTexture(GlTexture& texture, const SDL_Rect * dstrect);
 	void display();
-	void windowSize(int* width, int* height);
 private:
-	SDL_Window * m_window;
-	SDL_GLContext m_sdlglctx;
-	Game * m_game;
-	GLfloat m_currentZ;
+	Window &mWindow;
+	Game * mGame;
+	SDL_GLContext mSDLGlCtx;
+	GLuint gProgramID = 0;
+	GLint gVertexPos2DLocation = -1;
+	GLuint gVBO = 0;
+	GLuint gIBO = 0;
+	GLfloat mCurrentZ;
 };
+
+}
 
 #endif // GLGRAPHICS_H

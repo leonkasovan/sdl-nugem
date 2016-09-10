@@ -9,7 +9,9 @@
 #include "fight/fight.hpp"
 #include "game.hpp"
 
-SceneMenu::SceneMenu()
+using namespace Nugem;
+
+SceneMenu::SceneMenu(Game &game): mGame(game)
 {
 	   m_bigFace = nullptr;
 }
@@ -59,17 +61,17 @@ SceneMenu::~SceneMenu()
 		delete m_bigFace;
 }
 
-bool SceneMenu::loader()
+bool SceneMenu::loading()
 {
 	findCharacters();
 	for (Character & chara : m_characters) {
 		chara.loadForMenu();
-		m_selectionfaces.push_back(m_game->glGraphics().surfaceToTexture(chara.selectionSprite().surface()));
+		m_selectionfaces.push_back(mGame.glGraphics().surfaceToTexture(chara.selectionSprite().surface()));
 	}
 	selectedCharacter = 0;
 	if (m_bigFace)
 		delete m_bigFace;
-	   m_bigFace = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
+	   m_bigFace = new GlTexture(mGame.glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
 	return true;
 }
 
@@ -77,15 +79,15 @@ void SceneMenu::update()
 {
 }
 
-void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
+void SceneMenu::receiveInput(InputDevice * device, InputState state)
 {
 	if (state.back == INPUT_B_PRESSED) {
-		m_game->requestQuit();
+		mGame.requestQuit();
 		return;
 	}
 	
 	if (state.start == INPUT_B_PRESSED) {
-		m_game->setScene(new Fight(new Character(m_characters.at(selectedCharacter))));
+		mGame.changeScene(new Fight(new Character(m_characters.at(selectedCharacter))));
 	}
 	
 	int value = 0;
@@ -100,7 +102,7 @@ void SceneMenu::receiveInput(InputDevice * device, inputstate_t state)
 		selectedCharacter %= m_characters.size();
 		if (m_bigFace)
 			delete m_bigFace;
-		      m_bigFace = new GlTexture(m_game->glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
+		      m_bigFace = new GlTexture(mGame.glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
 	}
 }
 

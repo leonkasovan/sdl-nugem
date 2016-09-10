@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -25,6 +25,8 @@
 
 #include <deque>
 
+namespace Nugem {
+
 class Player {
 public:
 	Player(unsigned int number);
@@ -33,12 +35,14 @@ public:
 	Character * getCharacter();
 	void setInputDevice(InputDevice * iD);
 	InputDevice * getInputDevice();
-	void receiveInput(inputstate_t & inputState);
+	void receiveInput(InputState & inputState);
 protected:
 	unsigned int m_number;
 	Character * m_character;
 	InputDevice * inputDevice;
-	std::deque<inputstate_t> inputs;
+	std::deque<InputState> inputs;
 };
+
+}
 
 #endif // PLAYER_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -21,30 +21,30 @@
 
 #include <iostream>
 
-GlGraphics::GlGraphics()
+namespace Nugem {
+
+GlGraphics::GlGraphics(Window &window): mWindow(window)
 {
+	//Use OpenGL 3.1 core
+	
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+	
+	// Get window context
+	
+	mSDLGlCtx = mWindow.createGlContext();
 }
 
 GlGraphics::~GlGraphics()
 {
 }
 
-void GlGraphics::windowSize(int * width, int * height)
+void GlGraphics::initialize(Game * game)
 {
-	SDL_GetWindowSize(m_window, width, height);
-}
-
-void GlGraphics::initialize(Game * game, SDL_Window * window)
-{
-	m_window = window;
-	m_sdlglctx = SDL_GL_CreateContext(m_window);
-	m_game = game;
+   mGame = game;
 	
-	int winw, winh;
-	
-	windowSize(&winw, &winh);
-	
-    glViewport(0, 0, winw, winh);
+    glViewport(0, 0, 1, 1);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 	glPushMatrix(); //Start phase
@@ -52,19 +52,19 @@ void GlGraphics::initialize(Game * game, SDL_Window * window)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glOrtho(0, winw, winh, 0, -1, 1);
+	glOrtho(0, 1, 1, 0, -1, 1);
 }
 
 void GlGraphics::finish()
 {
-	SDL_GL_DeleteContext(m_sdlglctx);
+	SDL_GL_DeleteContext(mSDLGlCtx);
 }
 
 void GlGraphics::clear()
 {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-	m_currentZ = 0;
+	   mCurrentZ = 0;
 }
 
 GlTexture GlGraphics::surfaceToTexture(const SDL_Surface * surface)
@@ -129,7 +129,7 @@ void GlGraphics::render2DTexture(GlTexture & texture, const SDL_Rect * dstrect)
 
 void GlGraphics::display()
 {
-	SDL_GL_SwapWindow(m_window);
+	mWindow.swapGlWindow();
 }
 
 std::unordered_map<GLuint, unsigned int> GlTexture::useCounters;
@@ -168,4 +168,4 @@ GlTexture::GlTexture(GlTexture && glTexture): tid(0), w(0), h(0)
 	std::swap(h, glTexture.h);
 }
 
-
+}

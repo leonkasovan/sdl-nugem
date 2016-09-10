@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -27,39 +27,36 @@
 #include "scene.hpp"
 #include "scenemenu.hpp"
 
+namespace Nugem {
+
 const char * InputManager::controllerDBfilename = "gamecontrollerdb.txt";
 
 InputManager::InputManager()
 {
 	SDL_JoystickEventState(SDL_ENABLE);
 	loadGameControllerDB();
-	m_game = nullptr;
+	   mGame = nullptr;
 }
 
 InputManager::~InputManager()
 {
-	for (size_t i = 0; i < m_devices.size(); i++)
-		delete m_devices[i];
 }
 
 unsigned int InputManager::initialize(Game * game)
 {
-	m_game = game;
-	for (size_t i = 0; i < m_devices.size(); i++)
-		delete m_devices[i];
-	m_devices.clear();
-	m_devices.push_back(new KeyboardInput(*this));
+	mGame = game;
+	mDevices.clear();
+	mDevices.push_back(std::unique_ptr<InputDevice>(new KeyboardInput(*this)));
 	for (int i = 0; i < SDL_NumJoysticks(); i++) {
 		if (SDL_IsGameController(i))
-			m_devices.push_back(new GameController(*this, i));
+			         mDevices.push_back(std::unique_ptr<InputDevice>(new GameController(*this, i)));
 		else
-			m_devices.push_back(new Joystick(*this, i));
+			         mDevices.push_back(std::unique_ptr<InputDevice>(new Joystick(*this, i)));
 	}
-	for (auto i = m_devices.begin(); i != m_devices.end(); i++)
+	for (auto i = mDevices.begin(); i != mDevices.end(); i++)
 		(*i)->initialize();
-	return m_devices.size();
+	return mDevices.size();
 }
-
 
 bool InputManager::loadGameControllerDB()
 {
@@ -89,13 +86,13 @@ void InputManager::processSDLEvent(const SDL_Event & e)
 	case SDL_JOYDEVICEREMOVED:
 		return;
 	};
-	for (unsigned int i = 0; i < m_devices.size(); i++)
-		m_devices[i]->receiveEvent(e);
+	for (unsigned int i = 0; i < mDevices.size(); i++)
+		      mDevices[i]->receiveEvent(e);
 }
 
 void InputDevice::receiveEvent(const SDL_Event & e)
 {
-	inputstate_t eventstate = processEvent(e);
+	   InputState eventstate = processEvent(e);
 	if ((eventstate.d != INPUT_D_UNDEFINED ||
 	        eventstate.a != INPUT_B_UNDEFINED ||
 	        eventstate.b != INPUT_B_UNDEFINED ||
@@ -107,40 +104,40 @@ void InputDevice::receiveEvent(const SDL_Event & e)
 	        eventstate.back != INPUT_B_UNDEFINED) &&
 		eventstate != m_previousChange) {
 		m_previousChange = eventstate;
-		m_manager.registerInput(this, eventstate);
+		      mManager.registerInput(this, eventstate);
 		
 		if (eventstate.d != INPUT_D_UNDEFINED)
-			m_currentState.d = eventstate.d;
+			         mCurrentState.d = eventstate.d;
 		
 		if (eventstate.a != INPUT_B_UNDEFINED)
-			m_currentState.a = eventstate.a;
+			         mCurrentState.a = eventstate.a;
 		
 		if (eventstate.b != INPUT_B_UNDEFINED)
-			m_currentState.b = eventstate.b;
+			         mCurrentState.b = eventstate.b;
 		
 		if (eventstate.c != INPUT_B_UNDEFINED)
-			m_currentState.c = eventstate.c;
+			         mCurrentState.c = eventstate.c;
 		
 		if (eventstate.x != INPUT_B_UNDEFINED)
-			m_currentState.x = eventstate.x;
+			         mCurrentState.x = eventstate.x;
 		
 		if (eventstate.y != INPUT_B_UNDEFINED)
-			m_currentState.y = eventstate.y;
+			         mCurrentState.y = eventstate.y;
 		
 		if (eventstate.z != INPUT_B_UNDEFINED)
-			m_currentState.z = eventstate.z;
+			         mCurrentState.z = eventstate.z;
 		
 		if (eventstate.start != INPUT_B_UNDEFINED)
-			m_currentState.start = eventstate.start;
+			         mCurrentState.start = eventstate.start;
 		
 		if (eventstate.back != INPUT_B_UNDEFINED)
-			m_currentState.back = eventstate.back;
+			         mCurrentState.back = eventstate.back;
 	}
 }
 
 InputDevice & InputManager::device(size_t n)
 {
-	return *m_devices[n];
+	return *mDevices[n];
 }
 
 void InputManager::assignDeviceToPlayer(InputDevice * device, Player * player)
@@ -149,12 +146,11 @@ void InputManager::assignDeviceToPlayer(InputDevice * device, Player * player)
 		device->assignToPlayer(player);
 }
 
-void InputManager::registerInput(InputDevice * device, inputstate_t state)
+void InputManager::registerInput(InputDevice * device, InputState state)
 {
-	if (device && m_game) {
-		Scene * scene = m_game->currentScene();
-		SceneMenu * smenu;
-		if (scene && (smenu = dynamic_cast<SceneMenu *>(scene))) {
+	if (device && mGame) {
+		Scene& scene = mGame->currentScene();
+		if (SceneMenu *smenu = dynamic_cast<SceneMenu *>(&scene)) {
 			smenu->receiveInput(device, state);
 		}
 	}
@@ -162,31 +158,31 @@ void InputManager::registerInput(InputDevice * device, inputstate_t state)
 
 const size_t InputManager::deviceNumber() const
 {
-	return m_devices.size();
+	return mDevices.size();
 }
 
-const inputstate_t InputDevice::getState() const
+const InputState InputDevice::getState() const
 {
-	return m_currentState;
+	return mCurrentState;
 }
 
-InputDevice::InputDevice(InputManager & manager): m_player(nullptr), m_manager(manager)
+InputDevice::InputDevice(InputManager & manager): mPlayer(nullptr), mManager(manager)
 {
 }
 
 bool InputDevice::hasPlayerAssigned() const
 {
-	return (m_player != nullptr);
+	return (mPlayer != nullptr);
 }
 
 Player * InputDevice::getAssignedPlayer()
 {
-	return m_player;
+	return mPlayer;
 }
 
-inputstate_t InputDevice::getState()
+InputState InputDevice::getState()
 {
-	return m_currentState;
+	return mCurrentState;
 }
 
 void InputDevice::initialize()
@@ -196,16 +192,16 @@ void InputDevice::initialize()
 
 void InputDevice::assignToPlayer(Player * assignedPlayer)
 {
-	m_player = assignedPlayer;
+	   mPlayer = assignedPlayer;
 }
 
 KeyboardInput::KeyboardInput(InputManager & manager): InputDevice(manager)
 {
 }
 
-inputstate_t KeyboardInput::processEvent(const SDL_Event & e)
+InputState KeyboardInput::processEvent(const SDL_Event & e)
 {
-	inputstate_t state;
+	   InputState state;
 	switch (e.type) {
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
@@ -215,7 +211,7 @@ inputstate_t KeyboardInput::processEvent(const SDL_Event & e)
 	return state;
 }
 
-const inputbutton KeyboardInput::evaluateKey(SDL_Scancode key)
+const InputButtonState KeyboardInput::evaluateKey(SDL_Scancode key)
 {
 	const uint8_t * keystate = SDL_GetKeyboardState(NULL);
 	if (keystate[key])
@@ -226,50 +222,50 @@ const inputbutton KeyboardInput::evaluateKey(SDL_Scancode key)
 
 void KeyboardInput::updateGlobalState()
 {
-	m_currentState.a = evaluateKey(scancodeA);
-	m_currentState.b = evaluateKey(scancodeB);
-	m_currentState.c = evaluateKey(scancodeC);
-	m_currentState.x = evaluateKey(scancodeX);
-	m_currentState.y = evaluateKey(scancodeY);
-	m_currentState.z = evaluateKey(scancodeZ);
-	m_currentState.start = evaluateKey(scancodeStart);
-	m_currentState.back = evaluateKey(scancodeBack);
+	   mCurrentState.a = evaluateKey(scancodeA);
+	   mCurrentState.b = evaluateKey(scancodeB);
+	   mCurrentState.c = evaluateKey(scancodeC);
+	   mCurrentState.x = evaluateKey(scancodeX);
+	   mCurrentState.y = evaluateKey(scancodeY);
+	   mCurrentState.z = evaluateKey(scancodeZ);
+	   mCurrentState.start = evaluateKey(scancodeStart);
+	   mCurrentState.back = evaluateKey(scancodeBack);
 	const uint8_t * keystate = SDL_GetKeyboardState(NULL);
 	if (keystate[scancodeUp]) {
 		if (keystate[scancodeRight]) {
-			m_currentState.d = INPUT_D_NE;
+			         mCurrentState.d = INPUT_D_NE;
 		}
 		else
 			if (keystate[scancodeLeft]) {
-				m_currentState.d = INPUT_D_NW;
+				        mCurrentState.d = INPUT_D_NW;
 			}
 			else {
-				m_currentState.d = INPUT_D_N;
+				        mCurrentState.d = INPUT_D_N;
 			}
 	}
 	else
 		if (keystate[scancodeDown]) {
 			if (keystate[scancodeRight]) {
-				m_currentState.d = INPUT_D_SE;
+				        mCurrentState.d = INPUT_D_SE;
 			}
 			else
 				if (keystate[scancodeLeft]) {
-					m_currentState.d = INPUT_D_SW;
+					       mCurrentState.d = INPUT_D_SW;
 				}
 				else {
-					m_currentState.d = INPUT_D_S;
+					       mCurrentState.d = INPUT_D_S;
 				}
 		}
 		else {
 			if (keystate[scancodeRight]) {
-				m_currentState.d = INPUT_D_E;
+				        mCurrentState.d = INPUT_D_E;
 			}
 			else
 				if (keystate[scancodeLeft]) {
-					m_currentState.d = INPUT_D_W;
+					       mCurrentState.d = INPUT_D_W;
 				}
 				else {
-					m_currentState.d = INPUT_D_NEUTRAL;
+					       mCurrentState.d = INPUT_D_NEUTRAL;
 				}
 		}
 }
@@ -279,7 +275,7 @@ GameController::GameController(InputManager & manager, const uint32_t jid): Inpu
 	m_gcsdl = SDL_GameControllerOpen(jid);
 }
 
-GameController::GameController(GameController && gameController): InputDevice(gameController.m_manager), m_jid(gameController.m_jid)
+GameController::GameController(GameController && gameController): InputDevice(gameController.mManager), m_jid(gameController.m_jid)
 {
 	m_gcsdl = nullptr;
 	std::swap(m_gcsdl, gameController.m_gcsdl);
@@ -291,14 +287,14 @@ GameController::~GameController()
 		SDL_GameControllerClose(m_gcsdl);
 }
 
-inputstate_t GameController::processEvent(const SDL_Event & e)
+InputState GameController::processEvent(const SDL_Event & e)
 {
-	inputstate_t state;
+	   InputState state;
 	switch (e.type) {
 	case SDL_CONTROLLERAXISMOTION: {
 		const SDL_ControllerAxisEvent & aevent = e.caxis;
 		if (aevent.axis == SDL_CONTROLLER_AXIS_LEFTX || aevent.axis == SDL_CONTROLLER_AXIS_LEFTY) {
-			inputdir dir = getDirection();
+			InputDirection dir = getDirection();
 			state.d = dir;
 		}
 		else
@@ -372,18 +368,18 @@ inputstate_t GameController::processEvent(const SDL_Event & e)
 void GameController::updateGlobalState()
 {
 	SDL_GameControllerUpdate();
-	m_currentState.a = getButtonValue(SDL_CONTROLLER_BUTTON_A);
-	m_currentState.b = getButtonValue(SDL_CONTROLLER_BUTTON_B);
-	m_currentState.c = getButtonValueForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-	m_currentState.x = getButtonValue(SDL_CONTROLLER_BUTTON_X);
-	m_currentState.y = getButtonValue(SDL_CONTROLLER_BUTTON_Y);
-	m_currentState.z = getButtonValue(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
-	m_currentState.start = getButtonValue(SDL_CONTROLLER_BUTTON_START);
-	m_currentState.back = getButtonValue(SDL_CONTROLLER_BUTTON_BACK);
-	m_currentState.d = getDirection();
+	   mCurrentState.a = getButtonValue(SDL_CONTROLLER_BUTTON_A);
+	   mCurrentState.b = getButtonValue(SDL_CONTROLLER_BUTTON_B);
+	   mCurrentState.c = getButtonValueForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	   mCurrentState.x = getButtonValue(SDL_CONTROLLER_BUTTON_X);
+	   mCurrentState.y = getButtonValue(SDL_CONTROLLER_BUTTON_Y);
+	   mCurrentState.z = getButtonValue(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+	   mCurrentState.start = getButtonValue(SDL_CONTROLLER_BUTTON_START);
+	   mCurrentState.back = getButtonValue(SDL_CONTROLLER_BUTTON_BACK);
+	   mCurrentState.d = getDirection();
 }
 
-inputbutton GameController::getButtonValue(SDL_GameControllerButton button)
+InputButtonState GameController::getButtonValue(SDL_GameControllerButton button)
 {
 	switch (SDL_GameControllerGetButton(m_gcsdl, button)) {
 	case 0:
@@ -394,14 +390,14 @@ inputbutton GameController::getButtonValue(SDL_GameControllerButton button)
 	return INPUT_B_UNDEFINED;
 }
 
-inputbutton GameController::getButtonValueForAxis(SDL_GameControllerAxis axis)
+InputButtonState GameController::getButtonValueForAxis(SDL_GameControllerAxis axis)
 {
 	if (SDL_GameControllerGetAxis(m_gcsdl, axis) >= threshold)
 		return INPUT_B_PRESSED;
 	return INPUT_B_RELEASED;
 }
 
-inputdir GameController::getDirection(Sint16 hor, Sint16 vert)
+InputDirection GameController::getDirection(Sint16 hor, Sint16 vert)
 {
 	if (hor <= - threshold) {
 		// Going to the left
@@ -442,7 +438,7 @@ inputdir GameController::getDirection(Sint16 hor, Sint16 vert)
 	return INPUT_D_NEUTRAL;
 }
 
-inputdir GameController::getDirection()
+InputDirection GameController::getDirection()
 {
 	Sint16 vert = SDL_GameControllerGetAxis(m_gcsdl, SDL_CONTROLLER_AXIS_LEFTY);
 	Sint16 hor = SDL_GameControllerGetAxis(m_gcsdl, SDL_CONTROLLER_AXIS_LEFTX);
@@ -454,7 +450,7 @@ Joystick::Joystick(InputManager & manager, const uint32_t jid): InputDevice(mana
 	m_joysdl = SDL_JoystickOpen(jid);
 }
 
-Joystick::Joystick(Joystick && joystick): InputDevice(joystick.m_manager), m_jid(joystick.m_jid)
+Joystick::Joystick(Joystick && joystick): InputDevice(joystick.mManager), m_jid(joystick.m_jid)
 {
 	m_joysdl = nullptr;
 	std::swap(m_joysdl, joystick.m_joysdl);
@@ -466,9 +462,9 @@ Joystick::~Joystick()
 		SDL_JoystickClose(m_joysdl);
 }
 
-inputstate_t Joystick::processEvent(const SDL_Event & e)
+InputState Joystick::processEvent(const SDL_Event & e)
 {
-	inputstate_t state;
+	   InputState state;
 	switch (e.type) {
 	case SDL_JOYAXISMOTION:
 		break;
@@ -486,6 +482,8 @@ inputstate_t Joystick::processEvent(const SDL_Event & e)
 
 void Joystick::updateGlobalState()
 {
+
+}
 
 }
 

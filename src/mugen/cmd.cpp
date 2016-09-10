@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -23,12 +23,14 @@
 #include <string>
 #include <memory>
 
-using namespace mugen;
 
-void mugen::CharacterCommands::readFile(const std::string & filepath)
+namespace Nugem {
+namespace Mugen {
+	
+void CharacterCommands::readFile(const std::string & filepath)
 {
-	mugen::MugenTextFile cmdfile(filepath);
-	mugen::MugenTextKeyValue kv;
+	MugenTextFile cmdfile(filepath);
+	MugenTextKeyValue kv;
 	std::unique_ptr<CommandDefinition> currentDefinition;
 	std::unique_ptr<StateEntry> currentStateEntry;
 	while ((kv = cmdfile.nextValue())) {
@@ -51,7 +53,7 @@ void mugen::CharacterCommands::readFile(const std::string & filepath)
 	}
 }
 
-std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCommands::readInputDefinition(const std::string& entryString)
+std::vector<std::unique_ptr<CharacterCommands::CommandInput>> CharacterCommands::readInputDefinition(const std::string& entryString)
 {
 	std::vector<std::unique_ptr<CharacterCommands::CommandInput>> result;
 	for (int index = 0; index < entryString.size(); index++)
@@ -156,4 +158,7 @@ std::vector<std::unique_ptr<CharacterCommands::CommandInput>> mugen::CharacterCo
 		}
 	}
 	return result;
+}
+
+}
 }

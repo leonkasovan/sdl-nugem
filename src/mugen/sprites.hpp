@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -26,24 +26,26 @@
 #include <vector>
 #include <fstream>
 
-class Character;
-
-namespace mugen {
-struct spriteref {
+namespace Nugem {
+namespace Mugen {
+	
+struct Spriteref {
 	int group;
 	int image;
-	spriteref(): group(0), image(0) {}
-	spriteref(int g, int i): group(g), image(i) {}
-	bool operator==(const spriteref & ref) const { return group == ref.group && image == ref.image; }
+	Spriteref(): group(0), image(0) {}
+	Spriteref(int g, int i): group(g), image(i) {}
+	bool operator==(const Spriteref & ref) const { return group == ref.group && image == ref.image; }
 };
+
+}
 }
 
 namespace std {
 
   template <>
-  struct hash<mugen::spriteref>
+  struct hash<Nugem::Mugen::Spriteref>
   {
-    std::size_t operator()(const mugen::spriteref & k) const
+    std::size_t operator()(const Nugem::Mugen::Spriteref & k) const
     {
       using std::size_t;
       using std::hash;
@@ -55,22 +57,26 @@ namespace std {
 
 }
 
-namespace mugen {
+namespace Nugem {
 
+class Character;
+
+namespace Mugen {
+	
 class Sprite {
 public:
-	Sprite(spriteref reference, SDL_Surface * surface);
-	Sprite(spriteref reference, SDL_Surface * surface, int palette);
+	Sprite(Spriteref reference, SDL_Surface * surface);
+	Sprite(Spriteref reference, SDL_Surface * surface, int palette);
 	virtual ~Sprite();
 	Sprite(const Sprite & originalSprite);
 	Sprite(Sprite && originalSprite);
 	Sprite & operator=(const Sprite & originalSprite);
 	Sprite & operator=(Sprite && originalSprite);
-	const spriteref ref() const { return m_ref; };
+	const Spriteref ref() const { return m_ref; };
 	const SDL_Surface * surface() const { return m_surface; };
 	const int palette() const { return m_npalette; };
 protected:
-	spriteref m_ref;
+	Spriteref m_ref;
 	int m_npalette;
 	SDL_Surface * m_surface;
 	static SDL_Surface * copySurface(SDL_Surface * surface);
@@ -80,11 +86,11 @@ class SpriteHandler {
 public:
 	virtual ~SpriteHandler() {};
 	virtual void load() = 0;
-	virtual void load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last) = 0;
-	std::vector<std::unordered_map<spriteref, Sprite>> sprites() { return m_sprites; };
+	virtual void load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last) = 0;
+	std::vector<std::unordered_map<Spriteref, Sprite>> sprites() { return m_sprites; };
 	
 protected:
-	std::vector<std::unordered_map<spriteref, Sprite>> m_sprites;
+	std::vector<std::unordered_map<Spriteref, Sprite>> m_sprites;
 };
 
 // Function for both SFFv1 and SFFv2 sprites
@@ -99,9 +105,9 @@ class SpriteLoader {
 public:
 	SpriteLoader();
 	void initialize(const std::string & sffpath, Character * character);
-	std::vector<std::unordered_map<spriteref, Sprite>> load();
-	std::vector<std::unordered_map<spriteref, Sprite>> load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last);
-	std::unordered_map<spriteref, Sprite> loadForPalette(int palette);
+	std::vector<std::unordered_map<Spriteref, Sprite>> load();
+	std::vector<std::unordered_map<Spriteref, Sprite>> load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last);
+	std::unordered_map<Spriteref, Sprite> loadForPalette(int palette);
 	bool isInitialized() const;
 protected:
 	SpriteHandler * createHandler();
@@ -110,6 +116,7 @@ protected:
 	Character * m_character;
 };
 
+}
 }
 
 #endif // MUGEN_SPRITES_H

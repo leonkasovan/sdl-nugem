@@ -1,13 +1,12 @@
-#ifndef SCENE_FIGHT_H
-#define SCENE_FIGHT_H
+#ifndef FIGHT_HPP
+#define FIGHT_HPP
 
 #include "../scene.hpp"
-#include "../character.hpp"
+#include "fightcharacter.hpp"
+#include <array>
+#include <memory>
 
-class FightCharacter
-{
-  
-};
+namespace Nugem {
 
 class Fight: public Scene
 {
@@ -16,9 +15,11 @@ public:
 	virtual ~Fight();
 	virtual void update();
 	virtual bool render(GlGraphics & glGraphics);
-protected:
-	virtual bool loader();
-	Character * m_charLeft;
+	virtual bool loading();
+private:
+	std::array<std::unique_ptr<FightCharacter>, 2> mCharacters;
 };
 
-#endif // SCENE_FIGHT_H
+}
+
+#endif // FIGHT_HPP

@@ -17,20 +17,22 @@ set(SOURCE_FILES
 	${SOURCEDIR}/mugen/sffv2.cpp
 	${SOURCEDIR}/script/script.cpp
 	${SOURCEDIR}/input.cpp
+	${SOURCEDIR}/window.cpp
 	${SOURCEDIR}/glgraphics.cpp
 	${SOURCEDIR}/character.cpp
     ${SOURCEDIR}/player.cpp
     ${SOURCEDIR}/fight/fight.cpp
+    ${SOURCEDIR}/fight/fightcharacter.cpp
     ${SOURCEDIR}/scenemenu.cpp
-    ${SOURCEDIR}/scene.cpp
+    ${SOURCEDIR}/sceneloader.cpp
     ${SOURCEDIR}/game.cpp
     ${SOURCEDIR}/main.cpp
 )
 
 add_executable(${PROJECT} ${SOURCE_FILES})
-# Using C++11
-set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD 11)
-set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD_REQUIRED 11)
+# Using C++14
+set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD_REQUIRED 14)
 
 # Find SDL2
 INCLUDE(FindPkgConfig REQUIRED)
@@ -38,5 +40,5 @@ PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
 PKG_CHECK_MODULES(GL REQUIRED gl)
 include_directories(${SDL2_INCLUDE_DIRS} ${GL_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT} ${SDL2_LIBRARIES} ${GL_LIBRARIES})
+target_link_libraries(${PROJECT} ${SDL2_LIBRARIES} ${GL_LIBRARIES} pthread)
 install(TARGETS ${PROJECT} DESTINATION bin)

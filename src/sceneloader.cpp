@@ -17,4 +17,27 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
+#include "sceneloader.hpp"
+
+namespace Nugem {
+
+SceneLoader::SceneLoader(Game &game, Scene *scene): mGame(game), mScene(scene), mFuture(std::async(std::launch::async, [&]() { return scene->loading(); } ))
+{
+}
+
+void SceneLoader::update()
+{
+	
+}
+
+bool SceneLoader::render(GlGraphics & glGraphics)
+{
+	return true;
+}
+
+bool SceneLoader::loading()
+{
+	return true;
+}
+
+}

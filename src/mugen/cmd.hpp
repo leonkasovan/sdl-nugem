@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  *
  * This file is part of Nugem.
  *
@@ -25,7 +25,9 @@
 #include <string>
 #include <regex>
 
-namespace mugen {
+
+namespace Nugem {
+namespace Mugen {
 
 class CharacterCommands {
 public:
@@ -82,6 +84,7 @@ private:
 	static const std::regex sectionStateEntry;
 };
 
+}
 }
 
 #endif // CMD_H

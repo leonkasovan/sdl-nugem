@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -29,9 +29,8 @@
 #include <unordered_map>
 #include <SDL.h>
 
-class Character;
-
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
 struct sffv1color_t {
 	uint8_t red;
@@ -66,7 +65,7 @@ public:
 	Sffv1(Character& character, const char* filename);
 	~Sffv1();
 	void load();
-	void load(std::vector< spriteref >::iterator first, std::vector< spriteref >::iterator last);
+	void load(std::vector< Spriteref >::iterator first, std::vector< Spriteref >::iterator last);
 protected:
 	void loadSffFile();
 	void loadSharedPalettes();
@@ -76,6 +75,7 @@ protected:
 	sffv1palette_t getPaletteForSprite(size_t spritenumber);
 	SDL_Surface * renderToSurface();
 private:
+	static const size_t READBUF_SIZE = 12;
 	Character & character;
 	std::string filename;
 	size_t currentSprite;
@@ -88,6 +88,7 @@ private:
 	std::unordered_map<size_t, sffv1group_t> groups;
 };
 
+}
 }
 
 #endif // SFFV1_H

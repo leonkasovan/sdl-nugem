@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -24,9 +24,10 @@
 #include <iostream>
 #include <array>
 
-#define READBUF_SIZE 32
+namespace Nugem {
+namespace Mugen {
 
-mugen::Sffv2::Sffv2(const char * filename): filename(filename)
+Sffv2::Sffv2(const char * filename): filename(filename)
 {
 	currentSprite = 0;
 	currentPalette = 0;
@@ -38,7 +39,7 @@ mugen::Sffv2::Sffv2(const char * filename): filename(filename)
 	loadSffFile();
 }
 
-mugen::Sffv2::~Sffv2()
+Sffv2::~Sffv2()
 {
 	if (ldata != nullptr)
 		delete [] ldata;
@@ -46,7 +47,7 @@ mugen::Sffv2::~Sffv2()
 		delete [] tdata;
 }
 
-void mugen::Sffv2::loadSffFile()
+void Sffv2::loadSffFile()
 {
 	uint32_t fileptr;
 	uint8_t * readbuf[READBUF_SIZE];
@@ -95,20 +96,20 @@ void mugen::Sffv2::loadSffFile()
 
 	// Going to first sprite data
 	charfile.seekg(first_sprite_offset, std::ios::beg);
-	for (int i_sprite = 0; i_sprite < nsprites; i_sprite++) {
+	for (size_t i_sprite = 0; i_sprite < nsprites; i_sprite++) {
 		sprites.push_back(readSprite(charfile));
 	}
 
 	// Going to first palette data
 	charfile.seekg(first_palette_offset, std::ios::beg);
-	for (int i_palette = 0; i_palette < npalettes; i_palette++) {
+	for (size_t i_palette = 0; i_palette < npalettes; i_palette++) {
 		palettes.push_back(readPalette(charfile));
 	}
 
 	charfile.close();
 }
 
-mugen::sffv2sprite_t mugen::Sffv2::readSprite(std::ifstream & fileobj)
+sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
 {
 	sffv2sprite_t sprite;
 	sprite.groupno = read_uint16(fileobj);
@@ -129,7 +130,7 @@ mugen::sffv2sprite_t mugen::Sffv2::readSprite(std::ifstream & fileobj)
 	return sprite;
 }
 
-mugen::sffv2palette_t mugen::Sffv2::readPalette(std::ifstream & fileobj)
+sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
 {
 	sffv2palette_t palette;
 	palette.groupno = read_uint16(fileobj);
@@ -141,7 +142,7 @@ mugen::sffv2palette_t mugen::Sffv2::readPalette(std::ifstream & fileobj)
 	return palette;
 }
 
-void mugen::Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
+void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
 {
 	if (indexPixel < surfaceSize) {
 		uint32_t * pixels = (uint32_t *) surface->pixels;
@@ -158,7 +159,7 @@ void mugen::Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, 
 	}
 }
 
-SDL_Surface * mugen::Sffv2::renderToSurface()
+SDL_Surface * Sffv2::renderToSurface()
 {
 	Uint32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -253,7 +254,7 @@ SDL_Surface * mugen::Sffv2::renderToSurface()
 				if (!flag) { // RLE packet (short or long)
 					uint8_t color = sdata[i_byte] & 0x1F;
 					uint32_t run_length = sdata[i_byte] & 0xE0;
-					int run_count;
+					size_t run_count;
 					if (run_length > 0) { // short RLE packet
 						run_length >>= 5; // the color runs in 1 to 7 pixels, so it's mapped on 3 bits all right
 					}
@@ -320,33 +321,36 @@ SDL_Surface * mugen::Sffv2::renderToSurface()
 	return surface;
 }
 
-void mugen::Sffv2::load()
+void Sffv2::load()
 {
 	m_sprites.clear();
 	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-		std::unordered_map<spriteref, Sprite> currentPaletteSprites;
+		std::unordered_map<Spriteref, Sprite> currentPaletteSprites;
 		for (currentSprite = 0; currentSprite < sprites.size(); currentSprite++) {
 			sffv2sprite_t & sprite = sprites[currentSprite];
-			spriteref ref(sprite.groupno, sprite.itemno);
-			currentPaletteSprites.insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+			Spriteref ref(sprite.groupno, sprite.itemno);
+			currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
 		}
 		m_sprites.push_back(currentPaletteSprites);
 	}
 }
 
-void mugen::Sffv2::load(std::vector<spriteref>::iterator first, std::vector<spriteref>::iterator last)
+void Sffv2::load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last)
 {
 	m_sprites.clear();
 	for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-		m_sprites.push_back(std::unordered_map<spriteref, Sprite>());
+		m_sprites.push_back(std::unordered_map<Spriteref, Sprite>());
 	}
 	
 	for (; first != last; first++) {
 		for (currentPalette = 0; currentPalette < palettes.size(); currentPalette++) {
-			spriteref & ref = *first;
+			Spriteref & ref = *first;
 			currentSprite = groups[ref.group].i[ref.image];
-			m_sprites[currentPalette].insert(std::pair<spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
+			m_sprites[currentPalette].insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), currentPalette)));
 		}
 	}
+}
+
+}
 }
 

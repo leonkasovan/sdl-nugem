@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -29,17 +29,20 @@
 #include "mugen/sffv1.hpp"
 #include "mugen/sffv2.hpp"
 
+
+namespace Nugem {
+
 Character::Character(const char * charid): m_id(charid)
 {
-	m_currentPalette = 0;
-	m_currentAnimStep = 0;
-	m_directory = "chars/" + m_id;
-	m_definitionfilename = m_id + ".def";
-	loadCharacterDef((m_directory + "/" + m_definitionfilename).c_str());
+	   mCurrentPalette = 0;
+	   mCurrentAnimStep = 0;
+	   mDirectory = "chars/" + m_id;
+	   mDefinitionFilename = m_id + ".def";
+	loadCharacterDef((mDirectory + "/" + mDefinitionFilename).c_str());
 	std::string cmdfile = (std::string) m_def["files"]["cmd"];
-	loadCharacterCmd((m_directory + "/" + cmdfile).c_str());
+	loadCharacterCmd((mDirectory + "/" + cmdfile).c_str());
 	std::string airfile = (std::string) m_def["files"]["anim"];
-	loadCharacterAnimations((m_directory + "/" + airfile).c_str());
+	loadCharacterAnimations((mDirectory + "/" + airfile).c_str());
 }
 
 Character::Character(Character && character)
@@ -49,11 +52,11 @@ Character::Character(Character && character)
 	std::swap(m_name, character.m_name);
 	std::swap(m_x, character.m_x);
 	std::swap(m_y, character.m_y);
-	std::swap(m_currentPalette, character.m_currentPalette);
-	std::swap(m_currentAnimStep, character.m_currentAnimStep);
-	std::swap(m_directory, character.m_directory);
-	std::swap(m_definitionfilename, character.m_definitionfilename);
-	std::swap(m_spritefilename, character.m_spritefilename);
+	std::swap(mCurrentPalette, character.mCurrentPalette);
+	std::swap(mCurrentAnimStep, character.mCurrentAnimStep);
+	std::swap(mDirectory, character.mDirectory);
+	std::swap(mDefinitionFilename, character.mDefinitionFilename);
+	std::swap(mSpriteFilename, character.mSpriteFilename);
 	std::swap(m_animations, character.m_animations);
 	std::swap(m_def, character.m_def);
 }
@@ -76,21 +79,21 @@ const std::string & Character::name() const
 	return m_name;
 }
 
-mugen::DefinitionFile & Character::def()
+Mugen::DefinitionFile & Character::def()
 {
 	return m_def;
 }
 
 const std::string & Character::dir() const
 {
-	return m_directory;
+	return mDirectory;
 }
 
 void Character::loadCharacterDef(const char * filepath)
 {
-	m_def = mugen::DefinitionFile(filepath);
-	m_mugenversion = (std::string) m_def["info"]["mugenversion"];
-	m_spritefilename = (std::string) m_def["files"]["sprite"];
+	m_def = Mugen::DefinitionFile(filepath);
+	   mMugenVersion = (std::string) m_def["info"]["mugenversion"];
+	   mSpriteFilename = (std::string) m_def["files"]["sprite"];
 }
 
 void Character::loadCharacterCmd(const char * filepath)
@@ -100,15 +103,15 @@ void Character::loadCharacterCmd(const char * filepath)
 
 void Character::loadCharacterAnimations(const char * filepath)
 {
-	m_animations = mugen::AnimationData(filepath);
+	m_animations = Mugen::AnimationData(filepath);
 }
 /*
 void Character::render()
 {
 	int h, w;
 	//SDL_GetRendererOutputSize(renderer, &w, &h);
-	mugen::animation_t & animation = curAnimIterator->second;
-	mugen::animstep_t & animstep = animation.steps[currentAnimStep];
+	Mugen::animation_t & animation = curAnimIterator->second;
+	Mugen::animstep_t & animstep = animation.steps[currentAnimStep];
 	spriteHandler->setSprite(animstep.group, animstep.image);
 	currentGameTick++;
 	if (currentGameTick >= animstep.ticks) {
@@ -183,36 +186,36 @@ void Character::handleEvent(const SDL_Event e)
 	}*/
 }
 
-const mugen::Sprite & Character::currentSprite() const
+const Mugen::Sprite & Character::currentSprite() const
 {
-	return m_sprites.at(m_currentPalette).at(m_currentSprite);
+	return m_sprites.at(mCurrentPalette).at(mCurrentSprite);
 }
 
 void Character::loadForMenu()
 {
 	if (!m_spriteLoader.isInitialized())
-		m_spriteLoader.initialize(m_directory + "/" + m_spritefilename, this);
-	std::vector<mugen::spriteref> menurefs { mugen::spriteref(9000, 0), mugen::spriteref(9000, 1) };
-	std::vector< std::unordered_map< mugen::spriteref, mugen::Sprite > > menusprites = m_spriteLoader.load(menurefs.begin(), menurefs.end());
-	m_currentPalette = 0;
+		m_spriteLoader.initialize(mDirectory + "/" + mSpriteFilename, this);
+	std::vector<Mugen::Spriteref> menurefs { Mugen::Spriteref(9000, 0), Mugen::Spriteref(9000, 1) };
+	std::vector< std::unordered_map< Mugen::Spriteref, Mugen::Sprite > > menusprites = m_spriteLoader.load(menurefs.begin(), menurefs.end());
+	   mCurrentPalette = 0;
 	for ( size_t i = 0; i < menusprites.size(); i++) {
-		std::unordered_map< mugen::spriteref, mugen::Sprite > & palettesprites = menusprites[i]; 
-		m_selectionSprite.push_back(palettesprites.at(mugen::spriteref(9000, 0)));
-		m_faceSprite.push_back(palettesprites.at(mugen::spriteref(9000, 1)));
+		std::unordered_map< Mugen::Spriteref, Mugen::Sprite > & palettesprites = menusprites[i]; 
+		m_selectionSprite.push_back(palettesprites.at(Mugen::Spriteref(9000, 0)));
+		m_faceSprite.push_back(palettesprites.at(Mugen::Spriteref(9000, 1)));
 	}
 }
 
-const mugen::Sprite & Character::faceSprite() const
+const Mugen::Sprite & Character::faceSprite() const
 {
-	return m_faceSprite[m_currentPalette];
+	return m_faceSprite[mCurrentPalette];
 }
 
-const mugen::Sprite & Character::selectionSprite() const
+const Mugen::Sprite & Character::selectionSprite() const
 {
-	return m_selectionSprite[m_currentPalette];
+	return m_selectionSprite[mCurrentPalette];
 }
 
-
+}
 
 
 

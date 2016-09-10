@@ -1,9 +1,10 @@
-#ifndef AIR_H
-#define AIR_H
+#ifndef AIR_HPP
+#define AIR_HPP
 
 #include "mugenutils.hpp"
 
-namespace mugen {
+namespace Nugem {
+namespace Mugen {
 
 struct animstep_t {
 	// values separated by a comma in the file
@@ -28,28 +29,29 @@ struct animboxlist_t {
 };
 
 struct animation_t {
-	std::vector<animbox_t> boxes;
-	std::vector<animstep_t> steps;
+	::std::vector<animbox_t> boxes;
+	::std::vector<animstep_t> steps;
 	size_t loopstart;
 	animation_t() {
 			loopstart = 0;
 	}
 };
 
-class AnimationData: public std::map<size_t, animation_t> {
+class AnimationData: public ::std::map<size_t, animation_t> {
 public:
 	AnimationData();
-	AnimationData(const std::string & filepath);
+	AnimationData(const ::std::string & filepath);
 	AnimationData(AnimationData && animationData);
 	AnimationData& operator=(AnimationData && animationData);
 	AnimationData& operator=(const AnimationData & animationData);
-	AnimationData& readFile(const std::string & filepath);
-	static const std::regex regexSection;
-	static const std::regex regexClsnInit;
-	static const std::regex regexClsn;
-	static const std::regex regexStep;
+	AnimationData& readFile(const ::std::string & filepath);
+	static const ::std::regex regexSection;
+	static const ::std::regex regexClsnInit;
+	static const ::std::regex regexClsn;
+	static const ::std::regex regexStep;
 };
 
 }
+}
 
-#endif // AIR_H
+#endif // AIR_HPP

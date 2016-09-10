@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -17,12 +17,15 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+#include <SDL.h>
 #include "game.hpp"
 #include <iostream>
 
-int main (int argc, char ** argv)
+int main (int, char **)
 {
-	Game game;
-	game.run();
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
+	Nugem::Game().run();
+	SDL_Quit();
 	return 0;
 }

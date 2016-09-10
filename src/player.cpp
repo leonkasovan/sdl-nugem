@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Victor Nivet
+ * Copyright (c) 2016 Victor Nivet
  * 
  * This file is part of Nugem.
  * 
@@ -18,6 +18,8 @@
 */
 
 #include "player.hpp"
+
+namespace Nugem {
 
 Player::Player(unsigned int number): m_number(number)
 {
@@ -50,7 +52,9 @@ void Player::setInputDevice(InputDevice * iD)
 	inputDevice = iD;
 }
 
-void Player::receiveInput(inputstate_t & inputState)
+void Player::receiveInput(InputState & inputState)
 {
 	inputs.push_back(inputState);
+}
+
 }
