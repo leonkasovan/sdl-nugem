@@ -4,13 +4,24 @@
 #include "scene.hpp"
 #include "character.hpp"
 
+#include "glsprite.hpp"
+
 #include <vector>
+#include <memory>
 
 namespace Nugem {
 
+class MenuCharacter {
+public:
+	MenuCharacter(Character *);
+	Character &charObject();
+private:
+	std::unique_ptr<Character> mCharacter;
+};
+
 class Game;
 
-class SceneMenu: public Scene {
+class SceneMenu: public Scene, public InputReceiver {
 public:
 	SceneMenu(Game &);
 	~SceneMenu();
@@ -20,10 +31,9 @@ public:
 	bool loading();
 protected:
 	void findCharacters();
-	std::vector<Character> m_characters;
-	std::vector<GlTexture> m_selectionfaces;
+	std::vector<MenuCharacter> mCharacters;
+	std::unique_ptr<GlSpriteCollection> mTextureAtlas;
 	Game &mGame;
-	GlTexture * m_bigFace;
 	int selectedCharacter;
 };
 

@@ -22,13 +22,14 @@
 #include "scene.hpp"
 #include "player.hpp"
 
+#include "sceneloader.hpp"
 #include "scenemenu.hpp"
 
 #include <iostream>
 
 namespace Nugem {
 
-Game::Game(): mGlGraphics(mWindow)
+Game::Game(): mGlGraphics(mWindow), mEventHandler(*this)
 {
 	if (mWindow)
 		mContinueMainLoop = true;
@@ -44,10 +45,7 @@ Game::~Game()
 
 void Game::update()
 {
-	SDL_Event e;
-	while (SDL_PollEvent(&e) != 0) {
-		mInputManager.processSDLEvent(e);
-	}
+	mEventHandler.handleSDLEvents();
 	
 	mGlGraphics.clear();
 	// update
@@ -56,11 +54,6 @@ void Game::update()
 		mCurrentScene->render(mGlGraphics);
 	}
 	mGlGraphics.display();
-	
-	if (mNextScene) {
-		mCurrentScene.reset(nullptr);
-		mNextScene.swap(mCurrentScene);
-	}
 }
 
 void Game::run()
@@ -91,6 +84,11 @@ InputManager & Game::inputManager()
 	return mInputManager;
 }
 
+Window &Game::window()
+{
+	return mWindow;
+}
+
 Scene &Game::currentScene()
 {
 	return *mCurrentScene;
@@ -98,7 +96,12 @@ Scene &Game::currentScene()
 
 void Game::changeScene(Scene *newScene)
 {
-	mNextScene.reset(newScene);
+	mCurrentScene.reset(new SceneLoader(*this, newScene));
+}
+
+void Game::loadedScene(Scene *loadedScene)
+{
+	mCurrentScene.reset(loadedScene);
 }
 
 

@@ -30,4 +30,14 @@ EventHandler::~EventHandler()
 {
 }
 
+void EventHandler::handleSDLEvents()
+{
+	
+	SDL_Event e;
+	while (SDL_PollEvent(&e) != 0) {
+		mGame.inputManager().processSDLEvent(e);
+		mGame.window().processSDLEvent(e);
+	}
+}
+
 }

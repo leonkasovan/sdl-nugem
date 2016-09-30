@@ -18,16 +18,31 @@
 */
 
 #include "sceneloader.hpp"
+#include <iostream>
+#include "game.hpp"
 
 namespace Nugem {
 
-SceneLoader::SceneLoader(Game &game, Scene *scene): mGame(game), mScene(scene), mFuture(std::async(std::launch::async, [&]() { return scene->loading(); } ))
+SceneLoader::SceneLoader(Game &game, Scene *scene): mGame(game), mScene(scene)
 {
+	resetFuture();
 }
 
 void SceneLoader::update()
 {
-	
+	if (mFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+		if (!mFuture.get()) {
+			resetFuture();
+			return;
+		}
+		mScene->update();
+		mGame.loadedScene(mScene.release());
+	}
+}
+
+void SceneLoader::resetFuture()
+{
+	mFuture = std::async(std::launch::async, [&]() { return mScene->loading(); });
 }
 
 bool SceneLoader::render(GlGraphics & glGraphics)

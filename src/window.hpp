@@ -22,6 +22,7 @@
 
 #include <SDL.h>
 #include <string>
+#include <tuple>
 
 namespace Nugem {
 
@@ -29,9 +30,12 @@ class Window {
 public:
 	Window();
 	~Window();
+	void processSDLEvent(const SDL_Event &);
 	void resizeToFullscreen();
 	void swapGlWindow();
 	SDL_GLContext createGlContext();
+	size_t width();
+	size_t height();
 	
 	operator bool() const;
 private:
@@ -39,6 +43,8 @@ private:
 	const static unsigned int DEFAULT_WINDOW_HEIGHT = 480;
 	SDL_Window *mSDLWindow;
 	std::string mTitle = "NUGEM";
+	size_t mWidth;
+	size_t mHeight;
 };
 
 }

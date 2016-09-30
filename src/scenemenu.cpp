@@ -9,26 +9,21 @@
 #include "fight/fight.hpp"
 #include "game.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
 using namespace Nugem;
 
 SceneMenu::SceneMenu(Game &game): mGame(game)
 {
-	   m_bigFace = nullptr;
 }
 
 bool SceneMenu::render(GlGraphics & glGraphics)
 {
-	int ncols = 8;
-	int rw = 50;
-	int rh = 50;
-	int margin = 20;
-	for (size_t i = 0; i < m_characters.size(); i++) {
-		SDL_Rect rectangle { rw * 2 * ( (int) i % ncols), rh * 2 * ( (int) i / ncols), rw, rh};
-		glGraphics.render2DTexture(m_selectionfaces[i], &rectangle);
-	}
-	if (m_bigFace) {
-		SDL_Rect bigrect { 20, 20, -1, -1 };
-		glGraphics.render2DTexture(*m_bigFace, &bigrect);
+	SDL_Rect location{ 0, 0, 1920, 1080};
+	for (size_t i = 0; i < mTextureAtlas->size(); i++) {
+		mTextureAtlas->display(glGraphics, i, location);
+		location.y += i * 70 + 10;
 	}
 	return true;
 }
@@ -44,7 +39,7 @@ void SceneMenu::findCharacters()
 			if (name[0] == '.')
 				continue;
 			try {
-				m_characters.push_back(Character(name));
+				mCharacters.emplace_back(new Character(name));
 			}
 			catch
 				(CharacterLoadException & error) {
@@ -57,21 +52,20 @@ void SceneMenu::findCharacters()
 
 SceneMenu::~SceneMenu()
 {
-	if (m_bigFace)
-		delete m_bigFace;
 }
 
 bool SceneMenu::loading()
 {
 	findCharacters();
-	for (Character & chara : m_characters) {
-		chara.loadForMenu();
-		m_selectionfaces.push_back(mGame.glGraphics().surfaceToTexture(chara.selectionSprite().surface()));
+	GlSpriteCollectionBuilder textureAtlasBuilder;
+	std::vector<Mugen::Spriteref> menurefs { Mugen::Spriteref(9000, 0), Mugen::Spriteref(9000, 1) };
+	for (auto & chara : mCharacters) {
+		auto menusprites = chara.charObject().spriteLoader().load(menurefs.begin(), menurefs.end());
+		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
+		break; // debug
+		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
 	}
-	selectedCharacter = 0;
-	if (m_bigFace)
-		delete m_bigFace;
-	   m_bigFace = new GlTexture(mGame.glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
+	mTextureAtlas.reset(textureAtlasBuilder.build());
 	return true;
 }
 
@@ -81,29 +75,15 @@ void SceneMenu::update()
 
 void SceneMenu::receiveInput(InputDevice * device, InputState state)
 {
-	if (state.back == INPUT_B_PRESSED) {
-		mGame.requestQuit();
-		return;
-	}
-	
-	if (state.start == INPUT_B_PRESSED) {
-		mGame.changeScene(new Fight(new Character(m_characters.at(selectedCharacter))));
-	}
-	
-	int value = 0;
-	
-	if (state.d >= 7)
-		value++;
-	if (state.d > 0 && state.d <= 3)
-		value--;
-	
-	if (value) {
-		selectedCharacter += m_characters.size() + value;
-		selectedCharacter %= m_characters.size();
-		if (m_bigFace)
-			delete m_bigFace;
-		      m_bigFace = new GlTexture(mGame.glGraphics().surfaceToTexture(m_characters.at(selectedCharacter).faceSprite().surface()));
-	}
+}
+
+Nugem::MenuCharacter::MenuCharacter(Nugem::Character *character): mCharacter(character)
+{
+}
+
+Nugem::Character & Nugem::MenuCharacter::charObject()
+{
+	return *(mCharacter.get());
 }
 
 

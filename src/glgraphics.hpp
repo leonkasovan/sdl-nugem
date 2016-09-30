@@ -20,12 +20,15 @@
 #ifndef GLGRAPHICS_H
 #define GLGRAPHICS_H
 
+#include "window.hpp"
+
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include <GL/glu.h>
+#include <vector>
+#include <memory>
 #include <unordered_map>
-#include "window.hpp"
 
 namespace Nugem {
 
@@ -33,15 +36,37 @@ struct GlTexture {
 	GLuint tid = 0;
 	int w;
 	int h;
-	GlTexture(GLuint tid, int w, int h);
-	GlTexture(const GlTexture & glTexture);
-	GlTexture(GlTexture && glTexture);
+	GlTexture(GLuint, int, int);
+	GlTexture(const GlTexture &);
+	GlTexture(GlTexture &&);
 	~GlTexture();
+	static GlTexture surfaceToTexture(const SDL_Surface * surface);
 private:
 	static std::unordered_map<GLuint, unsigned int> useCounters;
 };
 
+struct GlShader {
+	GLuint shaderId;
+	GlShader(GLuint);
+	GlShader(GlShader &&);
+	static GlShader fromFile(const std::string &, GLuint type);
+	static GlShader fromString(const std::string &, GLuint type);
+	void deleteShader();
+	~GlShader();
+	bool compile();
+};
+
+struct GlShaderProgram {
+	GLuint shaderProgramId;
+	void attachShader(const GlShader &);
+	bool link();
+	void use();
+	GlShaderProgram();
+	~GlShaderProgram();
+};
 class Game;
+
+
 
 class GlGraphics
 {
@@ -51,18 +76,24 @@ public:
 	void initialize(Game * game);
 	void finish();
 	void clear();
-	GlTexture surfaceToTexture(const SDL_Surface * surface);
-	void render2DTexture(GlTexture& texture, const SDL_Rect * dstrect);
 	void display();
+	void renderSprite(size_t, size_t, size_t, size_t, size_t, size_t, size_t);
+	GLint shaderProgram;
+	std::vector<std::array<GLint, 2>> positionVertice;
+	std::vector<std::array<GLfloat, 2>> texCoords;
+	GLint uniform_mvp;
+	GLint uniform_glSpriteTexture;
+	GLuint atlasTid;
+	GLuint inputVertexBuffer;
+	GLuint texCoordsBuffer;
+	GLint positionVertAttrib;
+	GLint texCoordsAttrib;
+	GLuint vao;
 private:
 	Window &mWindow;
 	Game * mGame;
 	SDL_GLContext mSDLGlCtx;
-	GLuint gProgramID = 0;
-	GLint gVertexPos2DLocation = -1;
-	GLuint gVBO = 0;
-	GLuint gIBO = 0;
-	GLfloat mCurrentZ;
+	GLuint spritesVAO;
 };
 
 }

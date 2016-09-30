@@ -23,9 +23,9 @@
 #include <SDL.h>
 #include <vector>
 #include "input.hpp"
-#include "character.hpp"
 #include "window.hpp"
 #include "glgraphics.hpp"
+#include "eventhandler.hpp"
 
 namespace Nugem {
 
@@ -38,10 +38,12 @@ public:
 	Game();
 	~Game();
 	void run();
-	GlGraphics & glGraphics() { return mGlGraphics; };
+	GlGraphics &glGraphics() { return mGlGraphics; };
 	Scene &currentScene();
-	InputManager & inputManager();
-	void changeScene(Scene *newScene);
+	InputManager &inputManager();
+	Window &window();
+	void changeScene(Scene *);
+	void loadedScene(Scene *);
 	auto &players() { return mPlayers; };
 	bool requestQuit();
 protected:
@@ -50,8 +52,8 @@ protected:
 private:
 	Window mWindow;
 	GlGraphics mGlGraphics;
+	EventHandler mEventHandler;
 	std::unique_ptr<Scene> mCurrentScene;
-	std::unique_ptr<Scene> mNextScene;
 	std::vector<std::unique_ptr<Player>> mPlayers;
 	bool mContinueMainLoop;
 };

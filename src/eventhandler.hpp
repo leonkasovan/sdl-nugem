@@ -17,6 +17,11 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef EVENTHANDLER_HPP
+#define EVENTHANDLER_HPP
+
+#include <SDL.h>
+
 namespace Nugem {
 
 class Game;
@@ -25,8 +30,12 @@ class EventHandler {
 public:
 	EventHandler(Game &);
 	~EventHandler();
+	
+	void handleSDLEvents();
 private:
 	Game &mGame;
 };
 
 }
+
+#endif // EVENTHANDLER_HPP

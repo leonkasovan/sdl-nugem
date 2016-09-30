@@ -35,6 +35,7 @@ public:
 	bool loading();
 private:
 	Game &mGame;
+	void resetFuture();
 	std::unique_ptr<Scene> mScene;
 	std::future<bool> mFuture;
 };
