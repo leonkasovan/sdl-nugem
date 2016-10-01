@@ -31,12 +31,16 @@ GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalW
 	glGenTextures(1, &m_tid);
 	glBindTexture(GL_TEXTURE_2D, m_tid);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	float color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 GlSpriteCollectionBuilder::~GlSpriteCollectionBuilder()
@@ -49,11 +53,11 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 {
 	glBindTexture(GL_TEXTURE_2D, m_tid);
 	if (surface->h > m_maxHeight)
-		      m_maxHeight = surface->h;
+		m_maxHeight = surface->h;
 	GLuint currentOrdinate = m_totalWidth;
 	m_totalWidth += surface->w;
 	// Resize the texture atlas to fit the new surface
-	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, m_totalWidth, m_maxHeight, 0, GL_RGBA32UI, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32UI, m_totalWidth, m_maxHeight, 0, GL_RGBA32UI, GL_UNSIGNED_BYTE, 0);
 	// Add the new surface in the free space
 	glTexSubImage2D(GL_TEXTURE_2D, 0, currentOrdinate, 0, surface->w, surface->h, GL_RGBA32UI, GL_UNSIGNED_BYTE, surface->pixels);
 	size_t identifier = m_spriteList.size();

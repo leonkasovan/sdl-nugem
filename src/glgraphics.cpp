@@ -209,8 +209,6 @@ void GlGraphics::initialize(Game * game)
     glUseProgram(shaderProgram);
     glDeleteShader(vertexShader.shaderId);
     glDeleteShader(fragmentShader.shaderId);
-    glViewport(0, 0, 1024, 768);
-
 
     positionVertAttrib = glGetAttribLocation(shaderProgram, "position");
     if (positionVertAttrib == -1)
@@ -234,6 +232,8 @@ void GlGraphics::initialize(Game * game)
 
     glm::mat4 mvp =  glm::ortho(0.0f, 1.0f * 1920, 1.0f * 1080, 0.0f);
     glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
+	
+	glViewport(0, 0, 1920, 1080);
 }
 
 void GlGraphics::finish()
@@ -284,6 +284,8 @@ void GlGraphics::display()
 {
     glUseProgram(shaderProgram);
     glUniform1i(uniform_glSpriteTexture, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, atlasTid);
     glEnableVertexAttribArray(positionVertAttrib);
     glBindBuffer(GL_ARRAY_BUFFER, inputVertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(positionVertice[0]) * positionVertice.size(), positionVertice.data(), GL_STATIC_DRAW);

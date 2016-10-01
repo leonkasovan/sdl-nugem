@@ -20,10 +20,11 @@ SceneMenu::SceneMenu(Game &game): mGame(game)
 
 bool SceneMenu::render(GlGraphics & glGraphics)
 {
-	SDL_Rect location{ 0, 0, 1920, 1080};
+	size_t squareside = 300;
+	SDL_Rect location{ 100, 100, squareside, squareside};
 	for (size_t i = 0; i < mTextureAtlas->size(); i++) {
 		mTextureAtlas->display(glGraphics, i, location);
-		location.y += i * 70 + 10;
+		location.y += i * squareside + 20;
 	}
 	return true;
 }
