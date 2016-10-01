@@ -28,7 +28,6 @@ Window::Window()
 	                          SDL_WINDOWPOS_CENTERED,
 	                          DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
 	                          SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-	
 	resizeToFullscreen();
 }
 

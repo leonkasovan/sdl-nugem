@@ -30,6 +30,13 @@
 #include <memory>
 #include <unordered_map>
 
+#define testGlError() { \
+		auto glError = glGetError(); \
+		if (glError != GL_NO_ERROR) \
+			std::cerr << gluErrorString(glError) << std::endl; \
+		assert(glError == GL_NO_ERROR); \
+	}
+
 namespace Nugem {
 
 struct GlTexture {
@@ -66,10 +73,7 @@ struct GlShaderProgram {
 };
 class Game;
 
-
-
-class GlGraphics
-{
+class GlGraphics {
 public:
 	GlGraphics(Window &);
 	~GlGraphics();
@@ -94,6 +98,7 @@ private:
 	Game * mGame;
 	SDL_GLContext mSDLGlCtx;
 	GLuint spritesVAO;
+	
 };
 
 }

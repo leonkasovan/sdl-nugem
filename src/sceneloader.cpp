@@ -25,27 +25,32 @@ namespace Nugem {
 
 SceneLoader::SceneLoader(Game &game, Scene *scene): mGame(game), mScene(scene)
 {
-	resetFuture();
+// 	resetFuture();
+	mScene->loading();
 }
 
 void SceneLoader::update()
 {
-	if (mFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-		if (!mFuture.get()) {
-			resetFuture();
-			return;
-		}
-		mScene->update();
-		mGame.loadedScene(mScene.release());
-	}
+	mScene->update();
+	mGame.loadedScene(mScene.release());
+// 	if (mFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+// 		if (!mFuture.get()) {
+// 			resetFuture();
+// 			return;
+// 		}
+// 		mScene->update();
+// 		mGame.loadedScene(mScene.release());
+// 	}
 }
 
 void SceneLoader::resetFuture()
 {
-	mFuture = std::async(std::launch::async, [&]() { return mScene->loading(); });
+// 	mFuture = std::async(std::launch::async, [&]() { return mScene->loading(); });
+// 	mFuture = std::async(std::launch::deferred, [&]() { return mScene->loading(); });
+// 	mFuture.wait();
 }
 
-bool SceneLoader::render(GlGraphics & glGraphics)
+bool SceneLoader::render(GlGraphics &)
 {
 	return true;
 }

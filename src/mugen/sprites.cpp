@@ -52,11 +52,11 @@ uint16_t read_uint16(ifstream & fileobj)
 	return fileobj.get() | (fileobj.get() << 8);
 }
 
-Sprite::Sprite(Spriteref reference, SDL_Surface * surface, int palette): m_ref(reference), m_surface(surface), m_npalette(palette)
+Sprite::Sprite(Spriteref reference, SDL_Surface * surface, int palette): m_ref(reference), m_npalette(palette), m_surface(surface)
 {
 }
 
-Sprite::Sprite(Spriteref reference, SDL_Surface * surface): m_ref(reference), m_surface(surface), m_npalette(-1)
+Sprite::Sprite(Spriteref reference, SDL_Surface * surface): m_ref(reference), m_npalette(-1), m_surface(surface)
 {
 }
 
@@ -99,7 +99,7 @@ SDL_Surface * Sprite::copySurface(SDL_Surface * surface)
 	return SDL_ConvertSurface(surface, surface->format, 0);
 }
 
-SpriteLoader::SpriteLoader(): m_sffFile("")
+SpriteLoader::SpriteLoader(): m_sffFile(""), m_character(nullptr)
 {
 }
 
