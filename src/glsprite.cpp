@@ -63,10 +63,10 @@ GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalW
 // 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
 	testGlError();
 }
@@ -84,22 +84,23 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 		m_maxHeight = surface->h;
 	GLuint currentOrdinate = m_totalWidth;
 	m_totalWidth += surface->w;
+	testGlError();
 // 	// Resize the texture atlas to fit the new surface
-// 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32UI, m_totalWidth, m_maxHeight, 0, GL_RGBA32UI, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_totalWidth, m_maxHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	testGlError();
 // 	// Add the new surface in the free space
-// 	glTexSubImage2D(GL_TEXTURE_2D, 0, currentOrdinate, 0, surface->w, surface->h, GL_RGBA32UI, GL_UNSIGNED_BYTE, surface->pixels);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, currentOrdinate, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 	testGlError();
 	size_t identifier = m_spriteList.size();
 	m_spriteList.push_back({ (size_t) surface->w,  (size_t) surface->h,  (size_t) currentOrdinate });
-// 	IMG_SavePNG(const_cast<SDL_Surface *>(surface), ("img_" + std::to_string(identifier) + ".png").c_str()); // DEBUG
+	IMG_SavePNG(const_cast<SDL_Surface *>(surface), ("img_" + std::to_string(identifier) + ".png").c_str()); // DEBUG
 	return identifier;
 }
 
 GlSpriteCollection *GlSpriteCollectionBuilder::build()
 {
 	if (!m_built || !m_result) {
-// 		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap(GL_TEXTURE_2D);
 		m_result = new GlSpriteCollection(m_tid, std::move(m_spriteList));
 		m_built = true;
 		testGlError();
