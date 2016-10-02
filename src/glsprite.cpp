@@ -8,7 +8,7 @@
 
 namespace Nugem {
 
-GlSpriteCollection::GlSpriteCollection(GLuint tid, std::vector<GlSpriteCollectionData> &&spriteList): m_tid(tid), m_sprites(spriteList)
+GlSpriteCollection::GlSpriteCollection(GLuint tid, std::vector<GlSpriteCollectionData> &&spriteList): m_tid(tid), m_sprites(spriteList), m_totalHeight(0)
 {
 	m_totalWidth = m_sprites.back().x + m_sprites.back().w;
 	for (auto &sprite: m_sprites) {
@@ -72,14 +72,14 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 	m_surface = newSurface;
 	size_t identifier = m_spriteList.size();
 	m_spriteList.push_back({ (size_t) surface->w,  (size_t) surface->h,  (size_t) currentOrdinate });
-	IMG_SavePNG(const_cast<SDL_Surface *>(surface), ("img_" + std::to_string(identifier) + ".png").c_str()); // DEBUG
+// 	IMG_SavePNG(const_cast<SDL_Surface *>(surface), ("img_" + std::to_string(identifier) + ".png").c_str()); // DEBUG
 	return identifier;
 }
 
 GlSpriteCollection *GlSpriteCollectionBuilder::build()
 {
 	if (!m_built || !m_result) {
-		GLuint tid;
+		GLuint tid = 0;
 		glActiveTexture(GL_TEXTURE0);
 		glGenTextures(1, &tid);
 		glBindTexture(GL_TEXTURE_2D, tid);

@@ -152,7 +152,7 @@ void GlShaderProgram::use()
     glUseProgram(shaderProgramId);
 }
 
-GlGraphics::GlGraphics(Window &window): mWindow(window)
+GlGraphics::GlGraphics(Window &window): m_window(window), m_lastTidUsed(0)
 {
     //Use OpenGL 3.3 core
 
@@ -162,7 +162,7 @@ GlGraphics::GlGraphics(Window &window): mWindow(window)
 
     // Get window context
 
-    mSDLGlCtx = mWindow.createGlContext();
+    m_sdlGlCtx = m_window.createGlContext();
 
     glewExperimental = GL_TRUE;
 	{
@@ -180,64 +180,66 @@ GlGraphics::GlGraphics(Window &window): mWindow(window)
 
 GlGraphics::~GlGraphics()
 {
-    SDL_GL_DeleteContext(mSDLGlCtx);
+    SDL_GL_DeleteContext(m_sdlGlCtx);
 }
 
 void GlGraphics::initialize(Game * game)
 {
-    mGame = game;
+    m_game = game;
 	
 	{
 		GlShader vertexShader = GlShader::fromFile("../assets/shaders/sprite.vert", GL_VERTEX_SHADER);
 		vertexShader.compile();
 		GlShader fragmentShader = GlShader::fromFile("../assets/shaders/sprite.frag", GL_FRAGMENT_SHADER);
 		fragmentShader.compile();
-		shaderProgram = glCreateProgram();
-		glAttachShader(shaderProgram, vertexShader.shaderId);
-		glAttachShader(shaderProgram, fragmentShader.shaderId);
+		      m_shaderProgram = glCreateProgram();
+		glAttachShader(m_shaderProgram, vertexShader.shaderId);
+		glAttachShader(m_shaderProgram, fragmentShader.shaderId);
 		GLint success;
-		glLinkProgram(shaderProgram);
-		glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+		glLinkProgram(m_shaderProgram);
+		glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &success);
 		if(!success) {
 			char buffer[512];
-			glGetProgramInfoLog(shaderProgram, 512, NULL, buffer);
+			glGetProgramInfoLog(m_shaderProgram, 512, NULL, buffer);
 			std::cerr << buffer << std::endl;
 		}
-		glUseProgram(shaderProgram);
+		glUseProgram(m_shaderProgram);
 	}
 
-    positionVertAttrib = glGetAttribLocation(shaderProgram, "position");
-    if (positionVertAttrib == -1)
+    m_positionVertAttrib = glGetAttribLocation(m_shaderProgram, "position");
+    if (m_positionVertAttrib == -1)
         std::cerr << "Could not bind position attrib" << std::endl;
 
-    texCoordsAttrib = glGetAttribLocation(shaderProgram, "v_texCoords");
-    if (texCoordsAttrib == -1)
+    m_texCoordsAttrib = glGetAttribLocation(m_shaderProgram, "v_texCoords");
+    if (m_texCoordsAttrib == -1)
         std::cerr << "Could not bind tex coords attrib" << std::endl;
 
-    uniform_mvp = glGetUniformLocation(shaderProgram, "mvp");
-    if (uniform_mvp == -1)
+    m_uniformMvp = glGetUniformLocation(m_shaderProgram, "mvp");
+    if (m_uniformMvp == -1)
         std::cerr << "Could not bind mvp uniform" << std::endl;
-    uniform_glSpriteTexture = glGetUniformLocation(shaderProgram, "glSpriteTexture");
-    if (uniform_glSpriteTexture == -1)
+    m_UniformGlSpriteTexture = glGetUniformLocation(m_shaderProgram, "glSpriteTexture");
+    if (m_UniformGlSpriteTexture == -1)
         std::cerr << "Could not bind sprite texture uniform" << std::endl;
 
-    glGenBuffers(1, &itemPositionsBuffer);
-    glGenBuffers(1, &itemTexCoordsBuffer);
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    glGenBuffers(1, &m_itemPositionsBuffer);
+    glGenBuffers(1, &m_itemTexCoordsBuffer);
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
 	
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glViewport(0, 0, 1920, 1080);
+	
+	   m_lastTidUsed = 0;
 }
 
 void GlGraphics::finish()
 {
-    glDeleteBuffers(1, &itemPositionsBuffer);
-    glDeleteBuffers(1, &itemTexCoordsBuffer);
-    glDeleteVertexArrays(1, &vao);
-    glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &m_itemPositionsBuffer);
+    glDeleteBuffers(1, &m_itemTexCoordsBuffer);
+    glDeleteVertexArrays(1, &m_vao);
+    glDeleteProgram(m_shaderProgram);
 }
 
 void GlGraphics::clear()
@@ -274,19 +276,19 @@ GlTexture GlTexture::surfaceToTexture(const SDL_Surface * surface)
 
 void GlGraphics::display()
 {
-    glUseProgram(shaderProgram);
+    glUseProgram(m_shaderProgram);
 	
     glm::mat4 mvp =  glm::ortho(0.0f, 1.0f * 1920, 1.0f * 1080, 0.0f);
-    glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
+    glUniformMatrix4fv(m_uniformMvp, 1, GL_FALSE, glm::value_ptr(mvp));
 	for (auto &item: frameItems) {
 		if (!item.positions.empty()) {
-			glEnableVertexAttribArray(positionVertAttrib);
-			glBindBuffer(GL_ARRAY_BUFFER, itemPositionsBuffer);
+			glEnableVertexAttribArray(m_positionVertAttrib);
+			glBindBuffer(GL_ARRAY_BUFFER, m_itemPositionsBuffer);
 			testGlError();
 			glBufferData(GL_ARRAY_BUFFER, sizeof(item.positions[0]) * item.positions.size(), item.positions.data(), GL_STATIC_DRAW);
 			testGlError();
 			glVertexAttribPointer(
-				positionVertAttrib, // attribute
+				            m_positionVertAttrib, // attribute
 				2,                  // number of elements per vertex, here (x,y)
 				GL_INT,           // the type of each element
 				GL_FALSE,           // take our values as-is
@@ -296,32 +298,33 @@ void GlGraphics::display()
 		}
 		testGlError();
 		if (!item.texCoords.empty()) {
-			glUniform1i(uniform_glSpriteTexture, 0);
+			glUniform1i(m_UniformGlSpriteTexture, 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, item.tid);
-			glEnableVertexAttribArray(texCoordsAttrib);
+			glEnableVertexAttribArray(m_texCoordsAttrib);
 			testGlError();
 			// Describe our vertices array to OpenGL (it can't guess its format automatically)
-			glBindBuffer(GL_ARRAY_BUFFER, itemTexCoordsBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_itemTexCoordsBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(item.texCoords[0]) * item.texCoords.size(), item.texCoords.data(), GL_STATIC_DRAW);
 			glVertexAttribPointer(
-				texCoordsAttrib, // attribute
+				            m_texCoordsAttrib, // attribute
 				2,                 // number of elements per vertex, here (x,y)
 				GL_FLOAT,          // the type of each element
 				GL_FALSE,          // take our values as-is
 				0,                 // no extra data between each position
 				0                  // offset of first element
 			);
+			         m_lastTidUsed = item.tid;
 		}
 		testGlError();
 		if (!item.positions.empty()) {
 			glDrawArrays(GL_TRIANGLES, 0, item.positions.size());
 		}
-		glDisableVertexAttribArray(positionVertAttrib);
-		glDisableVertexAttribArray(texCoordsAttrib);
+		glDisableVertexAttribArray(m_positionVertAttrib);
+		glDisableVertexAttribArray(m_texCoordsAttrib);
 	}
 	frameItems.clear();
-    mWindow.swapGlWindow();
+    m_window.swapGlWindow();
 }
 
 void GlGraphics::passItem(GLuint tid, Positions && positions, TexCoords && texCoords)

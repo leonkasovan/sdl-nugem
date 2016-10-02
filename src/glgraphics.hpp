@@ -92,17 +92,18 @@ public:
 	void display();
 	void passItem(GLuint tid, Positions && positions, TexCoords && texCoords);
 private:
-	Window &mWindow;
-	Game * mGame;
-	SDL_GLContext mSDLGlCtx;
-	GLuint positionVertAttrib;
-	GLuint texCoordsAttrib;
-	GLuint vao;
-	GLuint itemPositionsBuffer;
-	GLuint itemTexCoordsBuffer;
-	GLint uniform_mvp;
-	GLint uniform_glSpriteTexture;
-	GLint shaderProgram;
+	Window &m_window;
+	Game * m_game;
+	SDL_GLContext m_sdlGlCtx;
+	GLuint m_positionVertAttrib;
+	GLuint m_texCoordsAttrib;
+	GLuint m_vao;
+	GLuint m_itemPositionsBuffer;
+	GLuint m_itemTexCoordsBuffer;
+	GLint m_uniformMvp;
+	GLint m_UniformGlSpriteTexture;
+	GLint m_shaderProgram;
+	GLuint m_lastTidUsed;
 	std::vector<InternalDisplayItem> frameItems;
 	
 };
