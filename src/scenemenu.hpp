@@ -34,7 +34,7 @@ protected:
 	std::vector<MenuCharacter> mCharacters;
 	std::unique_ptr<GlSpriteCollection> mTextureAtlas;
 	Game &mGame;
-	int selectedCharacter;
+	size_t m_selectedCharacter;
 };
 
 }

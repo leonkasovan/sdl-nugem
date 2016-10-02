@@ -75,29 +75,35 @@ class Game;
 
 class GlGraphics {
 public:
+	typedef std::vector<std::array<GLint, 2>> Positions;
+	typedef std::vector<std::array<GLfloat, 2>> TexCoords;
+private:
+	struct InternalDisplayItem {
+		GLuint tid;
+		Positions positions;
+		TexCoords texCoords;
+	};
+public:
 	GlGraphics(Window &);
 	~GlGraphics();
 	void initialize(Game * game);
 	void finish();
 	void clear();
 	void display();
-	void renderSprite(size_t, size_t, size_t, size_t, size_t, size_t, size_t);
-	GLint shaderProgram;
-	std::vector<std::array<GLint, 2>> positionVertice;
-	std::vector<std::array<GLfloat, 2>> texCoords;
-	GLint uniform_mvp;
-	GLint uniform_glSpriteTexture;
-	GLuint atlasTid;
-	GLuint inputVertexBuffer;
-	GLuint texCoordsBuffer;
-	GLint positionVertAttrib;
-	GLint texCoordsAttrib;
-	GLuint vao;
+	void passItem(GLuint tid, Positions && positions, TexCoords && texCoords);
 private:
 	Window &mWindow;
 	Game * mGame;
 	SDL_GLContext mSDLGlCtx;
-	GLuint spritesVAO;
+	GLuint positionVertAttrib;
+	GLuint texCoordsAttrib;
+	GLuint vao;
+	GLuint itemPositionsBuffer;
+	GLuint itemTexCoordsBuffer;
+	GLint uniform_mvp;
+	GLint uniform_glSpriteTexture;
+	GLint shaderProgram;
+	std::vector<InternalDisplayItem> frameItems;
 	
 };
 

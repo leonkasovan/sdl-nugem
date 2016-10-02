@@ -20,11 +20,21 @@ SceneMenu::SceneMenu(Game &game): mGame(game)
 
 bool SceneMenu::render(GlGraphics & glGraphics)
 {
-	int squareside = 300;
-	SDL_Rect location{ 100, 100, squareside, squareside};
-	for (size_t i = 0; i < mTextureAtlas->size(); i++) {
-		mTextureAtlas->display(glGraphics, i, location);
-		location.y += squareside + 20;
+	if (mTextureAtlas) {
+		GlSpriteDisplayer spriteDisplay(*(mTextureAtlas.get()));
+		{
+			int squareside = 50;
+			SDL_Rect location{ 100, 100, squareside, squareside};
+			for (size_t i = 0; i < mTextureAtlas->size(); i += 2) {
+				spriteDisplay.addSprite(i, location);
+				location.y += squareside + 10;
+			}
+		}
+		{
+			SDL_Rect bigLoc { 350, 100, 250, 250};
+			spriteDisplay.addSprite(m_selectedCharacter + 1, bigLoc);
+		}
+		spriteDisplay.display(glGraphics);
 	}
 	return true;
 }
@@ -64,7 +74,6 @@ bool SceneMenu::loading()
 		auto menusprites = chara.charObject().spriteLoader().load(menurefs.begin(), menurefs.end());
 		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
 		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
-		break;
 	}
 	mTextureAtlas.reset(textureAtlasBuilder.build());
 	return true;

@@ -221,20 +221,22 @@ void GlGraphics::initialize(Game * game)
     if (uniform_glSpriteTexture == -1)
         std::cerr << "Could not bind sprite texture uniform" << std::endl;
 
-    glGenBuffers(1, &inputVertexBuffer);
-    glGenBuffers(1, &texCoordsBuffer);
+    glGenBuffers(1, &itemPositionsBuffer);
+    glGenBuffers(1, &itemTexCoordsBuffer);
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+	
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glViewport(0, 0, 1920, 1080);
 }
 
 void GlGraphics::finish()
 {
-    glDeleteBuffers(1, &inputVertexBuffer);
-    glDeleteBuffers(1, &texCoordsBuffer);
+    glDeleteBuffers(1, &itemPositionsBuffer);
+    glDeleteBuffers(1, &itemTexCoordsBuffer);
     glDeleteVertexArrays(1, &vao);
-// 	glDeleteVertexArrays(1, &spritesVAO);
     glDeleteProgram(shaderProgram);
 }
 
@@ -257,8 +259,6 @@ GlTexture GlTexture::surfaceToTexture(const SDL_Surface * surface)
     }
 
     glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, mode, GL_UNSIGNED_BYTE, surface->pixels);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     float color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -278,51 +278,55 @@ void GlGraphics::display()
 	
     glm::mat4 mvp =  glm::ortho(0.0f, 1.0f * 1920, 1.0f * 1080, 0.0f);
     glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
-	testGlError();
-    if (!positionVertice.empty()) {
-		glEnableVertexAttribArray(positionVertAttrib);
-		glBindBuffer(GL_ARRAY_BUFFER, inputVertexBuffer);
+	for (auto &item: frameItems) {
+		if (!item.positions.empty()) {
+			glEnableVertexAttribArray(positionVertAttrib);
+			glBindBuffer(GL_ARRAY_BUFFER, itemPositionsBuffer);
+			testGlError();
+			glBufferData(GL_ARRAY_BUFFER, sizeof(item.positions[0]) * item.positions.size(), item.positions.data(), GL_STATIC_DRAW);
+			testGlError();
+			glVertexAttribPointer(
+				positionVertAttrib, // attribute
+				2,                  // number of elements per vertex, here (x,y)
+				GL_INT,           // the type of each element
+				GL_FALSE,           // take our values as-is
+				0,                  // no extra data between each position
+				0                   // offset of first element
+			);
+		}
 		testGlError();
-		glBufferData(GL_ARRAY_BUFFER, sizeof(positionVertice[0]) * positionVertice.size(), positionVertice.data(), GL_STATIC_DRAW);
+		if (!item.texCoords.empty()) {
+			glUniform1i(uniform_glSpriteTexture, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, item.tid);
+			glEnableVertexAttribArray(texCoordsAttrib);
+			testGlError();
+			// Describe our vertices array to OpenGL (it can't guess its format automatically)
+			glBindBuffer(GL_ARRAY_BUFFER, itemTexCoordsBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(item.texCoords[0]) * item.texCoords.size(), item.texCoords.data(), GL_STATIC_DRAW);
+			glVertexAttribPointer(
+				texCoordsAttrib, // attribute
+				2,                 // number of elements per vertex, here (x,y)
+				GL_FLOAT,          // the type of each element
+				GL_FALSE,          // take our values as-is
+				0,                 // no extra data between each position
+				0                  // offset of first element
+			);
+		}
 		testGlError();
-		glVertexAttribPointer(
-			positionVertAttrib, // attribute
-			2,                  // number of elements per vertex, here (x,y)
-			GL_INT,           // the type of each element
-			GL_FALSE,           // take our values as-is
-			0,                  // no extra data between each position
-			0                   // offset of first element
-		);
+		if (!item.positions.empty()) {
+			glDrawArrays(GL_TRIANGLES, 0, item.positions.size());
+		}
+		glDisableVertexAttribArray(positionVertAttrib);
+		glDisableVertexAttribArray(texCoordsAttrib);
 	}
-	testGlError();
-    if (!texCoords.empty()) {
-		glUniform1i(uniform_glSpriteTexture, 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, atlasTid);
-		glEnableVertexAttribArray(texCoordsAttrib);
-		testGlError();
-		// Describe our vertices array to OpenGL (it can't guess its format automatically)
-		glBindBuffer(GL_ARRAY_BUFFER, texCoordsBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords[0]) * texCoords.size(), texCoords.data(), GL_STATIC_DRAW);
-		glVertexAttribPointer(
-			texCoordsAttrib, // attribute
-			2,                 // number of elements per vertex, here (x,y)
-			GL_FLOAT,          // the type of each element
-			GL_FALSE,          // take our values as-is
-			0,                 // no extra data between each position
-			0                  // offset of first element
-		);
-	}
-	testGlError();
-    if (!positionVertice.empty()) {
-        glDrawArrays(GL_TRIANGLES, 0, positionVertice.size());
-        positionVertice.clear();
-    }
-    texCoords.clear();
-    glDisableVertexAttribArray(positionVertAttrib);
-    glDisableVertexAttribArray(texCoordsAttrib);
+	frameItems.clear();
     mWindow.swapGlWindow();
-	testGlError();
+}
+
+void GlGraphics::passItem(GLuint tid, Positions && positions, TexCoords && texCoords)
+{
+	frameItems.push_back({ tid, positions, texCoords });
 }
 
 }

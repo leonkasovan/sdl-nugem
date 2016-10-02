@@ -29,23 +29,6 @@ GlSpriteCollection::~GlSpriteCollection()
 	}
 }
 
-void Nugem::GlSpriteCollection::display(GlGraphics &glGraphics, size_t index, SDL_Rect &location)
-{
-	glGraphics.atlasTid = m_tid;
-	glGraphics.positionVertice.push_back({ { location.x, location.y } });
-	glGraphics.positionVertice.push_back({ { location.x + location.w, location.y } });
-	glGraphics.positionVertice.push_back({ { location.x, location.y + location.h } });
-	glGraphics.positionVertice.push_back({ { location.x + location.w, location.y + location.h } });
-	glGraphics.positionVertice.push_back({ { location.x + location.w, location.y } });
-	glGraphics.positionVertice.push_back({ { location.x, location.y + location.h } });
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x) / m_totalWidth, 0 }});
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x + m_sprites[index].w) / m_totalWidth, 0 }});
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x) / m_totalWidth, static_cast<GLfloat>(m_sprites[index].h) / m_totalHeight }});
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x + m_sprites[index].w) / m_totalWidth, static_cast<GLfloat>(m_sprites[index].h) / m_totalHeight }});
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x + m_sprites[index].w) / m_totalWidth, 0 }});
-	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x) / m_totalWidth, static_cast<GLfloat>(m_sprites[index].h) / m_totalHeight }});
-}
-
 GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalWidth(0), m_built(false), m_result(nullptr), m_surface(nullptr)
 {
 }
@@ -125,5 +108,29 @@ GlSpriteCollection *GlSpriteCollectionBuilder::build()
 	return m_result;
 }
 
+GlSpriteDisplayer::GlSpriteDisplayer(GlSpriteCollection &spriteAtlas): m_spriteAtlas(spriteAtlas)
+{}
+
+void GlSpriteDisplayer::addSprite(size_t spriteNumber, SDL_Rect &location)
+{
+	const GlSpriteCollectionData &sprite = m_spriteAtlas.sprites()[spriteNumber];
+	m_positions.push_back({ { location.x, location.y } });
+	m_positions.push_back({ { location.x + location.w, location.y } });
+	m_positions.push_back({ { location.x, location.y + location.h } });
+	m_positions.push_back({ { location.x + location.w, location.y + location.h } });
+	m_positions.push_back({ { location.x + location.w, location.y } });
+	m_positions.push_back({ { location.x, location.y + location.h } });
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), 0 }});
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), 0 }});
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), 0 }});
+	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
+}
+
+void GlSpriteDisplayer::display(GlGraphics &glGraphics)
+{
+	glGraphics.passItem(m_spriteAtlas.tid(), std::move(m_positions), std::move(m_texCoords));
+}
 
 }

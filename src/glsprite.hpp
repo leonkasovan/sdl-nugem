@@ -38,9 +38,11 @@ public:
 	GlSpriteCollection(GLuint, std::vector<GlSpriteCollectionData> &&);
 	GlSpriteCollection(GlSpriteCollection &&);
 	~GlSpriteCollection();
-	void display(GlGraphics &, size_t, SDL_Rect &);
 	decltype(auto) size() { return m_sprites.size(); };
 	decltype(auto) tid() { return m_tid; };
+	decltype(auto) width() { return m_totalWidth; };
+	decltype(auto) height() { return m_totalHeight; };
+	const std::vector<GlSpriteCollectionData> & sprites() { return m_sprites; };
 private:
 	GLuint m_tid;
 	std::vector<GlSpriteCollectionData> m_sprites;
@@ -62,7 +64,18 @@ private:
 	bool m_built;
 	SDL_Surface *m_surface;
 	GlSpriteCollection *m_result;
-	
+};
+
+class GlSpriteDisplayer
+{
+public:
+	GlSpriteDisplayer(GlSpriteCollection &);
+	void addSprite(size_t, SDL_Rect &);
+	void display(GlGraphics &);
+private:
+	GlSpriteCollection &m_spriteAtlas;
+	GlGraphics::Positions m_positions;
+	GlGraphics::TexCoords m_texCoords;
 };
 
 }
