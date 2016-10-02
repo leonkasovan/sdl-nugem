@@ -60,8 +60,9 @@ private:
 	size_t m_maxHeight;
 	size_t m_totalWidth;
 	bool m_built;
+	SDL_Surface *m_surface;
 	GlSpriteCollection *m_result;
-	GLuint m_tid;
+	
 };
 
 }

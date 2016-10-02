@@ -24,7 +24,7 @@ bool SceneMenu::render(GlGraphics & glGraphics)
 	SDL_Rect location{ 100, 100, squareside, squareside};
 	for (size_t i = 0; i < mTextureAtlas->size(); i++) {
 		mTextureAtlas->display(glGraphics, i, location);
-		location.y += i * (squareside + 20) + 20;
+		location.y += squareside + 20;
 	}
 	return true;
 }
@@ -63,8 +63,8 @@ bool SceneMenu::loading()
 	for (auto & chara : mCharacters) {
 		auto menusprites = chara.charObject().spriteLoader().load(menurefs.begin(), menurefs.end());
 		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
-		break; // debug
 		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
+		break;
 	}
 	mTextureAtlas.reset(textureAtlasBuilder.build());
 	return true;

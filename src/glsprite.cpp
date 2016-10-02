@@ -46,51 +46,47 @@ void Nugem::GlSpriteCollection::display(GlGraphics &glGraphics, size_t index, SD
 	glGraphics.texCoords.push_back({{ static_cast<GLfloat>(m_sprites[index].x) / m_totalWidth, static_cast<GLfloat>(m_sprites[index].h) / m_totalHeight }});
 }
 
-GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalWidth(0), m_built(false), m_result(nullptr)
+GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalWidth(0), m_built(false), m_result(nullptr), m_surface(nullptr)
 {
-	glActiveTexture(GL_TEXTURE0);
-	testGlError();
-	glGenTextures(1, &m_tid);
-	glBindTexture(GL_TEXTURE_2D, m_tid);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	
-	testGlError();
-	float color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	testGlError();
 }
 
 GlSpriteCollectionBuilder::~GlSpriteCollectionBuilder()
 {
-	if (!m_built) {
-		glDeleteTextures(1, &m_tid);
-	}
+	if (m_surface)
+		SDL_FreeSurface(m_surface);
 }
 
 size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 {
+	Uint32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+#else
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+#endif
 	if (surface->h > m_maxHeight)
 		m_maxHeight = surface->h;
 	GLuint currentOrdinate = m_totalWidth;
 	m_totalWidth += surface->w;
 	testGlError();
-// 	// Resize the texture atlas to fit the new surface
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_totalWidth, m_maxHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	testGlError();
-// 	// Add the new surface in the free space
-	glTexSubImage2D(GL_TEXTURE_2D, 0, currentOrdinate, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-	testGlError();
+	SDL_Surface *newSurface = SDL_CreateRGBSurface(0, m_totalWidth, m_maxHeight, 32, rmask, gmask, bmask, amask);
+	if (m_surface) {
+		SDL_Rect dstRect = { 0, 0, m_surface->w, m_surface->h };
+		SDL_BlitSurface(m_surface, nullptr, newSurface, &dstRect);
+		SDL_FreeSurface(m_surface);
+	}
+	{
+		SDL_Rect dstRect = { 0, 0, surface->w, surface->h };
+		dstRect.x = currentOrdinate;
+		SDL_BlitSurface(const_cast<SDL_Surface *>(surface), nullptr, newSurface, &dstRect);
+	}
+	m_surface = newSurface;
 	size_t identifier = m_spriteList.size();
 	m_spriteList.push_back({ (size_t) surface->w,  (size_t) surface->h,  (size_t) currentOrdinate });
 	IMG_SavePNG(const_cast<SDL_Surface *>(surface), ("img_" + std::to_string(identifier) + ".png").c_str()); // DEBUG
@@ -100,8 +96,29 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 GlSpriteCollection *GlSpriteCollectionBuilder::build()
 {
 	if (!m_built || !m_result) {
+		GLuint tid;
+		glActiveTexture(GL_TEXTURE0);
+		glGenTextures(1, &tid);
+		glBindTexture(GL_TEXTURE_2D, tid);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		
+		testGlError();
+		float color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_surface->w, m_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_surface->pixels);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		m_result = new GlSpriteCollection(m_tid, std::move(m_spriteList));
+		m_result = new GlSpriteCollection(tid, std::move(m_spriteList));
 		m_built = true;
 		testGlError();
 	}
