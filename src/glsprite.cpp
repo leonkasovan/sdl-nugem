@@ -29,7 +29,7 @@ GlSpriteCollection::~GlSpriteCollection()
 	}
 }
 
-GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalWidth(0), m_built(false), m_result(nullptr), m_surface(nullptr)
+GlSpriteCollectionBuilder::GlSpriteCollectionBuilder(): m_maxHeight(0), m_totalWidth(0), m_built(false), m_surface(nullptr), m_result(nullptr)
 {
 }
 
@@ -53,7 +53,7 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 	bmask = 0x00ff0000;
 	amask = 0xff000000;
 #endif
-	if (surface->h > m_maxHeight)
+	if ((long unsigned int) surface->h > m_maxHeight)
 		m_maxHeight = surface->h;
 	GLuint currentOrdinate = m_totalWidth;
 	m_totalWidth += surface->w;
@@ -79,6 +79,7 @@ size_t GlSpriteCollectionBuilder::addSprite(const SDL_Surface *surface)
 GlSpriteCollection *GlSpriteCollectionBuilder::build()
 {
 	if (!m_built || !m_result) {
+		testGlError();
 		GLuint tid = 0;
 		glActiveTexture(GL_TEXTURE0);
 		glGenTextures(1, &tid);
@@ -113,19 +114,30 @@ GlSpriteDisplayer::GlSpriteDisplayer(GlSpriteCollection &spriteAtlas): m_spriteA
 
 void GlSpriteDisplayer::addSprite(size_t spriteNumber, SDL_Rect &location)
 {
-	const GlSpriteCollectionData &sprite = m_spriteAtlas.sprites()[spriteNumber];
-	m_positions.push_back({ { location.x, location.y } });
-	m_positions.push_back({ { location.x + location.w, location.y } });
-	m_positions.push_back({ { location.x, location.y + location.h } });
-	m_positions.push_back({ { location.x + location.w, location.y + location.h } });
-	m_positions.push_back({ { location.x + location.w, location.y } });
-	m_positions.push_back({ { location.x, location.y + location.h } });
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), 0 }});
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), 0 }});
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width(), 0 }});
-	m_texCoords.push_back({{ static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width(), static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height() }});
+	if (location.w > 0 && location.h > 0 && spriteNumber < m_spriteAtlas.sprites().size()) {
+		const GlSpriteCollectionData &sprite = m_spriteAtlas.sprites()[spriteNumber];
+		m_positions.push_back({ { location.x, location.y } });
+		m_positions.push_back({ { location.x + location.w, location.y } });
+		m_positions.push_back({ { location.x, location.y + location.h } });
+		m_positions.push_back({ { location.x + location.w, location.y + location.h } });
+		m_positions.push_back({ { location.x + location.w, location.y } });
+		m_positions.push_back({ { location.x, location.y + location.h } });
+		GLfloat x[2];
+		if (m_spriteAtlas.width()) {
+			x[0] = static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width();
+			x[1] = static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width();
+		}
+		GLfloat y[2];
+		y[0] = 0;
+		if (m_spriteAtlas.height())
+			y[1] = static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height();
+		m_texCoords.push_back({{ x[0], y[0] }});
+		m_texCoords.push_back({{ x[1], y[0] }});
+		m_texCoords.push_back({{ x[0], y[1] }});
+		m_texCoords.push_back({{ x[1], y[1] }});
+		m_texCoords.push_back({{ x[1], y[0] }});
+		m_texCoords.push_back({{ x[0], y[1] }});
+	}
 }
 
 void GlSpriteDisplayer::display(GlGraphics &glGraphics)
