@@ -25,7 +25,7 @@ bool SceneMenu::render(GlGraphics & glGraphics)
 		{
 			int squareside = 50;
 			SDL_Rect location{ 100, 100, squareside, squareside};
-			for (size_t i = 0; i < mTextureAtlas->size(); i += 2) {
+			for (size_t i = 0; i < mTextureAtlas->sprites().size(); i += 2) {
 				spriteDisplay.addSprite(i, location);
 				location.y += squareside + 10;
 			}

@@ -38,7 +38,6 @@ public:
 	GlSpriteCollection(GLuint, std::vector<GlSpriteCollectionData> &&);
 	GlSpriteCollection(GlSpriteCollection &&);
 	~GlSpriteCollection();
-	decltype(auto) size() { return m_sprites.size(); };
 	decltype(auto) tid() { return m_tid; };
 	decltype(auto) width() { return m_totalWidth; };
 	decltype(auto) height() { return m_totalHeight; };
