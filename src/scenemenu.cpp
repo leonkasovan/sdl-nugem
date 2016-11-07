@@ -76,6 +76,7 @@ bool SceneMenu::loading()
 		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
 	}
 	mTextureAtlas.reset(textureAtlasBuilder.build());
+	m_selectedCharacter = 0;
 	return true;
 }
 

@@ -114,7 +114,11 @@ GlSpriteDisplayer::GlSpriteDisplayer(GlSpriteCollection &spriteAtlas): m_spriteA
 
 void GlSpriteDisplayer::addSprite(size_t spriteNumber, SDL_Rect &location)
 {
-	if (location.w > 0 && location.h > 0 && spriteNumber < m_spriteAtlas.sprites().size()) {
+	if (spriteNumber >= m_spriteAtlas.sprites().size()) {
+		std::cerr << "Error: trying to display a sprite that is not on the atlas" << std::endl;
+		return;
+	}
+	if (location.w > 0 && location.h > 0) {
 		const GlSpriteCollectionData &sprite = m_spriteAtlas.sprites()[spriteNumber];
 		m_positions.push_back({ { location.x, location.y } });
 		m_positions.push_back({ { location.x + location.w, location.y } });
