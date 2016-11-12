@@ -111,7 +111,7 @@ protected:
 	virtual InputState processEvent(const SDL_Event & e) = 0;
 	InputState mCurrentState;
 	Player *mPlayer;
-	InputManager & mManager;
+	InputManager & m_manager;
 private:
 	   InputState m_previousChange;
 };
@@ -170,7 +170,7 @@ private:
 class InputReceiver {
 public:
 	virtual ~InputReceiver() {};
-	virtual void receiveInput(InputDevice *, InputState) = 0;
+	virtual void receiveInput(InputDevice *, InputState &) = 0;
 };
 
 class InputManager {
@@ -181,13 +181,13 @@ public:
 	void processSDLEvent(const SDL_Event& e);
 	InputDevice& device(size_t n);
 	const size_t deviceNumber() const;
-	void addReceiver(InputReceiver &);
-	void removeReceiver(InputReceiver &);
-	void registerInput(InputDevice * device, InputState state);
+	void addReceiver(InputReceiver *);
+	void removeReceiver(InputReceiver *);
+	void registerInput(InputDevice * device, InputState &state);
 	void assignDeviceToPlayer(InputDevice * device, Player * player);
 protected:
 	std::vector<std::unique_ptr<InputDevice>> mDevices;
-	std::vector<std::reference_wrapper<InputReceiver>> mReceivers;
+	std::vector<InputReceiver *> mReceivers;
 	Game * mGame;
 	bool loadGameControllerDB();
 	static const char * controllerDBfilename;

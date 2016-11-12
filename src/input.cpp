@@ -104,7 +104,7 @@ void InputDevice::receiveEvent(const SDL_Event & e)
             eventstate.back != INPUT_B_UNDEFINED) &&
             eventstate != m_previousChange) {
         m_previousChange = eventstate;
-        mManager.registerInput(this, eventstate);
+        m_manager.registerInput(this, eventstate);
 
         if (eventstate.d != INPUT_D_UNDEFINED)
             mCurrentState.d = eventstate.d;
@@ -146,14 +146,21 @@ void InputManager::assignDeviceToPlayer(InputDevice * device, Player * player)
         device->assignToPlayer(player);
 }
 
-void InputManager::registerInput(InputDevice * device, InputState state)
+void InputManager::registerInput(InputDevice * device, InputState &state)
 {
-    if (device && mGame) {
-        Scene& scene = mGame->currentScene();
-        if (SceneMenu *smenu = dynamic_cast<SceneMenu *>(&scene)) {
-            smenu->receiveInput(device, state);
-        }
-    }
+	for (auto receiver: mReceivers) {
+		receiver->receiveInput(device, state);
+	}
+}
+
+void InputManager::addReceiver(InputReceiver *receiver)
+{
+	mReceivers.push_back(receiver);
+}
+
+void InputManager::removeReceiver(InputReceiver *receiver)
+{
+	mReceivers.erase(std::remove(mReceivers.begin(), mReceivers.end(), receiver), mReceivers.end());
 }
 
 const size_t InputManager::deviceNumber() const
@@ -166,7 +173,7 @@ const InputState InputDevice::getState() const
     return mCurrentState;
 }
 
-InputDevice::InputDevice(InputManager & manager): mPlayer(nullptr), mManager(manager)
+InputDevice::InputDevice(InputManager & manager): mPlayer(nullptr), m_manager(manager)
 {
 }
 
@@ -271,7 +278,7 @@ GameController::GameController(InputManager & manager, const uint32_t jid): Inpu
     m_gcsdl = SDL_GameControllerOpen(jid);
 }
 
-GameController::GameController(GameController && gameController): InputDevice(gameController.mManager), m_jid(gameController.m_jid)
+GameController::GameController(GameController && gameController): InputDevice(gameController.m_manager), m_jid(gameController.m_jid)
 {
     m_gcsdl = nullptr;
     std::swap(m_gcsdl, gameController.m_gcsdl);
@@ -441,7 +448,7 @@ Joystick::Joystick(InputManager & manager, const uint32_t jid): InputDevice(mana
     m_joysdl = SDL_JoystickOpen(jid);
 }
 
-Joystick::Joystick(Joystick && joystick): InputDevice(joystick.mManager), m_jid(joystick.m_jid)
+Joystick::Joystick(Joystick && joystick): InputDevice(joystick.m_manager), m_jid(joystick.m_jid)
 {
     m_joysdl = nullptr;
     std::swap(m_joysdl, joystick.m_joysdl);

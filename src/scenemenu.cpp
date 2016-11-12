@@ -14,25 +14,31 @@
 
 using namespace Nugem;
 
-SceneMenu::SceneMenu(Game &game): mGame(game)
+SceneMenu::SceneMenu(Game &game): m_game(game)
 {
+	   m_game.inputManager().addReceiver(this);
+}
+
+SceneMenu::~SceneMenu()
+{
+	   m_game.inputManager().removeReceiver(this);
 }
 
 bool SceneMenu::render(GlGraphics & glGraphics)
 {
-	if (mTextureAtlas) {
-		GlSpriteDisplayer spriteDisplay(*(mTextureAtlas.get()));
+	if (m_textureAtlas) {
+		GlSpriteDisplayer spriteDisplay(*(m_textureAtlas.get()));
 		{
 			int squareside = 50;
 			SDL_Rect location{ 100, 100, squareside, squareside};
-			for (size_t i = 0; i < mTextureAtlas->sprites().size(); i += 2) {
-				spriteDisplay.addSprite(i, location);
+			for (size_t i = 0; i < m_characters.size(); i ++) {
+				spriteDisplay.addSprite(m_characters[i].spriteIndex, location);
 				location.y += squareside + 10;
 			}
 		}
 		{
 			SDL_Rect bigLoc { 350, 100, 250, 250};
-			spriteDisplay.addSprite(m_selectedCharacter + 1, bigLoc);
+			spriteDisplay.addSprite(m_characters[m_selectedCharacter].bigSpriteIndex, bigLoc);
 		}
 		spriteDisplay.display(glGraphics);
 	}
@@ -50,7 +56,7 @@ void SceneMenu::findCharacters()
 			if (name[0] == '.')
 				continue;
 			try {
-				mCharacters.emplace_back(new Character(name));
+				m_characters.emplace_back(new Character(name));
 			}
 			catch
 				(CharacterLoadException & error) {
@@ -61,21 +67,17 @@ void SceneMenu::findCharacters()
 	}
 }
 
-SceneMenu::~SceneMenu()
-{
-}
-
 bool SceneMenu::loading()
 {
 	findCharacters();
 	GlSpriteCollectionBuilder textureAtlasBuilder;
 	std::vector<Mugen::Spriteref> menurefs { Mugen::Spriteref(9000, 0), Mugen::Spriteref(9000, 1) };
-	for (auto & chara : mCharacters) {
+	for (auto & chara : m_characters) {
 		auto menusprites = chara.charObject().spriteLoader().load(menurefs.begin(), menurefs.end());
-		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
-		textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
+		chara.spriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
+		chara.bigSpriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
 	}
-	mTextureAtlas.reset(textureAtlasBuilder.build());
+	m_textureAtlas.reset(textureAtlasBuilder.build());
 	m_selectedCharacter = 0;
 	return true;
 }
@@ -84,18 +86,30 @@ void SceneMenu::update()
 {
 }
 
-void SceneMenu::receiveInput(InputDevice * device, InputState state)
+void SceneMenu::receiveInput(InputDevice *, InputState &state)
 {
+	if (state.d == INPUT_D_S) {
+		m_selectedCharacter += m_characters.size() - 1;
+		m_selectedCharacter %= m_characters.size();
+	}
+	if (state.d == INPUT_D_N) {
+		m_selectedCharacter++;
+		m_selectedCharacter %= m_characters.size();
+	}
+	if (state.back == INPUT_B_PRESSED) {
+		m_game.requestQuit();
+	}
 }
 
-Nugem::MenuCharacter::MenuCharacter(Nugem::Character *character): mCharacter(character)
+Nugem::MenuCharacter::MenuCharacter(Nugem::Character *character): m_character(character)
 {
 }
 
 Nugem::Character & Nugem::MenuCharacter::charObject()
 {
-	return *(mCharacter.get());
+	return *(m_character.get());
 }
+
 
 
 

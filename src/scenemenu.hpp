@@ -15,8 +15,10 @@ class MenuCharacter {
 public:
 	MenuCharacter(Character *);
 	Character &charObject();
+	size_t spriteIndex;
+	size_t bigSpriteIndex;
 private:
-	std::unique_ptr<Character> mCharacter;
+	std::unique_ptr<Character> m_character;
 };
 
 class Game;
@@ -27,13 +29,13 @@ public:
 	~SceneMenu();
 	void update();
 	bool render(GlGraphics & glGraphics);
-	void receiveInput(InputDevice * device, InputState state);
+	void receiveInput(InputDevice * device, InputState &state);
 	bool loading();
 protected:
 	void findCharacters();
-	std::vector<MenuCharacter> mCharacters;
-	std::unique_ptr<GlSpriteCollection> mTextureAtlas;
-	Game &mGame;
+	std::vector<MenuCharacter> m_characters;
+	std::unique_ptr<GlSpriteCollection> m_textureAtlas;
+	Game &m_game;
 	size_t m_selectedCharacter;
 };
 
