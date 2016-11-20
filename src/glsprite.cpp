@@ -7,6 +7,8 @@
 #include <SDL2/SDL_image.h>
 
 namespace Nugem {
+	
+const SDL_Rect GlSpriteDisplayer::defaultSpriteCanvas = {-1, -1, -1, -1};
 
 GlSpriteCollection::GlSpriteCollection(GLuint tid, std::vector<GlSpriteCollectionData> &&spriteList): m_tid(tid), m_sprites(spriteList), m_totalHeight(0)
 {
@@ -112,35 +114,66 @@ GlSpriteCollection *GlSpriteCollectionBuilder::build()
 GlSpriteDisplayer::GlSpriteDisplayer(GlSpriteCollection &spriteAtlas): m_spriteAtlas(spriteAtlas)
 {}
 
-void GlSpriteDisplayer::addSprite(size_t spriteNumber, SDL_Rect &location)
+void GlSpriteDisplayer::addSprite(size_t spriteNumber, const SDL_Rect &dest, const SDL_Rect &src)
 {
 	if (spriteNumber >= m_spriteAtlas.sprites().size()) {
 		std::cerr << "Error: trying to display a sprite that is not on the atlas" << std::endl;
 		return;
 	}
-	if (location.w > 0 && location.h > 0) {
+	if (dest.w > 0 && dest.h > 0) {
 		const GlSpriteCollectionData &sprite = m_spriteAtlas.sprites()[spriteNumber];
-		m_positions.push_back({ { location.x, location.y } });
-		m_positions.push_back({ { location.x + location.w, location.y } });
-		m_positions.push_back({ { location.x, location.y + location.h } });
-		m_positions.push_back({ { location.x + location.w, location.y + location.h } });
-		m_positions.push_back({ { location.x + location.w, location.y } });
-		m_positions.push_back({ { location.x, location.y + location.h } });
-		GLfloat x[2];
+		bool enableDisplay = true;
+		GLfloat bndLeft, bndRight;
 		if (m_spriteAtlas.width()) {
-			x[0] = static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width();
-			x[1] = static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width();
+			// left boundary
+			bndLeft = static_cast<GLfloat>(sprite.x) / m_spriteAtlas.width();
+			// right boundary
+			bndRight = static_cast<GLfloat>(sprite.x + sprite.w) / m_spriteAtlas.width();
+			if (src.x > 0 || src.w > 0) {
+				GLfloat maxBndRight = bndRight;
+				if (src.x > 0)
+					bndLeft += src.x;
+				if (src.w > 0)
+					bndRight = bndLeft + src.w;
+				if (bndLeft > maxBndRight)
+					bndLeft = maxBndRight;
+				if (bndRight > maxBndRight)
+					bndRight = maxBndRight;
+				
+			}
 		}
-		GLfloat y[2];
-		y[0] = 0;
-		if (m_spriteAtlas.height())
-			y[1] = static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height();
-		m_texCoords.push_back({{ x[0], y[0] }});
-		m_texCoords.push_back({{ x[1], y[0] }});
-		m_texCoords.push_back({{ x[0], y[1] }});
-		m_texCoords.push_back({{ x[1], y[1] }});
-		m_texCoords.push_back({{ x[1], y[0] }});
-		m_texCoords.push_back({{ x[0], y[1] }});
+		GLfloat bndTop, bndBottom;
+		// top boundary
+		bndTop = 0;
+		// bottom boundary
+		if (m_spriteAtlas.height()) {
+			bndBottom = static_cast<GLfloat>(sprite.h) / m_spriteAtlas.height();
+			if (src.y > 0 || src.h > 0) {
+				GLfloat maxBndBottom = bndBottom;
+				if (src.y > 0)
+					bndTop += src.y;
+				if (src.h > 0)
+					bndBottom = bndTop + src.h;
+				if (bndBottom >= maxBndBottom)
+					bndBottom = maxBndBottom;
+				if (bndTop >= maxBndBottom)
+					bndTop = maxBndBottom;
+			}
+		}
+		if (enableDisplay) {
+			m_positions.push_back({ { dest.x, dest.y } });
+			m_positions.push_back({ { dest.x + dest.w, dest.y } });
+			m_positions.push_back({ { dest.x, dest.y + dest.h } });
+			m_positions.push_back({ { dest.x + dest.w, dest.y + dest.h } });
+			m_positions.push_back({ { dest.x + dest.w, dest.y } });
+			m_positions.push_back({ { dest.x, dest.y + dest.h } });
+			m_texCoords.push_back({{ bndLeft, bndTop }});
+			m_texCoords.push_back({{ bndRight, bndTop }});
+			m_texCoords.push_back({{ bndLeft, bndBottom }});
+			m_texCoords.push_back({{ bndRight, bndBottom }});
+			m_texCoords.push_back({{ bndRight, bndTop }});
+			m_texCoords.push_back({{ bndLeft, bndBottom }});
+		}
 	}
 }
 

@@ -69,8 +69,9 @@ class GlSpriteDisplayer
 {
 public:
 	GlSpriteDisplayer(GlSpriteCollection &);
-	void addSprite(size_t, SDL_Rect &);
+	void addSprite(size_t, const SDL_Rect &, const SDL_Rect & = defaultSpriteCanvas);
 	void display(GlGraphics &);
+	static const SDL_Rect defaultSpriteCanvas;
 private:
 	GlSpriteCollection &m_spriteAtlas;
 	GlGraphics::Positions m_positions;
