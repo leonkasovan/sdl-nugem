@@ -15,6 +15,7 @@ set(SOURCE_FILES
 	${SOURCEDIR}/mugen/sprites.cpp
 	${SOURCEDIR}/mugen/sffv1.cpp
 	${SOURCEDIR}/mugen/sffv2.cpp
+	${SOURCEDIR}/mugen/stage.cpp
 	${SOURCEDIR}/script/script.cpp
 	${SOURCEDIR}/input.cpp
 	${SOURCEDIR}/window.cpp

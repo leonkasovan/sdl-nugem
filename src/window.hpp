@@ -30,21 +30,22 @@ class Window {
 public:
 	Window();
 	~Window();
+	void raise();
 	void processSDLEvent(const SDL_Event &);
 	void resizeToFullscreen();
 	void swapGlWindow();
 	SDL_GLContext createGlContext();
-	size_t width();
-	size_t height();
+	size_t width() const;
+	size_t height() const;
 	
 	operator bool() const;
 private:
 	const static unsigned int DEFAULT_WINDOW_WIDTH = 640;
 	const static unsigned int DEFAULT_WINDOW_HEIGHT = 480;
-	SDL_Window *mSDLWindow;
-	std::string mTitle = "NUGEM";
-	size_t mWidth;
-	size_t mHeight;
+	SDL_Window *m_sdlWindow;
+	std::string m_title = "NUGEM";
+	size_t m_width;
+	size_t m_height;
 };
 
 }

@@ -17,8 +17,8 @@
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CHARACTER_H
-#define CHARACTER_H
+#ifndef CHARACTER_HPP
+#define CHARACTER_HPP
 
 #include <string>
 #include <vector>
@@ -86,5 +86,5 @@ class CharacterSpriteError: public CharacterException
 
 }
 
-#endif // CHARACTER_H
+#endif // CHARACTER_HPP
 

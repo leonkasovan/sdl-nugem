@@ -21,7 +21,7 @@
 
 namespace Nugem {
 
-FightCharacter::FightCharacter(Character& character, InputDevice& inputDevice): mCharacter(character), mInputDevice(inputDevice)
+FightCharacter::FightCharacter(Character *character, InputDevice& inputDevice): m_character(character), m_inputDevice(inputDevice)
 {
 }
 

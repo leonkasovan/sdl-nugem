@@ -183,6 +183,11 @@ GlGraphics::~GlGraphics()
     SDL_GL_DeleteContext(m_sdlGlCtx);
 }
 
+const Window &GlGraphics::window() const
+{
+	return m_window;
+}
+
 void GlGraphics::initialize(Game * game)
 {
     m_game = game;

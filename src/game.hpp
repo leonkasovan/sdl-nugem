@@ -38,7 +38,7 @@ public:
 	Game();
 	~Game();
 	void run();
-	GlGraphics &glGraphics() { return mGlGraphics; };
+	GlGraphics &glGraphics() { return m_glGraphics; };
 	Scene &currentScene();
 	InputManager &inputManager();
 	Window &window();
@@ -48,14 +48,14 @@ public:
 	bool requestQuit();
 protected:
 	void update();
-	InputManager mInputManager;
+	InputManager m_inputManager;
 private:
-	Window mWindow;
-	GlGraphics mGlGraphics;
+	Window m_window;
+	GlGraphics m_glGraphics;
 	EventHandler mEventHandler;
-	std::unique_ptr<Scene> mCurrentScene;
+	std::unique_ptr<Scene> m_currentScene;
 	std::vector<std::unique_ptr<Player>> mPlayers;
-	bool mContinueMainLoop;
+	bool m_continueMainLoop;
 };
 
 }

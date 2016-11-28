@@ -107,31 +107,31 @@ void InputDevice::receiveEvent(const SDL_Event & e)
         m_manager.registerInput(this, eventstate);
 
         if (eventstate.d != INPUT_D_UNDEFINED)
-            mCurrentState.d = eventstate.d;
+            m_currentState.d = eventstate.d;
 
         if (eventstate.a != INPUT_B_UNDEFINED)
-            mCurrentState.a = eventstate.a;
+            m_currentState.a = eventstate.a;
 
         if (eventstate.b != INPUT_B_UNDEFINED)
-            mCurrentState.b = eventstate.b;
+            m_currentState.b = eventstate.b;
 
         if (eventstate.c != INPUT_B_UNDEFINED)
-            mCurrentState.c = eventstate.c;
+            m_currentState.c = eventstate.c;
 
         if (eventstate.x != INPUT_B_UNDEFINED)
-            mCurrentState.x = eventstate.x;
+            m_currentState.x = eventstate.x;
 
         if (eventstate.y != INPUT_B_UNDEFINED)
-            mCurrentState.y = eventstate.y;
+            m_currentState.y = eventstate.y;
 
         if (eventstate.z != INPUT_B_UNDEFINED)
-            mCurrentState.z = eventstate.z;
+            m_currentState.z = eventstate.z;
 
         if (eventstate.start != INPUT_B_UNDEFINED)
-            mCurrentState.start = eventstate.start;
+            m_currentState.start = eventstate.start;
 
         if (eventstate.back != INPUT_B_UNDEFINED)
-            mCurrentState.back = eventstate.back;
+            m_currentState.back = eventstate.back;
     }
 }
 
@@ -148,19 +148,19 @@ void InputManager::assignDeviceToPlayer(InputDevice * device, Player * player)
 
 void InputManager::registerInput(InputDevice * device, InputState &state)
 {
-	for (auto receiver: mReceivers) {
-		receiver->receiveInput(device, state);
-	}
+    for (auto receiver: mReceivers) {
+        receiver->receiveInput(device, state);
+    }
 }
 
 void InputManager::addReceiver(InputReceiver *receiver)
 {
-	mReceivers.push_back(receiver);
+    mReceivers.push_back(receiver);
 }
 
 void InputManager::removeReceiver(InputReceiver *receiver)
 {
-	mReceivers.erase(std::remove(mReceivers.begin(), mReceivers.end(), receiver), mReceivers.end());
+    mReceivers.erase(std::remove(mReceivers.begin(), mReceivers.end(), receiver), mReceivers.end());
 }
 
 const size_t InputManager::deviceNumber() const
@@ -170,7 +170,7 @@ const size_t InputManager::deviceNumber() const
 
 const InputState InputDevice::getState() const
 {
-    return mCurrentState;
+    return m_currentState;
 }
 
 InputDevice::InputDevice(InputManager & manager): mPlayer(nullptr), m_manager(manager)
@@ -189,7 +189,7 @@ Player * InputDevice::getAssignedPlayer()
 
 InputState InputDevice::getState()
 {
-    return mCurrentState;
+    return m_currentState;
 }
 
 void InputDevice::initialize()
@@ -212,64 +212,90 @@ InputState KeyboardInput::processEvent(const SDL_Event & e)
     switch (e.type) {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
-        updateGlobalState();
+		const SDL_KeyboardEvent & kbdev = e.key;
+		auto readKey = [&](InputButtonState &buttonState, const SDL_Scancode scancode) {
+			if (kbdev.keysym.scancode == scancode) {
+				if (kbdev.state == SDL_PRESSED)
+					buttonState = InputButtonState::INPUT_B_PRESSED;
+				else if (kbdev.state == SDL_RELEASED)
+					buttonState = InputButtonState::INPUT_B_RELEASED;
+			}
+		};
+		readKey(state.a, scancodeA);
+		readKey(state.b, scancodeB);
+		readKey(state.c, scancodeC);
+		readKey(state.x, scancodeX);
+		readKey(state.y, scancodeY);
+		readKey(state.z, scancodeZ);
+		readKey(state.start, scancodeStart);
+		readKey(state.back, scancodeBack);
+		// Directions
+		{
+			const uint8_t * keystate = SDL_GetKeyboardState(NULL);
+			char currentDirValue = static_cast<char>(m_currentState.d);
+			if (kbdev.keysym.scancode == scancodeUp || kbdev.keysym.scancode == scancodeDown) {
+				bool pressedUp = keystate[scancodeUp];
+				bool pressedDown = keystate[scancodeDown];
+				if (pressedUp && !pressedDown)
+					state.d = static_cast<InputDirection>(6 + ((currentDirValue + 9) % 3));
+				else if (pressedDown)
+					state.d = static_cast<InputDirection>((currentDirValue + 9) % 3);
+				else
+					state.d = static_cast<InputDirection>(3 + ((currentDirValue + 9) % 3));
+			}
+			if (kbdev.keysym.scancode == scancodeLeft || kbdev.keysym.scancode == scancodeRight) {
+				bool pressedLeft = keystate[scancodeLeft];
+				bool pressedRight = keystate[scancodeRight];
+				if (pressedLeft && !pressedRight)
+					state.d = static_cast<InputDirection>(1 + (currentDirValue - currentDirValue % 3));
+				else if (pressedRight)
+					state.d = static_cast<InputDirection>(2 + (currentDirValue - currentDirValue % 3));
+				else
+					state.d = static_cast<InputDirection>(3 + (currentDirValue - currentDirValue % 3));
+			}
+		}
         break;
     };
     return state;
 }
 
-const InputButtonState KeyboardInput::evaluateKey(SDL_Scancode key)
-{
-    const uint8_t * keystate = SDL_GetKeyboardState(NULL);
-    if (keystate[key])
-        return INPUT_B_PRESSED;
-    else
-        return INPUT_B_RELEASED;
-}
-
 void KeyboardInput::updateGlobalState()
 {
-    mCurrentState.a = evaluateKey(scancodeA);
-    mCurrentState.b = evaluateKey(scancodeB);
-    mCurrentState.c = evaluateKey(scancodeC);
-    mCurrentState.x = evaluateKey(scancodeX);
-    mCurrentState.y = evaluateKey(scancodeY);
-    mCurrentState.z = evaluateKey(scancodeZ);
-    mCurrentState.start = evaluateKey(scancodeStart);
-    mCurrentState.back = evaluateKey(scancodeBack);
     const uint8_t * keystate = SDL_GetKeyboardState(NULL);
+	auto evaluateKey = [&](SDL_Scancode key) {
+		return (keystate[key]) ? INPUT_B_PRESSED : INPUT_B_RELEASED;
+	};
+    m_currentState.a = evaluateKey(scancodeA);
+    m_currentState.b = evaluateKey(scancodeB);
+    m_currentState.c = evaluateKey(scancodeC);
+    m_currentState.x = evaluateKey(scancodeX);
+    m_currentState.y = evaluateKey(scancodeY);
+    m_currentState.z = evaluateKey(scancodeZ);
+    m_currentState.start = evaluateKey(scancodeStart);
+    m_currentState.back = evaluateKey(scancodeBack);
     if (keystate[scancodeUp]) {
-        if (keystate[scancodeRight]) {
-            mCurrentState.d = INPUT_D_NE;
-        }
-        else if (keystate[scancodeLeft]) {
-            mCurrentState.d = INPUT_D_NW;
-        }
-        else {
-            mCurrentState.d = INPUT_D_N;
-        }
+        if (keystate[scancodeRight])
+            m_currentState.d = INPUT_D_NE;
+        else if (keystate[scancodeLeft])
+            m_currentState.d = INPUT_D_NW;
+        else
+            m_currentState.d = INPUT_D_N;
     }
     else if (keystate[scancodeDown]) {
-        if (keystate[scancodeRight]) {
-            mCurrentState.d = INPUT_D_SE;
-        }
-        else if (keystate[scancodeLeft]) {
-            mCurrentState.d = INPUT_D_SW;
-        }
-        else {
-            mCurrentState.d = INPUT_D_S;
-        }
+        if (keystate[scancodeRight])
+            m_currentState.d = INPUT_D_SE;
+        else if (keystate[scancodeLeft])
+            m_currentState.d = INPUT_D_SW;
+        else
+            m_currentState.d = INPUT_D_S;
     }
     else {
-        if (keystate[scancodeRight]) {
-            mCurrentState.d = INPUT_D_E;
-        }
-        else if (keystate[scancodeLeft]) {
-            mCurrentState.d = INPUT_D_W;
-        }
-        else {
-            mCurrentState.d = INPUT_D_NEUTRAL;
-        }
+        if (keystate[scancodeRight])
+            m_currentState.d = INPUT_D_E;
+        else if (keystate[scancodeLeft])
+            m_currentState.d = INPUT_D_W;
+        else
+            m_currentState.d = INPUT_D_NEUTRAL;
     }
 }
 
@@ -370,15 +396,15 @@ InputState GameController::processEvent(const SDL_Event & e)
 void GameController::updateGlobalState()
 {
     SDL_GameControllerUpdate();
-    mCurrentState.a = getButtonValue(SDL_CONTROLLER_BUTTON_A);
-    mCurrentState.b = getButtonValue(SDL_CONTROLLER_BUTTON_B);
-    mCurrentState.c = getButtonValueForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-    mCurrentState.x = getButtonValue(SDL_CONTROLLER_BUTTON_X);
-    mCurrentState.y = getButtonValue(SDL_CONTROLLER_BUTTON_Y);
-    mCurrentState.z = getButtonValue(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
-    mCurrentState.start = getButtonValue(SDL_CONTROLLER_BUTTON_START);
-    mCurrentState.back = getButtonValue(SDL_CONTROLLER_BUTTON_BACK);
-    mCurrentState.d = getDirection();
+    m_currentState.a = getButtonValue(SDL_CONTROLLER_BUTTON_A);
+    m_currentState.b = getButtonValue(SDL_CONTROLLER_BUTTON_B);
+    m_currentState.c = getButtonValueForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+    m_currentState.x = getButtonValue(SDL_CONTROLLER_BUTTON_X);
+    m_currentState.y = getButtonValue(SDL_CONTROLLER_BUTTON_Y);
+    m_currentState.z = getButtonValue(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    m_currentState.start = getButtonValue(SDL_CONTROLLER_BUTTON_START);
+    m_currentState.back = getButtonValue(SDL_CONTROLLER_BUTTON_BACK);
+    m_currentState.d = getDirection();
 }
 
 InputButtonState GameController::getButtonValue(SDL_GameControllerButton button)

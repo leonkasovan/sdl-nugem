@@ -36,7 +36,7 @@ DefinitionFile & DefinitionFile::readFile(const std::string & filepath)
 {
 	MugenTextFile def(filepath);
 	MugenTextKeyValue kv;
-	while (kv = def.nextValue()) {
+	while ((kv = def.nextValue())) {
 		std::string identifier = kv.name();
 		std::transform(identifier.begin(), identifier.end(), identifier.begin(), ::tolower);
 		std::string section = def.section();

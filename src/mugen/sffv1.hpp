@@ -62,7 +62,7 @@ struct sffv1group_t {
 class Sffv1: public SpriteHandler
 {
 public:
-	Sffv1(Character& character, const char* filename);
+	Sffv1(const char* filename, const char* paletteFile = "");
 	~Sffv1();
 	void load();
 	void load(std::vector< Spriteref >::iterator first, std::vector< Spriteref >::iterator last);
@@ -76,16 +76,16 @@ protected:
 	SDL_Surface * renderToSurface();
 private:
 	static const size_t READBUF_SIZE = 12;
-	Character & character;
-	std::string filename;
-	size_t currentSprite;
-	size_t currentPalette;
-	uint32_t ngroups;
-	uint32_t nimages;
-	std::vector<sffv1sprite_t> sprites;
-	bool sharedPalette; // if not, it's an individual palette
-	std::vector<sffv1palette_t> palettes;
-	std::unordered_map<size_t, sffv1group_t> groups;
+	std::string m_filename;
+	std::string m_paletteFile;
+	size_t m_currentSprite;
+	size_t m_currentPalette;
+	uint32_t m_ngroups;
+	uint32_t m_nimages;
+	std::vector<sffv1sprite_t> m_sffv1Container;
+	bool m_sharedPalette; // if not, it's an individual palette
+	std::vector<sffv1palette_t> m_palettes;
+	std::unordered_map<size_t, sffv1group_t> m_groups;
 };
 
 }

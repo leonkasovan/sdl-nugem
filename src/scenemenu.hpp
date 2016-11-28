@@ -1,5 +1,5 @@
-#ifndef SCENEMENU_H
-#define SCENEMENU_H
+#ifndef SCENEMENU_HPP
+#define SCENEMENU_HPP
 
 #include "scene.hpp"
 #include "character.hpp"
@@ -41,4 +41,4 @@ protected:
 
 }
 
-#endif // SCENEMENU_H
+#endif // SCENEMENU_HPP

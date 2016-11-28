@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2016 Victor Nivet
- * 
+ *
  * This file is part of Nugem.
- * 
+ *
  * Nugem is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  * Nugem is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  *  along with Nugem.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -29,79 +29,80 @@
 
 namespace Nugem {
 
-Game::Game(): mGlGraphics(mWindow), mEventHandler(*this)
+Game::Game(): m_glGraphics(m_window), mEventHandler(*this)
 {
-	if (mWindow)
-		mContinueMainLoop = true;
-	else
-		std::cerr << "Failed to open a window" << std::endl;
+    if (m_window)
+        m_continueMainLoop = true;
+    else
+        std::cerr << "Failed to open a window" << std::endl;
 }
 
 Game::~Game()
 {
-	// SDL deinitialization
-	mGlGraphics.finish();
+    // SDL deinitialization
+    m_glGraphics.finish();
 }
 
 void Game::update()
 {
-	mEventHandler.handleSDLEvents();
-	
-	mGlGraphics.clear();
-	// update
-	if (mCurrentScene) {
-		mCurrentScene->update();
-		mCurrentScene->render(mGlGraphics);
-	}
-	mGlGraphics.display();
+    mEventHandler.handleSDLEvents();
+
+    m_glGraphics.clear();
+    // update
+    if (m_currentScene) {
+        m_currentScene->update();
+        m_currentScene->render(m_glGraphics);
+    }
+    m_glGraphics.display();
 }
 
 void Game::run()
 {
-	mInputManager.initialize(this);
-	changeScene(new SceneMenu(*this));
-	mGlGraphics.initialize(this);
-	// 60 fps
-	uint32_t tickdelay = 1000 / 60;
-	// Main game loop
-	while (mContinueMainLoop && !SDL_QuitRequested()) {
-		uint32_t tick = SDL_GetTicks();
-		update();
-		uint32_t dt = SDL_GetTicks() - tick;
-		if (dt < tickdelay)
-			SDL_Delay(tickdelay - dt);
-	}
+    m_inputManager.initialize(this);
+    changeScene(new SceneMenu(*this));
+    m_glGraphics.initialize(this);
+	m_window.raise();
+    // 60 fps
+    uint32_t tickdelay = 1000 / 60;
+    // Main game loop
+    while (m_continueMainLoop && !SDL_QuitRequested()) {
+        uint32_t tick = SDL_GetTicks();
+        update();
+        uint32_t dt = SDL_GetTicks() - tick;
+        if (dt < tickdelay)
+            SDL_Delay(tickdelay - dt);
+    }
 }
 
 bool Game::requestQuit()
 {
-	   mContinueMainLoop = false;
-	return true;
+    m_continueMainLoop = false;
+    return true;
 }
 
 InputManager & Game::inputManager()
 {
-	return mInputManager;
+    return m_inputManager;
 }
 
 Window &Game::window()
 {
-	return mWindow;
+    return m_window;
 }
 
 Scene &Game::currentScene()
 {
-	return *mCurrentScene;
+    return *m_currentScene;
 }
 
 void Game::changeScene(Scene *newScene)
 {
-	mCurrentScene.reset(new SceneLoader(*this, newScene));
+    m_currentScene.reset(new SceneLoader(*this, newScene));
 }
 
 void Game::loadedScene(Scene *loadedScene)
 {
-	mCurrentScene.reset(loadedScene);
+    m_currentScene.reset(loadedScene);
 }
 
 

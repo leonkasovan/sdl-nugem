@@ -99,13 +99,14 @@ SDL_Surface * Sprite::copySurface(SDL_Surface * surface)
 	return SDL_ConvertSurface(surface, surface->format, 0);
 }
 
-SpriteLoader::SpriteLoader(): m_sffFile(""), m_character(nullptr)
+SpriteLoader::SpriteLoader()
 {
 }
 
-void SpriteLoader::initialize(const __cxx11::string & sffpath, Character * character)
+void SpriteLoader::initialize(const std::string & sffpath, const std::string & palettesFile)
 {
 	m_sffFile = sffpath;
+	m_palettesFile = palettesFile;
 	
 	// Determining sprite version
 	{
@@ -118,8 +119,6 @@ void SpriteLoader::initialize(const __cxx11::string & sffpath, Character * chara
 		m_sffVersion = extract_version(spritefile);
 		spritefile.close();
 	}
-	
-	m_character = character;
 }
 
 vector< unordered_map< Spriteref, Sprite > > SpriteLoader::load()
@@ -154,12 +153,12 @@ SpriteHandler * SpriteLoader::createHandler()
 	if (m_sffVersion[0] >= 2)
 		return new Sffv2(m_sffFile.c_str());
 	else
-		return new Sffv1(*m_character, m_sffFile.c_str());
+		return new Sffv1(m_sffFile.c_str(), m_palettesFile.c_str());
 }
 
 bool SpriteLoader::isInitialized() const
 {
-	return (m_character != nullptr) && (m_sffFile.length() > 0);
+	return (m_sffFile.length() > 0);
 }
 
 }

@@ -74,8 +74,10 @@ bool SceneMenu::loading()
 	std::vector<Mugen::Spriteref> menurefs { Mugen::Spriteref(9000, 0), Mugen::Spriteref(9000, 1) };
 	for (auto & chara : m_characters) {
 		auto menusprites = chara.charObject().spriteLoader().load(menurefs.begin(), menurefs.end());
-		chara.spriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 0)).surface());
-		chara.bigSpriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(Mugen::Spriteref(9000, 1)).surface());
+		if (!menusprites.empty() && menusprites[0].count(menurefs[0]) && menusprites[0].count(menurefs[1])) {
+			chara.spriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(menurefs[0]).surface());
+			chara.bigSpriteIndex = textureAtlasBuilder.addSprite(menusprites[0].at(menurefs[1]).surface());
+		}
 	}
 	m_textureAtlas.reset(textureAtlasBuilder.build());
 	m_selectedCharacter = 0;
@@ -88,6 +90,12 @@ void SceneMenu::update()
 
 void SceneMenu::receiveInput(InputDevice *, InputState &state)
 {
+	if (state.back == INPUT_B_PRESSED) {
+		m_game.requestQuit();
+	}
+	if (state.start == INPUT_B_PRESSED) {
+		m_game.changeScene(new Fight(m_game, m_characters[m_selectedCharacter].charObject().name()));
+	}
 	if (state.d == INPUT_D_S) {
 		m_selectedCharacter += m_characters.size() - 1;
 		m_selectedCharacter %= m_characters.size();
@@ -95,9 +103,6 @@ void SceneMenu::receiveInput(InputDevice *, InputState &state)
 	if (state.d == INPUT_D_N) {
 		m_selectedCharacter++;
 		m_selectedCharacter %= m_characters.size();
-	}
-	if (state.back == INPUT_B_PRESSED) {
-		m_game.requestQuit();
 	}
 }
 

@@ -28,10 +28,10 @@ namespace Nugem {
 class FightCharacter
 {
 public:
-	FightCharacter(Character &character, InputDevice &inputDevice);
+	FightCharacter(Character *character, InputDevice &inputDevice);
 private:
-	Character &mCharacter;
-	InputDevice &mInputDevice;
+	std::unique_ptr<Character> m_character;
+	InputDevice &m_inputDevice;
 };
 
 }

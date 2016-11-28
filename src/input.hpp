@@ -109,7 +109,7 @@ public:
 	Player * getAssignedPlayer();
 protected:
 	virtual InputState processEvent(const SDL_Event & e) = 0;
-	InputState mCurrentState;
+	InputState m_currentState;
 	Player *mPlayer;
 	InputManager & m_manager;
 private:
@@ -122,7 +122,6 @@ public:
 	virtual InputState processEvent(const SDL_Event & e);
 	virtual void updateGlobalState();
 private:
-	const InputButtonState evaluateKey(SDL_Scancode key);
 	static const SDL_Scancode scancodeA = SDL_SCANCODE_A;
 	static const SDL_Scancode scancodeB = SDL_SCANCODE_S;
 	static const SDL_Scancode scancodeC = SDL_SCANCODE_D;

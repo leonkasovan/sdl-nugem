@@ -91,6 +91,7 @@ public:
 	void clear();
 	void display();
 	void passItem(GLuint tid, Positions && positions, TexCoords && texCoords);
+	const Window &window() const;
 private:
 	Window &m_window;
 	Game * m_game;

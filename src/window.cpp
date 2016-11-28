@@ -23,60 +23,65 @@ namespace Nugem {
 
 Window::Window()
 {
-	mSDLWindow = SDL_CreateWindow(mTitle.c_str(),
-	                          SDL_WINDOWPOS_CENTERED,
-	                          SDL_WINDOWPOS_CENTERED,
-	                          DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
-	                          SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-	resizeToFullscreen();
+    m_sdlWindow = SDL_CreateWindow(m_title.c_str(),
+                                   SDL_WINDOWPOS_CENTERED,
+                                   SDL_WINDOWPOS_CENTERED,
+                                   DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
+                                   SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+    resizeToFullscreen();
 }
 
 Window::~Window()
 {
-	SDL_DestroyWindow(mSDLWindow);
+    SDL_DestroyWindow(m_sdlWindow);
+}
+
+void Window::raise()
+{
+    SDL_RaiseWindow(m_sdlWindow);
 }
 
 void Window::resizeToFullscreen()
 {
-	int idx = SDL_GetWindowDisplayIndex(mSDLWindow);
-	SDL_Rect bounds;
-	SDL_GetDisplayBounds(idx, &bounds);
-	SDL_SetWindowBordered(mSDLWindow, SDL_FALSE);
-	SDL_SetWindowPosition(mSDLWindow, bounds.x, bounds.y);
-	SDL_SetWindowSize(mSDLWindow, bounds.w, bounds.h);
-	mWidth = bounds.w;
-	mHeight = bounds.h;
+    int idx = SDL_GetWindowDisplayIndex(m_sdlWindow);
+    SDL_Rect bounds;
+    SDL_GetDisplayBounds(idx, &bounds);
+    SDL_SetWindowBordered(m_sdlWindow, SDL_FALSE);
+    SDL_SetWindowPosition(m_sdlWindow, bounds.x, bounds.y);
+    SDL_SetWindowSize(m_sdlWindow, bounds.w, bounds.h);
+    m_width = bounds.w;
+    m_height = bounds.h;
 }
 
 void Window::swapGlWindow()
 {
-	SDL_GL_SwapWindow(mSDLWindow);
+    SDL_GL_SwapWindow(m_sdlWindow);
 }
 
 SDL_GLContext Window::createGlContext()
 {
-	return SDL_GL_CreateContext(mSDLWindow);
+    return SDL_GL_CreateContext(m_sdlWindow);
 }
 
 Window::operator bool() const
 {
-	return mSDLWindow;
+    return m_sdlWindow;
 }
 
-size_t Window::width()
+size_t Window::width() const
 {
-	return mWidth;
+    return m_width;
 }
 
-size_t Window::height()
+size_t Window::height() const
 {
-	return mHeight;
+    return m_height;
 }
 
 void Window::processSDLEvent(const SDL_Event &e)
 {
-	if (e.type == SDL_WINDOWEVENT) {
-		switch (e.window.event) {
+    if (e.type == SDL_WINDOWEVENT) {
+        switch (e.window.event) {
         case SDL_WINDOWEVENT_SHOWN:
 //             SDL_Log("Window %d shown", event->window.windowID);
             break;
@@ -90,21 +95,21 @@ void Window::processSDLEvent(const SDL_Event &e)
 //             SDL_Log("Window %d moved to %d,%d",
 //                     event->window.windowID, event->window.data1,
 //                     event->window.data2);
-			resizeToFullscreen();
+            resizeToFullscreen();
             break;
         case SDL_WINDOWEVENT_RESIZED:
 //             SDL_Log("Window %d resized to %dx%d",
 //                     event->window.windowID, event->window.data1,
 //                     event->window.data2);
-			mWidth = e.window.data1;
-			mHeight = e.window.data2;
+            m_width = e.window.data1;
+            m_height = e.window.data2;
             break;
         case SDL_WINDOWEVENT_SIZE_CHANGED:
 //             SDL_Log("Window %d size changed to %dx%d",
 //                     event->window.windowID, event->window.data1,
 //                     event->window.data2);
-			mWidth = e.window.data1;
-			mHeight = e.window.data2;
+            m_width = e.window.data1;
+            m_height = e.window.data2;
             break;
         case SDL_WINDOWEVENT_MINIMIZED:
 //             SDL_Log("Window %d minimized", event->window.windowID);
@@ -138,7 +143,7 @@ void Window::processSDLEvent(const SDL_Event &e)
 //                     event->window.windowID, event->window.event);
             break;
         }
-	}
+    }
 }
 
 }

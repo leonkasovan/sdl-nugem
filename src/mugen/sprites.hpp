@@ -104,7 +104,7 @@ uint16_t read_uint16(std::ifstream & fileobj);
 class SpriteLoader {
 public:
 	SpriteLoader();
-	void initialize(const std::string & sffpath, Character * character);
+	void initialize(const std::string & sffpath, const std::string & palettesFile = "");
 	std::vector<std::unordered_map<Spriteref, Sprite>> load();
 	std::vector<std::unordered_map<Spriteref, Sprite>> load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last);
 	std::unordered_map<Spriteref, Sprite> loadForPalette(int palette);
@@ -112,8 +112,8 @@ public:
 protected:
 	SpriteHandler * createHandler();
 	std::string m_sffFile;
+	std::string m_palettesFile;
 	std::array<uint8_t, 4> m_sffVersion;
-	Character * m_character;
 };
 
 }
