@@ -49,8 +49,7 @@ void Stage::initialize() {
 	};
 	auto setDouble = [&](double &result) {
 		result = std::stod(kv.value());
-	};
-	bool newBgSection = false;
+    };
 	std::string newBgSectionName = "";
 	BgElement *currentBgSection = nullptr;
 	std::unordered_map<decltype(DefSection),std::unordered_map<std::string, std::function<void(void)>>> kvEntryExecutor {
@@ -132,20 +131,43 @@ void Stage::initialize() {
 				currentBgSection->name = newBgSectionName;
 			}},
 			{"spriteno", [&]() {
-				if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
-					Spriteref elementSpriteNo;
+                if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
 					std::string str;
 					setString(str);
 					std::stringstream ss(str);
-					ss >> m_localCoord[0];
+                    ss >> staticBgElement->spriteref.group;
 					ss.ignore(1);
-					ss >> m_localCoord[1];
+                    ss >> staticBgElement->spriteref.image;
 				}
 			}},
-			{"start", [&]() {  }},
-			{"delta", [&]() {  }},
-			{"mask", [&]() { }}
-		}}
+            {"layerno", [&]() {
+                if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
+                    setInt(staticBgElement->layer);
+                }
+            }},
+            {"start", [&]() {
+                if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
+                    std::string str;
+                    setString(str);
+                    std::stringstream ss(str);
+                    ss >> staticBgElement->start[0];
+                    ss.ignore(1);
+                    ss >> staticBgElement->start[0];
+                }}},
+            {"delta", [&]() {
+                if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
+                    std::string str;
+                    setString(str);
+                    std::stringstream ss(str);
+                    ss >> staticBgElement->delta[0];
+                    ss.ignore(1);
+                    ss >> staticBgElement->delta[0];
+                }}},
+            {"mask", [&]() {
+                if (StaticBgElement *staticBgElement = dynamic_cast<StaticBgElement *>(currentBgSection)) {
+                    int val; setInt(val); staticBgElement->mask = val;
+                }}}
+        }}
 	};
 	std::regex bgSection("BG (.*)");
     while ((kv = definitionFile.nextValue())) {
@@ -179,8 +201,7 @@ void Stage::initialize() {
 					if (currentBgSection) {
 						m_bgElements.emplace_back(currentBgSection);
 						currentBgSection = nullptr;
-					}
-					newBgSection = true;
+ 			                   }
 					newBgSectionName = sm[1];
 				}
             }
@@ -197,11 +218,13 @@ void Stage::initialize() {
 		auto allsprites = m_spriteLoader.load();
 		for (auto &bgSection: m_bgElements) {
 			if (StaticBgElement *staticElement = dynamic_cast<StaticBgElement *>(bgSection.get())) {
-				atlasBuilder.addSprite(allsprites[0].at(staticElement->spriteno).surface());
+                staticElement->atlasid = atlasBuilder.addSprite(allsprites[0].at(staticElement->spriteref).surface());
 			}
 		}
 	}
 	m_textureAtlas.reset(atlasBuilder.build());
+	m_camera[0] = m_start[0];
+	m_camera[1] = m_start[0];
 }
 
 Mugen::SpriteLoader &Stage::spriteLoader()
@@ -211,9 +234,11 @@ Mugen::SpriteLoader &Stage::spriteLoader()
 
 void Stage::renderBackground(GlGraphics &glGraphics) {
 	GlSpriteDisplayer spriteDisplay(*(m_textureAtlas.get()));
-	{
-		SDL_Rect bigLoc { 0, 0, glGraphics.window().width(), glGraphics.window().height()};
-		spriteDisplay.addSprite(0, bigLoc);
+    SDL_Rect totalScreen { 0, 0, glGraphics.window().width(), glGraphics.window().height() };
+    for (auto &bgSection: m_bgElements) {
+        if (StaticBgElement *staticElement = dynamic_cast<StaticBgElement *>(bgSection.get())) {
+            spriteDisplay.addSprite(staticElement->atlasid, totalScreen);
+        }
 	}
 	spriteDisplay.display(glGraphics);
 }

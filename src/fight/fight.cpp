@@ -8,7 +8,7 @@ Fight::Fight(Game &game, const std::string &characterName): m_game(game)
 {
 	m_game.inputManager().addReceiver(this);
 	m_characters[0].reset(new FightCharacter(new Character(characterName.c_str()), m_game.inputManager().device(0)));
-	m_stage.reset(new Mugen::Stage("kim"));
+	m_stage.reset(new Mugen::Stage("kfm"));
 }
 
 Fight::~Fight()

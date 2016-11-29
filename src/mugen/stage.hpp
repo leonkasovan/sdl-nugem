@@ -39,7 +39,9 @@ public:
 private:
 	constexpr static const char *folder = "stages";
 	const std::string m_loadingName;
+	// ============================
 	// Definition file values
+	// ============================
 	// Info group
 	std::string m_name;
 	std::string m_displayName;
@@ -92,25 +94,30 @@ private:
 	// Music group
 	std::string m_bgmusic;
 	int m_bgvolume;
-	// BGDef group
-    Mugen::SpriteLoader m_spriteLoader;
+	// Background definition elements
+    	Mugen::SpriteLoader m_spriteLoader;
 	bool m_debugbg;
 	struct BgElement {
 		std::string name;
 		virtual ~BgElement() {};
 	};
 	struct StaticBgElement: public BgElement {
-		Spriteref spriteno;
+        Spriteref spriteref;
 		int layer = 0;
-		double start[2] = {0, 0};
+        double start[2] = {0.0f, 0.0f};
+        double delta[2] = {1.0f, 1.0f};
 		bool mask;
 		int tile[2] = {0, 0};
 		int tilespacing[2] = {0, 0};
+        size_t atlasid;
 	};
 	struct AnimatedBgElement: public BgElement {};
 	struct ParallaxBgElement: public BgElement {};
 	std::vector<std::unique_ptr<BgElement>> m_bgElements;
 	std::unique_ptr<GlSpriteCollection> m_textureAtlas;
+
+	// Camera position
+	int m_camera[2];
 };
 
 }
