@@ -87,10 +87,7 @@ public:
 	virtual ~SpriteHandler() {};
 	virtual void load() = 0;
 	virtual void load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last) = 0;
-	std::vector<std::unordered_map<Spriteref, Sprite>> sprites() { return m_sprites; };
-	
-protected:
-	std::vector<std::unordered_map<Spriteref, Sprite>> m_sprites;
+	virtual std::vector<std::unordered_map<Spriteref, Sprite>> sprites() = 0;
 };
 
 // Function for both SFFv1 and SFFv2 sprites

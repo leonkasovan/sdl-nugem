@@ -94,7 +94,7 @@ void SceneMenu::receiveInput(InputDevice *, InputState &state)
 		m_game.requestQuit();
 	}
 	if (state.start == INPUT_B_PRESSED) {
-		m_game.changeScene(new Fight(m_game, m_characters[m_selectedCharacter].charObject().name()));
+		m_game.changeScene(new Fight(m_game, m_characters[m_selectedCharacter].charObject().id()));
 	}
 	if (state.d == INPUT_D_S) {
 		m_selectedCharacter += m_characters.size() - 1;

@@ -109,9 +109,9 @@ void Sffv2::loadSffFile()
     charfile.close();
 }
 
-sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
+Sffv2Sprite Sffv2::readSprite(std::ifstream & fileobj)
 {
-    sffv2sprite_t sprite;
+    Sffv2Sprite sprite;
     sprite.groupno = read_uint16(fileobj);
     sprite.itemno = read_uint16(fileobj);
     sprite.width = read_uint16(fileobj);
@@ -130,9 +130,9 @@ sffv2sprite_t Sffv2::readSprite(std::ifstream & fileobj)
     return sprite;
 }
 
-sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
+Sffv2Palette Sffv2::readPalette(std::ifstream & fileobj)
 {
-    sffv2palette_t palette;
+    Sffv2Palette palette;
     palette.groupno = read_uint16(fileobj);
     palette.itemno = read_uint16(fileobj);
     palette.numcols = read_uint16(fileobj);
@@ -142,7 +142,7 @@ sffv2palette_t Sffv2::readPalette(std::ifstream & fileobj)
     return palette;
 }
 
-void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t & palette, SDL_Surface * surface, const uint32_t surfaceSize)
+void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const Sffv2Palette & palette, SDL_Surface * surface, const uint32_t surfaceSize)
 {
     if (indexPixel < surfaceSize) {
         uint32_t * pixels = (uint32_t *) surface->pixels;
@@ -157,6 +157,11 @@ void Sffv2::outputColoredPixel(uint8_t color, const uint32_t indexPixel, const s
             alpha = 0x00;
         * (pixels + indexPixel) = SDL_MapRGBA(surface->format, red, green, blue, alpha);
     }
+}
+
+bool Sffv2::usesTData(const Sffv2Sprite& sffv2sprite) const
+{
+	return sffv2sprite.flags & 0x01;;
 }
 
 SDL_Surface * Sffv2::renderToSurface()
@@ -177,12 +182,16 @@ SDL_Surface * Sffv2::renderToSurface()
     size_t displayedSprite = m_currentSprite;
     if (m_sffv2Container[m_currentSprite].linkedindex)
         displayedSprite = m_sffv2Container[m_currentSprite].linkedindex;
-    sffv2sprite_t & sprite = m_sffv2Container[displayedSprite];
+    Sffv2Sprite & sprite = m_sffv2Container[displayedSprite];
     // Initializing the surface to be returned
     SDL_Surface * surface = SDL_CreateRGBSurface(0, sprite.width, sprite.height, 32, rmask, gmask, bmask, amask);  // using the defaults masks
     SDL_LockSurface(surface);
     // Initializing the variables we will need for the rest
-    uint8_t * sdata = m_ldata + sprite.dataOffset;
+    uint8_t * sdata;
+	if (usesTData(sprite))
+		sdata = m_tdata + sprite.dataOffset;
+	else
+		sdata = m_ldata + sprite.dataOffset;
     size_t paletteUsed = sprite.paletteIndex;
     // Just a guess:
     // if the sprite indicates a palette number other than 0, it's forcing that one
@@ -191,7 +200,7 @@ SDL_Surface * Sffv2::renderToSurface()
     // case of a linked palette
     if (m_palettes[paletteUsed].linkedindex)
         paletteUsed = m_palettes[paletteUsed].linkedindex;
-    sffv2palette_t & palette = m_palettes[paletteUsed];
+    Sffv2Palette & palette = m_palettes[paletteUsed];
     uint64_t indexPixel = 0;
     uint32_t surfaceSize = (uint32_t)(surface->w * surface->h);
     uint32_t i_byte = 0;
@@ -210,8 +219,8 @@ SDL_Surface * Sffv2::renderToSurface()
                 i_byte++;
                 uint8_t color = sdata[i_byte]; // <- the next byte
                 uint8_t run_length = (first_byte & 0x3F);
-                for (int run_count = 0; run_count < run_length; run_count++, indexPixel++)
-                    outputColoredPixel(color, indexPixel, palette, surface, surfaceSize);
+                for (int run_count = 0; run_count < run_length; run_count++)
+                    outputColoredPixel(color, indexPixel++, palette, surface, surfaceSize);
             }
             else
                 outputColoredPixel(first_byte, indexPixel++, palette, surface, surfaceSize);
@@ -227,20 +236,19 @@ SDL_Surface * Sffv2::renderToSurface()
                 color = sdata[++i_byte];
             else
                 color = 0;
-            for (int run_count = 0; run_count < run_length; run_count++, indexPixel++)
-                outputColoredPixel(color, indexPixel, palette, surface, surfaceSize);
+            for (int run_count = 0; run_count < run_length; run_count++)
+                outputColoredPixel(color, indexPixel++, palette, surface, surfaceSize);
             for (int bytes_processed = 0; bytes_processed < (data_length & 0x7F) - 1; bytes_processed++) {
                 uint8_t byte = sdata[++i_byte];
                 color = byte & 0x1F;
                 run_length = byte >> 5;
-                for (uint8_t run_count = 0; run_count < run_length; run_count++, indexPixel++)
-                    outputColoredPixel(color, indexPixel, palette, surface, surfaceSize);
+                for (uint8_t run_count = 0; run_count < run_length; run_count++)
+                    outputColoredPixel(color, indexPixel++, palette, surface, surfaceSize);
             }
         }
         break;
     case 4: // LZ5
         // see the documentation on LZ5 compression: https://web.archive.org/web/20141230125932/http://elecbyte.com/wiki/index.php/LZ5
-        // TODO Fix whatever is wrong here
         uint32_t shortlzpackets = 1;
         uint8_t recycledbits = 0;
         // first 4 bytes are the size of uncompressed data
@@ -263,8 +271,8 @@ SDL_Surface * Sffv2::renderToSurface()
                         run_length = sdata[i_byte] + 8;
                         // the color runs in 8 to 263 times
                     }
-                    for (run_count = 0; run_count < run_length; run_count++, indexPixel++)
-                        outputColoredPixel(color, indexPixel, palette, surface, surfaceSize);
+                    for (run_count = 0; run_count < run_length; run_count++)
+                        outputColoredPixel(color, indexPixel++, palette, surface, surfaceSize);
                 }
                 else {   // LZ packet (short or long)
                     uint32_t copylength = sdata[i_byte] & 0x3F; // bits 0-5
@@ -327,7 +335,7 @@ void Sffv2::load()
     for (m_currentPalette = 0; m_currentPalette < m_palettes.size(); m_currentPalette++) {
         std::unordered_map<Spriteref, Sprite> currentPaletteSprites;
         for (m_currentSprite = 0; m_currentSprite < m_sffv2Container.size(); m_currentSprite++) {
-            sffv2sprite_t & sprite = m_sffv2Container[m_currentSprite];
+            Sffv2Sprite & sprite = m_sffv2Container[m_currentSprite];
             Spriteref ref(sprite.groupno, sprite.itemno);
             currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), m_currentPalette)));
         }

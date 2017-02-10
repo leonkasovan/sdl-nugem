@@ -32,17 +32,17 @@
 namespace Nugem {
 namespace Mugen {
 
-struct sffv1color_t {
+struct Sffv1Color {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
 };
 
-struct sffv1palette_t {
-	sffv1color_t colors[PALETTE_NCOLORS];
+struct Sffv1Palette {
+	Sffv1Color colors[PALETTE_NCOLORS];
 };
 
-struct sffv1sprite_t {
+struct Sffv1Sprite {
 	// image coordinates
 	uint16_t axisX;
 	uint16_t axisY;
@@ -54,7 +54,7 @@ struct sffv1sprite_t {
 	uint8_t * data;
 };
 
-struct sffv1group_t {
+struct Sffv1Group {
 	// map: index in group -> absolute image index
 	std::unordered_map<size_t, size_t> i;
 };
@@ -72,7 +72,7 @@ protected:
 	// true if there is a palette file that was sucessfully read
 	// false if not
 	bool readActPalette(const char* filepath);
-	sffv1palette_t getPaletteForSprite(size_t spritenumber);
+	   Sffv1Palette getPaletteForSprite(size_t spritenumber);
 	SDL_Surface * renderToSurface();
 private:
 	static const size_t READBUF_SIZE = 12;
@@ -82,10 +82,13 @@ private:
 	size_t m_currentPalette;
 	uint32_t m_ngroups;
 	uint32_t m_nimages;
-	std::vector<sffv1sprite_t> m_sffv1Container;
+	std::vector<Sffv1Sprite> m_sffv1Container;
 	bool m_sharedPalette; // if not, it's an individual palette
-	std::vector<sffv1palette_t> m_palettes;
-	std::unordered_map<size_t, sffv1group_t> m_groups;
+	std::vector<Sffv1Palette> m_palettes;
+	std::unordered_map<size_t, Sffv1Group> m_groups;
+	std::vector<std::unordered_map<Spriteref, Sprite>> m_sprites;
+public:
+	std::vector<std::unordered_map<Spriteref, Sprite>> sprites() { return m_sprites; };
 };
 
 }

@@ -71,7 +71,7 @@ void Sffv1::loadSffFile()
     m_sharedPalette = (sharedPaletteByte != 0);
     // Reading the subfiles
     while (charfile.good() && ((int) nextSubfileOffset) > 0 && m_sffv1Container.size() < m_nimages) {
-        sffv1sprite_t sprite;
+        Sffv1Sprite sprite;
         charfile.seekg(nextSubfileOffset, std::ios::beg);
         nextSubfileOffset = read_uint32(charfile);
         sprite.dataSize = read_uint32(charfile);
@@ -90,7 +90,7 @@ void Sffv1::loadSffFile()
         charfile.read((char *) sprite.data, sprite.dataSize);
         // Add the sprites' index to its group and image number
         m_groups[sprite.group].i[sprite.groupimage] = m_sffv1Container.size();
-        m_sffv1Container.push_back(sprite);
+        m_sffv1Container.emplace_back(std::move(sprite));
     }
     charfile.close();
 }
@@ -114,9 +114,9 @@ void Sffv1::loadSharedPalettes()
     }
 }
 
-sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
+Sffv1Palette Sffv1::getPaletteForSprite(size_t spritenumber)
 {
-    sffv1palette_t s;
+    Sffv1Palette s;
     long paletteSpriteNumber = spritenumber;
     size_t iterationNumber = m_sprites.size();
     if (m_sharedPalette && m_sffv1Container[paletteSpriteNumber].usesSharedPalette)
@@ -127,11 +127,11 @@ sffv1palette_t Sffv1::getPaletteForSprite(size_t spritenumber)
         if (paletteSpriteNumber < 0)
             paletteSpriteNumber += m_sffv1Container.size();
     }
-    sffv1sprite_t & paletteSprite = m_sffv1Container[paletteSpriteNumber];
+    Sffv1Sprite & paletteSprite = m_sffv1Container[paletteSpriteNumber];
     if (paletteSprite.dataSize > 768 && paletteSprite.data[paletteSprite.dataSize - 768 - 1] == 0x0C) {
         uint8_t * paletteData = paletteSprite.data + (paletteSprite.dataSize - 768);
         for (int i = 0; i < PALETTE_NCOLORS; i++) {
-            s.colors[i] = (sffv1color_t) {
+            s.colors[i] = (Sffv1Color) {
                 *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2)
             };
         }
@@ -157,7 +157,7 @@ SDL_Surface * Sffv1::renderToSurface()
     size_t displayedSpriteNumber = m_currentSprite;
     if (m_sffv1Container[m_currentSprite].linkedindex && !m_sffv1Container[m_currentSprite].dataSize)
         displayedSpriteNumber = m_sffv1Container[m_currentSprite].linkedindex;
-    sffv1sprite_t & displayedSprite = m_sffv1Container[displayedSpriteNumber];
+    Sffv1Sprite & displayedSprite = m_sffv1Container[displayedSpriteNumber];
 
 // 	if the sprite is supposed to use the same palette as the previous sprite, then we get this palette
     SDL_Surface * surface = nullptr;
@@ -175,7 +175,7 @@ SDL_Surface * Sffv1::renderToSurface()
     surface = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
     SDL_LockSurface(surface);
     // find the right palette
-    sffv1palette_t palette = getPaletteForSprite(m_currentSprite);
+    Sffv1Palette palette = getPaletteForSprite(m_currentSprite);
     uint8_t * dataStart = displayedSprite.data + 128;
     uint32_t * pixels = (uint32_t * ) surface->pixels;
     size_t i_pixel, i_byte;
@@ -193,7 +193,7 @@ SDL_Surface * Sffv1::renderToSurface()
             colorIndex = dataStart[i_byte];
         }
         if (colorIndex) { // if not null
-            sffv1color_t & color = palette.colors[dataStart[i_byte]];
+            Sffv1Color & color = palette.colors[dataStart[i_byte]];
             sdlcolor = (SDL_Color) {
                 color.red, color.green, color.blue, 0xFF
             };
@@ -212,7 +212,7 @@ SDL_Surface * Sffv1::renderToSurface()
 
 bool Sffv1::readActPalette(const char * filepath)
 {
-    sffv1palette_t palette;
+    Sffv1Palette palette;
     std::ifstream actfile;
     // reading a .act file: a Photoshop 8-bit palette
     try {
@@ -244,7 +244,7 @@ void Sffv1::load()
     for (m_currentPalette = 0; m_currentPalette < m_palettes.size(); m_currentPalette++) {
         std::unordered_map<Spriteref, Sprite> currentPaletteSprites;
         for (m_currentSprite = 0; m_currentSprite < m_sffv1Container.size(); m_currentSprite++) {
-            sffv1sprite_t & sprite = m_sffv1Container[m_currentSprite];
+            Sffv1Sprite & sprite = m_sffv1Container[m_currentSprite];
             Spriteref ref(sprite.group, sprite.groupimage);
             currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), m_currentPalette)));
         }

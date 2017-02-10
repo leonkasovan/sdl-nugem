@@ -35,7 +35,7 @@ namespace Mugen {
 
 // This only provides support for SFF v2.00 ?
 // 24bit / 32bit sprites don't work?
-struct sffv2sprite_t {
+struct Sffv2Sprite {
     uint16_t groupno;
     uint16_t itemno;
     uint16_t width;
@@ -54,7 +54,7 @@ struct sffv2sprite_t {
     SDL_Texture * texture;
 };
 
-struct sffv2palette_t {
+struct Sffv2Palette {
     uint16_t groupno;
     uint16_t itemno;
     uint16_t numcols; // Number of colors
@@ -64,7 +64,7 @@ struct sffv2palette_t {
     // there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte
 };
 
-struct sffv2group_t {
+struct Sffv2Group {
     std::unordered_map<size_t, size_t> i;
 };
 
@@ -75,17 +75,18 @@ public:
     void load();
     void load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last);
 protected:
-    void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const sffv2palette_t& palette, SDL_Surface* surface, const uint32_t surfaceSize);
+    void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const Sffv2Palette& palette, SDL_Surface* surface, const uint32_t surfaceSize);
     void loadSffFile();
-    sffv2sprite_t readSprite(std::ifstream & fileobj);
-    sffv2palette_t readPalette(std::ifstream & fileobj);
+    Sffv2Sprite readSprite(std::ifstream & fileobj);
+    Sffv2Palette readPalette(std::ifstream & fileobj);
     SDL_Surface * renderToSurface();
+	bool usesTData(const Sffv2Sprite&) const;
 private:
     static const size_t READBUF_SIZE = 32;
     std::string m_filename;
-    std::vector<sffv2sprite_t> m_sffv2Container;
-    std::vector<sffv2palette_t> m_palettes;
-    std::unordered_map<size_t, sffv2group_t> m_groups;
+    std::vector<Sffv2Sprite> m_sffv2Container;
+    std::vector<Sffv2Palette> m_palettes;
+    std::unordered_map<size_t, Sffv2Group> m_groups;
     size_t m_currentSprite;
     size_t m_currentPalette;
     uint32_t m_nsprites;
@@ -95,6 +96,9 @@ private:
     uint8_t * m_tdata;
     uint32_t m_tdataLength;
     SDL_Texture * m_texture;
+	std::vector<std::unordered_map<Spriteref, Sprite>> m_sprites;
+public:
+	std::vector<std::unordered_map<Spriteref, Sprite>> sprites() { return m_sprites; };
 };
 
 }

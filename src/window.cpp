@@ -43,10 +43,10 @@ void Window::raise()
 
 void Window::resizeToFullscreen()
 {
+    SDL_SetWindowBordered(m_sdlWindow, SDL_FALSE);
     int idx = SDL_GetWindowDisplayIndex(m_sdlWindow);
     SDL_Rect bounds;
     SDL_GetDisplayBounds(idx, &bounds);
-    SDL_SetWindowBordered(m_sdlWindow, SDL_FALSE);
     SDL_SetWindowPosition(m_sdlWindow, bounds.x, bounds.y);
     SDL_SetWindowSize(m_sdlWindow, bounds.w, bounds.h);
     m_width = bounds.w;
@@ -95,7 +95,7 @@ void Window::processSDLEvent(const SDL_Event &e)
 //             SDL_Log("Window %d moved to %d,%d",
 //                     event->window.windowID, event->window.data1,
 //                     event->window.data2);
-            resizeToFullscreen();
+//             resizeToFullscreen();
             break;
         case SDL_WINDOWEVENT_RESIZED:
 //             SDL_Log("Window %d resized to %dx%d",

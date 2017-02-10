@@ -34,7 +34,7 @@ array<uint8_t, 4> extract_version(ifstream & fileobj)
 {
 	array<uint8_t, 4> version;
 	for (int i = 0; i < 4; i++)
-		version[3 - i] = fileobj.get();
+		fileobj >> version[3 - i];
 	return version;
 }
 
@@ -42,8 +42,8 @@ uint32_t read_uint32(ifstream & fileobj)
 {
 	uint32_t e = 0;
 	// Little endian reading
-	for (int i = 0; i < 8 * 4; i += 8)
-		e |= fileobj.get() << i;
+ 	for (int i = 0; i < 8 * 4; i += 8)
+ 		e |= fileobj.get() << i;
 	return e;
 }
 
