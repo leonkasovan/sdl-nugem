@@ -32,35 +32,41 @@
 namespace Nugem {
 namespace Mugen {
 
-struct Sffv1Color {
-	uint8_t red;
-	uint8_t green;
-	uint8_t blue;
-};
-
-struct Sffv1Palette {
-	Sffv1Color colors[PALETTE_NCOLORS];
-};
-
-struct Sffv1Sprite {
-	// image coordinates
-	uint16_t axisX;
-	uint16_t axisY;
-	uint16_t group; // group number
-	uint16_t groupimage; // image number (in the group)
-	uint32_t dataSize;
-	uint16_t linkedindex; // only for a linked sprite
-	bool usesSharedPalette; // if the image owns its palette, or if it uses a shared palette
-	uint8_t * data;
-};
-
-struct Sffv1Group {
-	// map: index in group -> absolute image index
-	std::unordered_map<size_t, size_t> i;
-};
-
 class Sffv1: public SpriteHandler
 {
+private:
+	struct Color {
+		uint8_t red;
+		uint8_t green;
+		uint8_t blue;
+	};
+	struct PaletteInfo {
+		Color colors[PALETTE_NCOLORS];
+	};
+	struct SpriteInfo {
+		// image coordinates
+		uint16_t axisX;
+		uint16_t axisY;
+		uint16_t group; // group number
+		uint16_t groupimage; // image number (in the group)
+		uint32_t dataSize;
+		uint16_t linkedindex; // only for a linked sprite
+		bool usesSharedPalette; // if the image owns its palette, or if it uses a shared palette
+		uint8_t * data;
+		uint16_t xmin() const;
+		uint16_t xmax() const;
+		uint16_t ymin() const;
+		uint16_t ymax() const;
+		uint8_t nplanes() const;
+		uint16_t bytesPerLine() const;
+		uint16_t width() const;
+		uint16_t height() const;
+		uint32_t totalBytesPerLine() const;
+	};
+	struct GroupInfo {
+		// map: index in group -> absolute image index
+		std::unordered_map<size_t, size_t> i;
+	};
 public:
 	Sffv1(const char* filename, const char* paletteFile = "");
 	~Sffv1();
@@ -72,20 +78,28 @@ protected:
 	// true if there is a palette file that was sucessfully read
 	// false if not
 	bool readActPalette(const char* filepath);
-	   Sffv1Palette getPaletteForSprite(size_t spritenumber);
-	SDL_Surface * renderToSurface();
+	const PaletteInfo getPaletteForSprite(size_t spriteNumber, size_t currentPaletteId);
+	SDL_Surface * renderToSurface(size_t spriteNumber, size_t currentPaletteId);
 private:
+	class Drawer: public SurfaceDrawer {
+	public:
+		Drawer(const SpriteInfo& sprite, const PaletteInfo& palette);
+		~Drawer() {};
+	protected:
+		void draw(uint32_t * pixelData, size_t width, size_t height);
+	private:
+		const SpriteInfo& m_sprite;
+		const PaletteInfo& m_palette;
+	};
 	static const size_t READBUF_SIZE = 12;
 	std::string m_filename;
 	std::string m_paletteFile;
-	size_t m_currentSprite;
-	size_t m_currentPalette;
 	uint32_t m_ngroups;
 	uint32_t m_nimages;
-	std::vector<Sffv1Sprite> m_sffv1Container;
+	std::vector<SpriteInfo> m_sffv1Container;
 	bool m_sharedPalette; // if not, it's an individual palette
-	std::vector<Sffv1Palette> m_palettes;
-	std::unordered_map<size_t, Sffv1Group> m_groups;
+	std::vector<PaletteInfo> m_palettes;
+	std::unordered_map<size_t, GroupInfo> m_groups;
 	std::vector<std::unordered_map<Spriteref, Sprite>> m_sprites;
 public:
 	std::vector<std::unordered_map<Spriteref, Sprite>> sprites() { return m_sprites; };

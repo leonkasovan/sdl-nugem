@@ -33,64 +33,71 @@ namespace Mugen {
  * SFFv2 sprite format, as documented in https://web.archive.org/web/20150510210608/http://elecbyte.com/wiki/index.php/SFFv2
 */
 
-// This only provides support for SFF v2.00 ?
-// 24bit / 32bit sprites don't work?
-struct Sffv2Sprite {
-    uint16_t groupno;
-    uint16_t itemno;
-    uint16_t width;
-    uint16_t height;
-    uint16_t axisx;
-    uint16_t axisy;
-    uint16_t linkedindex;
-    uint8_t fmt; // Format: 0 -> raw, 1 -> invalid, 2 -> RLE8, 3 -> RLE5, 4 -> LZ5
-    uint8_t coldepth;
-    uint32_t dataOffset;
-    uint32_t dataLength;
-    uint16_t paletteIndex;
-    uint16_t flags; // flags w/ load information
-    // bit 0 -> if value = 0, literal (use ldata); if value = 1, translate (use tdata & decompress on load)
-    // bit 1 to 15: unused
-    SDL_Texture * texture;
-};
-
-struct Sffv2Palette {
-    uint16_t groupno;
-    uint16_t itemno;
-    uint16_t numcols; // Number of colors
-    uint16_t linkedindex;
-    uint32_t ldataOffset;
-    uint32_t dataLength;
-    // there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte
-};
-
-struct Sffv2Group {
-    std::unordered_map<size_t, size_t> i;
-};
-
 class Sffv2: public SpriteHandler {
+private:
+	// This only provides support for SFF v2.00
+	// 24bit / 32bit sprites may or may not work?
+	struct SpriteInfo {
+		uint16_t groupno;
+		uint16_t itemno;
+		uint16_t width;
+		uint16_t height;
+		uint16_t axisx;
+		uint16_t axisy;
+		uint16_t linkedindex;
+		uint8_t fmt; // Format: 0 -> raw, 1 -> invalid, 2 -> RLE8, 3 -> RLE5, 4 -> LZ5
+		uint8_t coldepth;
+		uint32_t dataOffset;
+		uint32_t dataLength;
+		uint16_t paletteIndex;
+		uint16_t flags; // flags w/ load information
+		// bit 0 -> if value = 0, literal (use ldata); if value = 1, translate (use tdata & decompress on load)
+		// bit 1 to 15: unused
+		SDL_Texture * texture;
+		bool usesTData() const;
+	};
+
+	struct PaletteInfo {
+		uint16_t groupno;
+		uint16_t itemno;
+		uint16_t numcols; // Number of colors
+		uint16_t linkedindex;
+		uint32_t ldataOffset;
+		uint32_t dataLength;
+		// there are 4 bytes per color: 3 for RGB 8-bit values, and a last, unused byte
+	};
+
+	struct GroupInfo {
+		std::unordered_map<size_t, size_t> i;
+	};
 public:
     Sffv2(const char* filename);
     ~Sffv2();
     void load();
     void load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last);
 protected:
-    void outputColoredPixel(uint8_t color, const uint32_t indexPixel, const Sffv2Palette& palette, SDL_Surface* surface, const uint32_t surfaceSize);
     void loadSffFile();
-    Sffv2Sprite readSprite(std::ifstream & fileobj);
-    Sffv2Palette readPalette(std::ifstream & fileobj);
-    SDL_Surface * renderToSurface();
-	bool usesTData(const Sffv2Sprite&) const;
+    SpriteInfo readSprite(std::ifstream & fileobj);
+    PaletteInfo readPalette(std::ifstream & fileobj);
+    SDL_Surface * renderToSurface(size_t spriteNumber, size_t currentPaletteId);
 private:
+	class Drawer: public SurfaceDrawer {
+	public:
+		Drawer(const SpriteInfo& sprite, const PaletteInfo& palette, uint8_t * ldata, uint8_t * tdata);
+		~Drawer() {};
+	protected:
+		void draw(uint32_t * pixelData, size_t width, size_t height);
+	private:
+		const SpriteInfo& m_sprite;
+		const PaletteInfo& m_palette;
+		const uint8_t * m_ldata;
+		const uint8_t * m_tdata;
+	};
     static const size_t READBUF_SIZE = 32;
     std::string m_filename;
-    std::vector<Sffv2Sprite> m_sffv2Container;
-    std::vector<Sffv2Palette> m_palettes;
-    std::unordered_map<size_t, Sffv2Group> m_groups;
-    size_t m_currentSprite;
-    size_t m_currentPalette;
-    uint32_t m_nsprites;
-    uint32_t m_npalettes;
+    std::vector<SpriteInfo> m_sffv2Container;
+    std::vector<PaletteInfo> m_palettes;
+    std::unordered_map<size_t, GroupInfo> m_groups;
     uint8_t * m_ldata;
     uint32_t m_ldataLength;
     uint8_t * m_tdata;

@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <vector>
 #include <fstream>
+#include <functional>
 
 namespace Nugem {
 namespace Mugen {
@@ -61,12 +62,23 @@ namespace Nugem {
 
 class Character;
 
+class SurfaceDrawer {
+public:
+	SurfaceDrawer(size_t width, size_t height);
+	virtual ~SurfaceDrawer();
+	uint32_t rgba(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) const;
+	SDL_Surface * operator()();
+protected:
+	virtual void draw(uint32_t * pixelData, size_t width, size_t height) = 0;
+private:
+	SDL_Surface * m_surface;
+};
+
 namespace Mugen {
 	
 class Sprite {
 public:
-	Sprite(Spriteref reference, SDL_Surface * surface);
-	Sprite(Spriteref reference, SDL_Surface * surface, int palette);
+	Sprite(Spriteref reference, SDL_Surface * surface, int palette = -1);
 	virtual ~Sprite();
 	Sprite(const Sprite & originalSprite);
 	Sprite(Sprite && originalSprite);

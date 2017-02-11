@@ -28,6 +28,41 @@
 using namespace std;
 
 namespace Nugem {
+
+SurfaceDrawer::SurfaceDrawer(size_t width, size_t height)
+{
+    Uint32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+	m_surface = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
+	SDL_LockSurface(m_surface);
+}
+
+SurfaceDrawer::~SurfaceDrawer()
+{
+	SDL_UnlockSurface(m_surface);
+}
+
+uint32_t SurfaceDrawer::rgba(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) const
+{
+	return SDL_MapRGBA(m_surface->format, red, green, blue, alpha);
+}
+
+SDL_Surface * SurfaceDrawer::operator()()
+{
+	draw(static_cast<uint32_t *>(m_surface->pixels), m_surface->w, m_surface->h);
+	return m_surface;
+}
+
 namespace Mugen {
 
 array<uint8_t, 4> extract_version(ifstream & fileobj)
@@ -53,10 +88,6 @@ uint16_t read_uint16(ifstream & fileobj)
 }
 
 Sprite::Sprite(Spriteref reference, SDL_Surface * surface, int palette): m_ref(reference), m_npalette(palette), m_surface(surface)
-{
-}
-
-Sprite::Sprite(Spriteref reference, SDL_Surface * surface): m_ref(reference), m_npalette(-1), m_surface(surface)
 {
 }
 

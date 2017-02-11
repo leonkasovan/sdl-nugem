@@ -28,11 +28,55 @@
 
 namespace Nugem {
 namespace Mugen {
+	
+
+uint16_t Sffv1::SpriteInfo::xmin() const
+{
+	return *( ((uint16_t * ) data) + 2);
+}
+
+uint16_t Sffv1::SpriteInfo::xmax() const
+{
+	return *( ((uint16_t * ) data) + 4);;
+}
+
+uint16_t Sffv1::SpriteInfo::ymin() const
+{
+	return *( ((uint16_t * ) data) + 3);;
+}
+
+uint16_t Sffv1::SpriteInfo::ymax() const
+{
+	return *( ((uint16_t * ) data) + 5);;
+}
+
+uint8_t Sffv1::SpriteInfo::nplanes() const
+{
+	return *( (uint8_t * ) data + 65);
+}
+
+uint16_t Sffv1::SpriteInfo::bytesPerLine() const
+{
+	return *( (uint16_t * ) data + 33);
+}
+
+uint16_t Sffv1::SpriteInfo::width() const
+{
+	return xmax() - xmin() + 1;
+}
+
+uint16_t Sffv1::SpriteInfo::height() const
+{
+	return ymax() - ymin() + 1;
+}
+
+uint32_t Sffv1::SpriteInfo::totalBytesPerLine() const
+{
+	return nplanes() * bytesPerLine();
+}
 
 Sffv1::Sffv1(const char * filename, const char * paletteFile): m_filename(filename), m_paletteFile(paletteFile)
 {
-    m_currentSprite = 0;
-    m_currentPalette = 0;
     m_sffv1Container.clear();
     m_palettes.clear();
     loadSffFile();
@@ -41,9 +85,8 @@ Sffv1::Sffv1(const char * filename, const char * paletteFile): m_filename(filena
 
 Sffv1::~Sffv1()
 {
-    for (int i = 0; i < m_sffv1Container.size(); i++) {
+    for (int i = 0; i < m_sffv1Container.size(); i++)
         delete [] m_sffv1Container[i].data;
-    }
 }
 
 void Sffv1::loadSffFile()
@@ -71,7 +114,7 @@ void Sffv1::loadSffFile()
     m_sharedPalette = (sharedPaletteByte != 0);
     // Reading the subfiles
     while (charfile.good() && ((int) nextSubfileOffset) > 0 && m_sffv1Container.size() < m_nimages) {
-        Sffv1Sprite sprite;
+        SpriteInfo sprite;
         charfile.seekg(nextSubfileOffset, std::ios::beg);
         nextSubfileOffset = read_uint32(charfile);
         sprite.dataSize = read_uint32(charfile);
@@ -114,72 +157,43 @@ void Sffv1::loadSharedPalettes()
     }
 }
 
-Sffv1Palette Sffv1::getPaletteForSprite(size_t spritenumber)
+const Sffv1::PaletteInfo Sffv1::getPaletteForSprite(size_t spriteNumber, size_t currentPaletteId)
 {
-    Sffv1Palette s;
-    long paletteSpriteNumber = spritenumber;
+    PaletteInfo s;
     size_t iterationNumber = m_sprites.size();
-    if (m_sharedPalette && m_sffv1Container[paletteSpriteNumber].usesSharedPalette)
-        return m_palettes[m_currentPalette];
-    while (m_sffv1Container[paletteSpriteNumber].usesSharedPalette && iterationNumber > 0) {
+    if (m_sharedPalette && m_sffv1Container[spriteNumber].usesSharedPalette)
+        return m_palettes[currentPaletteId];
+    while (m_sffv1Container[spriteNumber].usesSharedPalette && iterationNumber > 0) {
         iterationNumber--;
-        paletteSpriteNumber--;
-        if (paletteSpriteNumber < 0)
-            paletteSpriteNumber += m_sffv1Container.size();
+		if (spriteNumber > 0)
+			spriteNumber--;
+        else
+            spriteNumber += m_sffv1Container.size() - 1;
     }
-    Sffv1Sprite & paletteSprite = m_sffv1Container[paletteSpriteNumber];
+    SpriteInfo & paletteSprite = m_sffv1Container[spriteNumber];
     if (paletteSprite.dataSize > 768 && paletteSprite.data[paletteSprite.dataSize - 768 - 1] == 0x0C) {
         uint8_t * paletteData = paletteSprite.data + (paletteSprite.dataSize - 768);
         for (int i = 0; i < PALETTE_NCOLORS; i++) {
-            s.colors[i] = (Sffv1Color) {
+            s.colors[i] = (Color) {
                 *(paletteData + 3 * i), *(paletteData + 3 * i + 1), *(paletteData + 3 * i + 2)
             };
         }
         return s;
     }
-    return m_palettes[m_currentPalette];
+    return m_palettes[currentPaletteId];
 }
 
-SDL_Surface * Sffv1::renderToSurface()
+
+Sffv1::Drawer::Drawer(const SpriteInfo& sprite, const PaletteInfo& palette): Nugem::SurfaceDrawer(sprite.width(), sprite.height()), m_sprite(sprite), m_palette(palette)
+{}
+
+void Sffv1::Drawer::draw(uint32_t * pixelData, size_t width, size_t height)
 {
-    Uint32 rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-    size_t displayedSpriteNumber = m_currentSprite;
-    if (m_sffv1Container[m_currentSprite].linkedindex && !m_sffv1Container[m_currentSprite].dataSize)
-        displayedSpriteNumber = m_sffv1Container[m_currentSprite].linkedindex;
-    Sffv1Sprite & displayedSprite = m_sffv1Container[displayedSpriteNumber];
-
-// 	if the sprite is supposed to use the same palette as the previous sprite, then we get this palette
-    SDL_Surface * surface = nullptr;
-
-    // decoding the PCX
-    uint16_t Xmin = *( (uint16_t * ) displayedSprite.data + 2);
-    uint16_t Ymin = *( (uint16_t * ) displayedSprite.data + 3);
-    uint16_t Xmax = *( (uint16_t * ) displayedSprite.data + 4);
-    uint16_t Ymax = *( (uint16_t * ) displayedSprite.data + 5);
-    uint8_t nplanes = *( (uint8_t * ) displayedSprite.data + 65);
-    uint16_t bytesPerLine = *( (uint16_t * ) displayedSprite.data + 33);
-    uint16_t width = Xmax - Xmin + 1;
-    uint16_t height = Ymax - Ymin + 1;
-    uint32_t totalBytesPerLine = nplanes * bytesPerLine;
-    surface = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
-    SDL_LockSurface(surface);
-    // find the right palette
-    Sffv1Palette palette = getPaletteForSprite(m_currentSprite);
-    uint8_t * dataStart = displayedSprite.data + 128;
-    uint32_t * pixels = (uint32_t * ) surface->pixels;
+	// PCX file format: data starts at offset 128
+	// before offset 128 is the header: see the Sffv1Sprite methods
+    uint8_t * dataStart = m_sprite.data + 128;
     size_t i_pixel, i_byte;
-    for (i_pixel = 0, i_byte = 0; i_pixel < width * height && i_byte < (displayedSprite.dataSize - 128); i_byte++) {
+    for (i_pixel = 0, i_byte = 0; i_pixel < width * height && i_byte < (m_sprite.dataSize - 128); i_byte++) {
         uint16_t runLength;
         SDL_Color sdlcolor;
         uint8_t colorIndex;
@@ -193,7 +207,7 @@ SDL_Surface * Sffv1::renderToSurface()
             colorIndex = dataStart[i_byte];
         }
         if (colorIndex) { // if not null
-            Sffv1Color & color = palette.colors[dataStart[i_byte]];
+            const Color & color = m_palette.colors[dataStart[i_byte]];
             sdlcolor = (SDL_Color) {
                 color.red, color.green, color.blue, 0xFF
             };
@@ -202,17 +216,22 @@ SDL_Surface * Sffv1::renderToSurface()
             sdlcolor = (SDL_Color) {
             0, 0, 0, 0
         };
-        for (int runCount = runLength; runCount > 0; runCount--, i_pixel++)
-            *(pixels + i_pixel) = SDL_MapRGBA(surface->format, sdlcolor.r, sdlcolor.g, sdlcolor.b, sdlcolor.a);
+        for (int runCount = runLength; runCount > 0 && i_pixel < width * height; runCount--, i_pixel++)
+            *(pixelData + i_pixel) = rgba(sdlcolor.r, sdlcolor.g, sdlcolor.b, sdlcolor.a);
     }
-    SDL_UnlockSurface(surface);
+}
 
-    return surface;
+SDL_Surface * Sffv1::renderToSurface(size_t spriteNumber, size_t currentPaletteId)
+{
+    size_t displayedSpriteNumber = spriteNumber;
+    if (m_sffv1Container[spriteNumber].linkedindex && !m_sffv1Container[spriteNumber].dataSize)
+        displayedSpriteNumber = m_sffv1Container[spriteNumber].linkedindex;
+    return Drawer(m_sffv1Container[displayedSpriteNumber], getPaletteForSprite(displayedSpriteNumber, currentPaletteId))();
 }
 
 bool Sffv1::readActPalette(const char * filepath)
 {
-    Sffv1Palette palette;
+    Sffv1::PaletteInfo palette;
     std::ifstream actfile;
     // reading a .act file: a Photoshop 8-bit palette
     try {
@@ -241,12 +260,12 @@ bool Sffv1::readActPalette(const char * filepath)
 void Sffv1::load()
 {
     m_sprites.clear();
-    for (m_currentPalette = 0; m_currentPalette < m_palettes.size(); m_currentPalette++) {
+    for (size_t currentPalette = 0; currentPalette < m_palettes.size(); currentPalette++) {
         std::unordered_map<Spriteref, Sprite> currentPaletteSprites;
-        for (m_currentSprite = 0; m_currentSprite < m_sffv1Container.size(); m_currentSprite++) {
-            Sffv1Sprite & sprite = m_sffv1Container[m_currentSprite];
+        for (size_t currentSprite = 0; currentSprite < m_sffv1Container.size(); currentSprite++) {
+            SpriteInfo & sprite = m_sffv1Container[currentSprite];
             Spriteref ref(sprite.group, sprite.groupimage);
-            currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), m_currentPalette)));
+            currentPaletteSprites.insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(currentSprite, currentPalette), currentPalette)));
         }
         m_sprites.push_back(currentPaletteSprites);
     }
@@ -255,15 +274,15 @@ void Sffv1::load()
 void Sffv1::load(std::vector<Spriteref>::iterator first, std::vector<Spriteref>::iterator last)
 {
     m_sprites.clear();
-    for (m_currentPalette = 0; m_currentPalette < m_palettes.size(); m_currentPalette++) {
+    for (size_t currentPalette = 0; currentPalette < m_palettes.size(); currentPalette++) {
         m_sprites.push_back(std::unordered_map<Spriteref, Sprite>());
     }
 
     for (; first != last; first++) {
-        for (m_currentPalette = 0; m_currentPalette < m_palettes.size(); m_currentPalette++) {
+        for (size_t currentPalette = 0; currentPalette < m_palettes.size(); currentPalette++) {
             Spriteref & ref = *first;
-            m_currentSprite = m_groups[ref.group].i[ref.image];
-            m_sprites[m_currentPalette].insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(), m_currentPalette)));
+            size_t currentSprite = m_groups[ref.group].i[ref.image];
+            m_sprites[currentPalette].insert(std::pair<Spriteref, Sprite>(ref, Sprite(ref, renderToSurface(currentSprite, currentPalette), currentPalette)));
         }
     }
 }
