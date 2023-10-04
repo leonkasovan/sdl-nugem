@@ -2,6 +2,7 @@
 #define AIR_HPP
 
 #include "mugenutils.hpp"
+#include <map>
 
 namespace Nugem {
 namespace Mugen {

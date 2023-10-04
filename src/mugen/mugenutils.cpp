@@ -12,9 +12,9 @@ namespace Nugem {
 namespace Mugen {
 	
 
-istream & _getline(istream & __is, string & __str)
+istream & _getline(std::istream & __is, std::string & __str)
 {
-	istream & _is = getline(__is, __str);
+    std::istream & _is = getline(__is, __str);
 	// Cut the line at the comments: find the ; character
 	bool ignored = false;
 	for (unsigned int index = 0; index < __str.size(); index++) {
@@ -41,7 +41,7 @@ const regex MugenTextFile::regexSectionHeader("^[ \t]*\\[[ \t]*([^\\]]+?)[ \t]*\
 const regex MugenTextFile::regexKeyValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*([^\r]+?)[ \t\r]*$");
 const regex MugenTextFile::regexKeyQuotedValue("^[ \t]*([^=]+?)[ \t]*=[ \t]*\"([^\r\"]+?)\"[ \t\r]*$");
 
-MugenTextFile::MugenTextFile(const string & path): m_path(path), m_inputstream(path)
+MugenTextFile::MugenTextFile(const std::string & path): m_path(path), m_inputstream(path)
 {
 	m_section = "";
 }
@@ -52,7 +52,7 @@ MugenTextFile::~MugenTextFile()
 		m_inputstream.close();
 }
 
-const string & MugenTextFile::section() const
+const std::string & MugenTextFile::section() const
 {
 	return m_section;
 }
@@ -62,10 +62,10 @@ const bool MugenTextFile::newSection() const
 	return m_newSection;
 }
 
-const string MugenTextFile::nextLine()
+const std::string MugenTextFile::nextLine()
 {
 	m_newSection = false;
-	string s;
+	std::string s;
 	_getline(m_inputstream, s);
 	smatch sm;
 	if (regex_match(s, sm, regexSectionHeader)) {
@@ -82,7 +82,7 @@ MugenTextFile::operator bool() const
 
 const MugenTextKeyValue MugenTextFile::nextValue()
 {
-	string line;
+	std::string line;
 	m_newSection = false;
 	while (_getline(m_inputstream, line)) {
 		smatch sm;
@@ -104,7 +104,7 @@ MugenTextKeyValue::MugenTextKeyValue(): m_empty(true)
 {
 }
 
-MugenTextKeyValue MugenTextKeyValue::read(const string & stringToRead)
+MugenTextKeyValue MugenTextKeyValue::read(const std::string & stringToRead)
 {
 	smatch sm;
 	if (regex_match(stringToRead, sm, MugenTextFile::regexKeyQuotedValue)) {
@@ -116,7 +116,7 @@ MugenTextKeyValue MugenTextKeyValue::read(const string & stringToRead)
 	return MugenTextKeyValue();
 }
 
-MugenTextKeyValue::MugenTextKeyValue(string key, string value): m_key(key), m_value(value)
+MugenTextKeyValue::MugenTextKeyValue(std::string key, std::string value): m_key(key), m_value(value)
 {
 }
 
@@ -158,12 +158,12 @@ MugenTextKeyValue::operator bool() const
 	return !m_empty;
 }
 
-const string & MugenTextKeyValue::name() const
+const std::string & MugenTextKeyValue::name() const
 {
 	return m_key;
 }
 
-const string & MugenTextKeyValue::value() const
+const std::string & MugenTextKeyValue::value() const
 {
 	return m_value;
 }

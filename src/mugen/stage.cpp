@@ -23,6 +23,7 @@
 
 #include <regex>
 #include <iostream>
+#include <sstream>
 
 namespace Nugem {
 namespace Mugen {

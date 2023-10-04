@@ -11,7 +11,7 @@ namespace Nugem {
 namespace Mugen {
 
 // ::std::getline adjusted for the ; comment character
-::std::istream& _getline(::std::istream& __is, ::std::__cxx11::string& __str);
+::std::istream& _getline(::std::istream& __is, ::std::string& __str);
 
 class MugenTextKeyValue {
 public:
