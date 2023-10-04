@@ -1,6 +1,14 @@
 .idea
 build
+doc
+
+# osx
+.DS_Store
+
+#cmake
 cmake-build-debug
 nugem
-.DS_Store
-doc
+cmake_install.cmake
+CMakeCache.txt
+Makefile
+CMakeFiles
