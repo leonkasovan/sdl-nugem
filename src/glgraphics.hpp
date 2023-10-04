@@ -35,6 +35,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <cassert>
 #define testGlError() { \
 		auto glError = glGetError(); \
 		if (glError != GL_NO_ERROR) \
