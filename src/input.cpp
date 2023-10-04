@@ -19,13 +19,12 @@
 
 #include "input.hpp"
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 #include "game.hpp"
 #include "player.hpp"
 #include "scene.hpp"
-#include "scenemenu.hpp"
 
 namespace Nugem {
 

@@ -18,7 +18,6 @@
 */
 
 #include "sceneloader.hpp"
-#include <iostream>
 #include "game.hpp"
 
 namespace Nugem {
