@@ -20,7 +20,6 @@
 
 #include <SDL.h>
 #include "game.hpp"
-#include <iostream>
 
 int main (int, char **)
 {

@@ -21,7 +21,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <glm/glm.hpp>
 #include <glm/geometric.hpp>
 #include <glm/ext.hpp>
 
@@ -191,11 +190,11 @@ const Window &GlGraphics::window() const
 void GlGraphics::initialize(Game * game)
 {
     m_game = game;
-	
+
 	{
-		GlShader vertexShader = GlShader::fromFile("../assets/shaders/sprite.vert", GL_VERTEX_SHADER);
+		GlShader vertexShader = GlShader::fromFile("assets/shaders/sprite.vert", GL_VERTEX_SHADER);
 		vertexShader.compile();
-		GlShader fragmentShader = GlShader::fromFile("../assets/shaders/sprite.frag", GL_FRAGMENT_SHADER);
+		GlShader fragmentShader = GlShader::fromFile("assets/shaders/sprite.frag", GL_FRAGMENT_SHADER);
 		fragmentShader.compile();
 		      m_shaderProgram = glCreateProgram();
 		glAttachShader(m_shaderProgram, vertexShader.shaderId);
@@ -230,12 +229,12 @@ void GlGraphics::initialize(Game * game)
     glGenBuffers(1, &m_itemTexCoordsBuffer);
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
-	
+
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	glViewport(0, 0, 1920, 1080);
-	
+
 	   m_lastTidUsed = 0;
 }
 
@@ -282,7 +281,7 @@ GlTexture GlTexture::surfaceToTexture(const SDL_Surface * surface)
 void GlGraphics::display()
 {
     glUseProgram(m_shaderProgram);
-	
+
     glm::mat4 mvp =  glm::ortho(0.0f, 1.0f * 1920, 1.0f * 1080, 0.0f);
     glUniformMatrix4fv(m_uniformMvp, 1, GL_FALSE, glm::value_ptr(mvp));
 	for (auto &item: frameItems) {

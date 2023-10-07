@@ -1,48 +1,55 @@
+cmake_minimum_required(VERSION 3.7)
 set(PROJECT nugem)
 project(${PROJECT})
-cmake_minimum_required(VERSION 2.8)
 
 
 # Add global definitions
 add_definitions("-Wall")
-set(SOURCEDIR src)
-set(SOURCE_FILES
-	${SOURCEDIR}/mugen/mugenutils.cpp
-	${SOURCEDIR}/mugen/air.cpp
-	${SOURCEDIR}/mugen/def.cpp
-	${SOURCEDIR}/mugen/state.cpp
-	${SOURCEDIR}/mugen/cmd.cpp
-	${SOURCEDIR}/mugen/sprites.cpp
-	${SOURCEDIR}/mugen/sffv1.cpp
-	${SOURCEDIR}/mugen/sffv2.cpp
-	${SOURCEDIR}/mugen/stage.cpp
-	${SOURCEDIR}/script/script.cpp
-	${SOURCEDIR}/input.cpp
-	${SOURCEDIR}/window.cpp
-	${SOURCEDIR}/glgraphics.cpp
-	${SOURCEDIR}/glsprite.cpp
-	${SOURCEDIR}/character.cpp
-    ${SOURCEDIR}/player.cpp
-    ${SOURCEDIR}/fight/fight.cpp
-    ${SOURCEDIR}/fight/fightcharacter.cpp
-    ${SOURCEDIR}/scenemenu.cpp
-    ${SOURCEDIR}/sceneloader.cpp
-	${SOURCEDIR}/eventhandler.cpp
-    ${SOURCEDIR}/game.cpp
-    ${SOURCEDIR}/main.cpp
-)
+file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 
 add_executable(${PROJECT} ${SOURCE_FILES})
 # Using C++14
 set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD 14)
 set_property(TARGET ${PROJECT} PROPERTY CXX_STANDARD_REQUIRED 14)
 
+message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}
+CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
+
+# gcc 5 and clang 3.4 at least to support c++14
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.4)
+    message(FATAL_ERROR "Require at least clang++-3.4")
+endif ()
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.1)
+    message(FATAL_ERROR "Require at least g++-5.1")
+endif ()
+
 # Find SDL2
+# https://cmake.org/cmake/help/latest/module/FindPkgConfig.html
 INCLUDE(FindPkgConfig REQUIRED)
 PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
+PKG_CHECK_MODULES(SDL2_IMAGE REQUIRED SDL2_image)
 PKG_CHECK_MODULES(GL REQUIRED gl)
 PKG_CHECK_MODULES(GLEW REQUIRED glew)
-include_directories(${SDL2_INCLUDE_DIRS} ${GL_INCLUDE_DIRS})
+PKG_CHECK_MODULES(GLM REQUIRED glm)
+if (APPLE)
+    PKG_CHECK_MODULES(GLU REQUIRED glut)
+else ()
+    PKG_CHECK_MODULES(GLU REQUIRED glu)
+endif ()
 
-target_link_libraries(${PROJECT} SDL2_image ${SDL2_LIBRARIES} ${GL_LIBRARIES} pthread ${GLEW_LIBRARIES})
+message("SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}
+SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}
+GLEW_INCLUDE_DIRS: ${GLEW_INCLUDE_DIRS}
+GL_INCLUDE_DIRS:${GL_INCLUDE_DIRS}
+GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}
+GLU_INCLUDE_DIRS: ${GLU_INCLUDE_DIRS}")
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${GL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS} ${GLU_INCLUDE_DIRS})
+
+message("SDL2_LINK_LIBRARIES: ${SDL2_LINK_LIBRARIES}
+SDL2_IMAGE_LINK_LIBRARIES: ${SDL2_IMAGE_LINK_LIBRARIES}
+GLEW_LINK_LIBRARIES: ${GLEW_LINK_LIBRARIES}
+GL_LINK_LIBRARIES:${GL_LINK_LIBRARIES}
+GLM_LINK_LIBRARIES: ${GLM_LINK_LIBRARIES}
+GLU_LINK_LIBRARIES: ${GLU_LINK_LIBRARIES}")
+target_link_libraries(${PROJECT} ${SDL2_LINK_LIBRARIES} ${SDL2_IMAGE_LINK_LIBRARIES} ${GL_LINK_LIBRARIES} ${GLEW_LINK_LIBRARIES} ${GLM_LINK_LIBRARIES} ${GLU_LINK_LIBRARIES})
 install(TARGETS ${PROJECT} DESTINATION bin)

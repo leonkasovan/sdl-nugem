@@ -1,7 +1,5 @@
 #include "glsprite.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 #include <iostream>
 
 #include <SDL2/SDL_image.h>

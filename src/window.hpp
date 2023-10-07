@@ -32,7 +32,6 @@ public:
 	~Window();
 	void raise();
 	void processSDLEvent(const SDL_Event &);
-	void resizeToFullscreen();
 	void swapGlWindow();
 	SDL_GLContext createGlContext();
 	size_t width() const;

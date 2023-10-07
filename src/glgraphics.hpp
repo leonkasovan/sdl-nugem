@@ -25,17 +25,30 @@
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
-#include <GL/glu.h>
-#include <vector>
-#include <memory>
-#include <unordered_map>
 
+#if defined(__APPLE__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+
+#define testGlError() { }
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#include <cassert>
 #define testGlError() { \
 		auto glError = glGetError(); \
 		if (glError != GL_NO_ERROR) \
 			std::cerr << gluErrorString(glError) << std::endl; \
 		assert(glError == GL_NO_ERROR); \
 	}
+
+#endif
+
+#include <vector>
+#include <memory>
+#include <unordered_map>
+
 
 namespace Nugem {
 
