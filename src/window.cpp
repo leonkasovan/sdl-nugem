@@ -27,8 +27,7 @@ Window::Window()
                                    SDL_WINDOWPOS_CENTERED,
                                    SDL_WINDOWPOS_CENTERED,
                                    DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
-                                   SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-    resizeToFullscreen();
+                                   SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
 Window::~Window()
@@ -39,18 +38,6 @@ Window::~Window()
 void Window::raise()
 {
     SDL_RaiseWindow(m_sdlWindow);
-}
-
-void Window::resizeToFullscreen()
-{
-    SDL_SetWindowBordered(m_sdlWindow, SDL_FALSE);
-    int idx = SDL_GetWindowDisplayIndex(m_sdlWindow);
-    SDL_Rect bounds;
-    SDL_GetDisplayBounds(idx, &bounds);
-    SDL_SetWindowPosition(m_sdlWindow, bounds.x, bounds.y);
-    SDL_SetWindowSize(m_sdlWindow, bounds.w, bounds.h);
-    m_width = bounds.w;
-    m_height = bounds.h;
 }
 
 void Window::swapGlWindow()

@@ -192,9 +192,9 @@ void GlGraphics::initialize(Game * game)
     m_game = game;
 
 	{
-		GlShader vertexShader = GlShader::fromFile("../assets/shaders/sprite.vert", GL_VERTEX_SHADER);
+		GlShader vertexShader = GlShader::fromFile("assets/shaders/sprite.vert", GL_VERTEX_SHADER);
 		vertexShader.compile();
-		GlShader fragmentShader = GlShader::fromFile("../assets/shaders/sprite.frag", GL_FRAGMENT_SHADER);
+		GlShader fragmentShader = GlShader::fromFile("assets/shaders/sprite.frag", GL_FRAGMENT_SHADER);
 		fragmentShader.compile();
 		      m_shaderProgram = glCreateProgram();
 		glAttachShader(m_shaderProgram, vertexShader.shaderId);
