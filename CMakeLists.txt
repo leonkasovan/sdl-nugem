@@ -36,6 +36,25 @@ if (APPLE)
 else ()
     PKG_CHECK_MODULES(GLU REQUIRED glu)
 endif ()
+find_package(OpenGL REQUIRED)
+if(${CMAKE_SYSTEM_NAME}  MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME}  MATCHES  "Windows")
+    find_package(GLEW REQUIRED)
+endif()
+
+# see what platform we are on and set platform defines
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DGL_SILENCE_DEPRECATION)
+    target_link_libraries(${PROJECT} "-framework Metal -framework Foundation")
+
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set ( PROJECT_LINK_LIBS -lGL)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    add_compile_definitions(_USE_MATH_DEFINES)
+    add_compile_definitions(NOMINMAX)
+    target_compile_definitions(${PROJECT} PRIVATE /wd4251)
+endif()
+
+
 
 message("SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}
 SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}
@@ -51,5 +70,7 @@ GLEW_LINK_LIBRARIES: ${GLEW_LINK_LIBRARIES}
 GL_LINK_LIBRARIES:${GL_LINK_LIBRARIES}
 GLM_LINK_LIBRARIES: ${GLM_LINK_LIBRARIES}
 GLU_LINK_LIBRARIES: ${GLU_LINK_LIBRARIES}")
-target_link_libraries(${PROJECT} ${SDL2_LINK_LIBRARIES} ${SDL2_IMAGE_LINK_LIBRARIES} ${GL_LINK_LIBRARIES} ${GLEW_LINK_LIBRARIES} ${GLM_LINK_LIBRARIES} ${GLU_LINK_LIBRARIES})
+target_link_libraries(${PROJECT} ${SDL2_LINK_LIBRARIES} ${SDL2_IMAGE_LINK_LIBRARIES} ${GL_LINK_LIBRARIES} ${GLEW_LINK_LIBRARIES} ${GLM_LINK_LIBRARIES} ${GLU_LINK_LIBRARIES} OpenGL::GL)
 install(TARGETS ${PROJECT} DESTINATION bin)
+
+

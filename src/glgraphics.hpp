@@ -25,17 +25,22 @@
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
+#include <cassert>
 
 #if defined(__APPLE__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 
-#define testGlError() { }
+#define testGlError() { \
+		auto glError = glGetError(); \
+		if (glError != GL_NO_ERROR) \
+			std::cerr << gluErrorString(glError) << std::endl; \
+		assert(glError == GL_NO_ERROR); \
+	}
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <cassert>
 #define testGlError() { \
 		auto glError = glGetError(); \
 		if (glError != GL_NO_ERROR) \
