@@ -54,7 +54,10 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     target_compile_definitions(${PROJECT} PRIVATE /wd4251)
 endif()
 
-
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions("-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+endif ()
 
 message("SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}
 SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}
