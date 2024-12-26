@@ -85,7 +85,7 @@ Sffv1::Sffv1(const char * filename, const char * paletteFile): m_filename(filena
 
 Sffv1::~Sffv1()
 {
-    for (int i = 0; i < m_sffv1Container.size(); i++)
+    for (size_t i = 0; i < m_sffv1Container.size(); i++)
         delete [] m_sffv1Container[i].data;
 }
 
