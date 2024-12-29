@@ -1,15 +1,12 @@
 # Nugem
 
-**nugem** is a 2D fighting game engine reimplementing M.U.G.E.N. using SDL2 and OpenGL aiming for compatibility with [Mugen](https://en.wikipedia.org/wiki/Mugen_(game_engine)).
+**nugem** is a 2D fighting game engine reimplementing M.U.G.E.N. using SDL2 and OpenGL ES aiming for compatibility with [Mugen](https://en.wikipedia.org/wiki/Mugen_(game_engine)).
 
 ## Prequirements
 * g++ 14+
-* clang 16+
 * cmake 3+
 * sdl2
-* freeglut 3+
-* glew
-* gl
+* glad
 * glm
 
 ## Dependencies
@@ -28,7 +25,10 @@ brew install sdl2 sdl2_image freeglut glew glm doxygen
 ## How to run
 
 ```shell
-cmake . -DCMAKE_BUILD_TYPE=Debug && make && ./nugem
+cmake  -B build . -DCMAKE_BUILD_TYPE=Debug OR
+cmake  -B build .
+make -j8 -C build
+./nugem
 ```
 
 ## Reference
